@@ -1,5 +1,7 @@
-import Layout from '@/layouts/Layout';
-import DashboardPage from '@/pages/DashboardPage';
+import { Layout } from '@/components/common';
+import { UsersPage } from '@/features/users/pages/UsersPage';
+import { DashboardPage } from '@/features/dashboard/pages/Dashboard';
+import { UserDetailsPage } from '@/features/users/pages/UserDetailsPage';
 
 const routes = [
   {
@@ -9,6 +11,19 @@ const routes = [
       {
         path: 'dashboard',
         element: <DashboardPage />,
+      },
+      {
+        path: 'users',
+        children: [
+          {
+            index: true,
+            element: <UsersPage />,
+          },
+          {
+            path: 'details/:userId',
+            element: <UserDetailsPage />,
+          },
+        ],
       },
     ],
   },

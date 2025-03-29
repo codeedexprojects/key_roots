@@ -1,7 +1,8 @@
-import { Sidebar, Navbar } from '@/components/common';
 import { Outlet } from 'react-router';
+import { Navbar } from './Navbar';
+import { Sidebar } from './Sidebar';
 
-export default function Layout() {
+export function Layout() {
   return (
     <div className='flex h-screen w-screen overflow-hidden'>
       <Sidebar />
