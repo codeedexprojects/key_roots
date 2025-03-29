@@ -7,7 +7,7 @@ export default function Layout() {
       <Sidebar />
       <div className='flex flex-col flex-1 h-screen overflow-hidden'>
         <Navbar />
-        <main className='flex-1 overflow-auto p-6 bg-gray-50'>
+        <main className='flex-1 overflow-auto p-2 md:p-4 lg:p-6 bg-gray-50'>
           <Outlet />
         </main>
       </div>

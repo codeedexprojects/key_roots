@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Home,
   Users,
+  LogOut,
+  PanelLeftOpen,
+  PanelRightOpen,
   Store,
   Calendar,
   CreditCard,
@@ -10,118 +11,115 @@ import {
   Grid3X3,
   DollarSign,
   Award,
-  LogOut,
-  ChevronRight,
-  ChevronLeft,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { NavLink } from 'react-router';
 
-export function Sidebar() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+const menuItems = [
+  { name: 'Dashboard', icon: Home, to: '/admin/dashboard' },
+  { name: 'Users', icon: Users, to: '/admin/users' },
+  { name: 'Vendor', icon: Store, to: '/admin/vendors' },
+  { name: 'Booking Details', icon: Calendar, to: '/admin/bookings' },
+  { name: 'Payments', icon: CreditCard, to: '/admin/payments' },
+  { name: 'Advertisement', icon: MonitorSmartphone, to: '/admin/ads' },
+  { name: 'Category', icon: Grid3X3, to: '/admin/categories' },
+  { name: 'Pay Out', icon: DollarSign, to: '/admin/payouts' },
+  { name: 'Reward', icon: Award, to: '/admin/rewards' },
+];
 
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+export const Sidebar = () => {
+  const [isOpen, setIsOpen] = useState(window.innerWidth >= 768);
 
-  const menuItems = [
-    { icon: Home, label: 'Dashboard', active: true },
-    { icon: Users, label: 'Users' },
-    { icon: Store, label: 'Vendor' },
-    { icon: Calendar, label: 'Booking Details' },
-    { icon: CreditCard, label: 'Payments' },
-    { icon: MonitorSmartphone, label: 'Advertisement' },
-    { icon: Grid3X3, label: 'Category' },
-    { icon: DollarSign, label: 'Pay Out' },
-    { icon: Award, label: 'Reward' },
-  ];
+  useEffect(() => {
+    const handleResize = () => {
+      window.innerWidth >= 768 ? setIsOpen(true) : setIsOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
-    <motion.div
-      className='h-screen bg-primary flex flex-col justify-between'
-      initial={{ width: isSidebarOpen ? '16rem' : '4rem' }}
-      animate={{ width: isSidebarOpen ? '16rem' : '4rem' }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}>
-      {/* Top - Logo and Menu */}
-      <div>
-        {/* Logo */}
-        <div className='p-4'>
-          <div className='flex items-center'>
-            <div className='bg-white p-2 rounded-md'>
-              <img
-                src={'https://www.svgrepo.com/show/4263/placeholder.svg'}
-                alt='Keyroute'
-                className='h-5 w-5'
-              />
-            </div>
-            <AnimatePresence>
-              {isSidebarOpen && (
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                  className='ml-3 text-white font-bold text-xl'>
-                  KEYROUTE
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {/* Menu Items */}
-        <div className='mt-4'>
-          {menuItems.map((item, index) => (
-            <motion.div
-              key={index}
-              className={`flex items-center py-3 px-4 cursor-pointer ${
-                item.active ? 'bg-red-800' : 'hover:bg-red-800'
-              }`}
-              whileHover={{ x: 5 }}
-              transition={{ duration: 0.2 }}>
-              <item.icon className='h-5 w-5 text-white' />
-              <AnimatePresence>
-                {isSidebarOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.2, delay: 0.1 }}
-                    className='ml-4 text-white'>
-                    {item.label}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {/* Bottom - Collapse + Logout */}
-      <div className='p-4'>
-        {/* Collapse Toggle */}
-        <button
-          onClick={toggleSidebar}
-          className='p-2 rounded-full hover:bg-gray-100 bg-white text-primary'>
-          {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
-        </button>
-
-        {/* Logout */}
-        <motion.div
-          className='flex items-center py-3 px-4 mt-4 cursor-pointer hover:bg-red-800'
-          whileHover={{ x: 5 }}
-          transition={{ duration: 0.2 }}>
-          <LogOut className='h-5 w-5 text-white' />
+    <motion.aside
+      animate={{ width: isOpen ? '16rem' : '4rem' }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className='flex flex-col h-screen text-white bg-primary shadow-md z-20'>
+      {/* Logo */}
+      <div className='flex items-center justify-between p-4'>
+        <NavLink
+          to='/admin/dashboard'
+          className='flex items-center'>
+          <img
+            src='https://www.svgrepo.com/show/4263/placeholder.svg'
+            alt='Logo'
+            className='w-8'
+          />
           <AnimatePresence>
-            {isSidebarOpen && (
-              <motion.div
+            {isOpen && (
+              <motion.span
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2, delay: 0.1 }}
-                className='ml-4 text-white'>
-                Logout
-              </motion.div>
+                transition={{ delay: 0.2, duration: 0.3 }}
+                className='ml-3 text-xl font-bold text-white'>
+                KEYROUTE
+              </motion.span>
             )}
           </AnimatePresence>
-        </motion.div>
+        </NavLink>
       </div>
-    </motion.div>
+
+      {/* Menu Items */}
+      <nav className='flex-grow mt-4'>
+        <ul className='space-y-2 px-2'>
+          {menuItems.map((item) => (
+            <li key={item.name}>
+              <NavLink
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center p-2 rounded-lg transition-all duration-200 hover:bg-white/10
+                  ${isActive ? 'bg-white/20 font-medium' : 'text-white'}
+                  ${!isOpen ? 'justify-center' : ''}`
+                }>
+                <item.icon className='h-5 w-5' />
+                <AnimatePresence>
+                  {isOpen && (
+                    <motion.span
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{ delay: 0.2, duration: 0.3 }}
+                      className='ml-3'>
+                      {item.name}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* Collapse Toggle & Logout */}
+      <div className='p-4 mt-auto flex flex-col items-start'>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          className='mb-4'>
+          {isOpen ? (
+            <PanelLeftOpen className='h-6 w-6' />
+          ) : (
+            <PanelRightOpen className='h-6 w-6' />
+          )}
+        </button>
+
+        <button
+          onClick={() => console.log('Handle logout')}
+          className='flex items-center text-white text-sm hover:text-red-200 transition-colors'>
+          <LogOut className='w-4 h-4 mr-2' />
+          {isOpen && 'Logout'}
+        </button>
+      </div>
+    </motion.aside>
   );
-}
+};

@@ -55,10 +55,34 @@ export function Dashboard() {
       bookings: 75,
       img: '/placeholder.svg?height=40&width=40',
     },
+    {
+      name: 'Shajahan travel',
+      location: 'Palakkad',
+      bookings: 75,
+      img: '/placeholder.svg?height=40&width=40',
+    },
+    {
+      name: 'Shajahan travel',
+      location: 'Palakkad',
+      bookings: 75,
+      img: '/placeholder.svg?height=40&width=40',
+    },
   ];
 
   // Sample users data
   const users = [
+    {
+      name: 'Kaja husain',
+      email: 'kajahusain23@gmail.com',
+      joined: '12/3/25',
+      img: '/placeholder.svg?height=40&width=40',
+    },
+    {
+      name: 'Kaja husain',
+      email: 'kajahusain23@gmail.com',
+      joined: '12/3/25',
+      img: '/placeholder.svg?height=40&width=40',
+    },
     {
       name: 'Kaja husain',
       email: 'kajahusain23@gmail.com',
@@ -152,11 +176,11 @@ export function Dashboard() {
   const tabs = ['12 Months', '6 Months', '30 Days', '7 Days'];
 
   return (
-    <div className='p-6'>
+    <div className='p-2 md:p-4 lg:p-6'>
       {/* Summary Cards */}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2'>
         {/* Today Booking */}
-        <div className='stat-card'>
+        <div className='stat-card p-4 border rounded-lg'>
           <div className='flex justify-between items-center'>
             <h3 className='text-gray-600'>Today booking</h3>
             <span className='text-gray-500'>05</span>
@@ -166,7 +190,7 @@ export function Dashboard() {
         </div>
 
         {/* Total Booking */}
-        <div className='stat-card'>
+        <div className='stat-card p-4 border rounded-lg'>
           <div className='flex justify-between items-center'>
             <h3 className='text-gray-600'>Total booking</h3>
             <span className='text-gray-500'>15</span>
@@ -176,7 +200,7 @@ export function Dashboard() {
         </div>
 
         {/* Total Vendor */}
-        <div className='stat-card'>
+        <div className='stat-card p-4 border rounded-lg'>
           <div className='flex justify-between items-center'>
             <h3 className='text-gray-600'>Total vendor</h3>
           </div>
@@ -185,7 +209,7 @@ export function Dashboard() {
         </div>
 
         {/* Total Users */}
-        <div className='stat-card'>
+        <div className='stat-card p-4 border rounded-lg'>
           <div className='flex justify-between items-center'>
             <h3 className='text-gray-600'>Total Users</h3>
           </div>
@@ -195,7 +219,7 @@ export function Dashboard() {
       </div>
 
       {/* Revenue Chart */}
-      <div className='mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4'>
+      <div className='mt-6 grid grid-cols-1 lg:grid-cols-3 gap-2'>
         <div className='card lg:col-span-2'>
           <div className='flex justify-between items-center mb-4'>
             <h3 className='font-medium'>Total Revenue</h3>
@@ -203,7 +227,7 @@ export function Dashboard() {
               {tabs.map((tab) => (
                 <button
                   key={tab}
-                  className={`tab ${activeTab === tab ? 'tab-active' : ''}`}
+                  className={`tab ${activeTab === tab ? 'tab-active' : ''} `}
                   onClick={() => setActiveTab(tab)}>
                   {tab}
                 </button>
@@ -239,37 +263,32 @@ export function Dashboard() {
         </div>
 
         {/* Recent Approved */}
-        <div className='card overflow-y-auto max-h-80'>
+        <div className='card bg-white border border-gray-200 rounded-md p-5 overflow-y-auto max-h-80'>
           <div className='flex justify-between items-center mb-4'>
             <h3 className='font-medium'>Recent approved</h3>
             <button className='text-[#1f81ec] text-sm'>Export PDF</button>
           </div>
-
-          <div className='space-y-4'>
+          <div className='divide-y divide-gray-200'>
             {approvedBookings.map((booking, index) => (
               <div
                 key={index}
-                className='border-b pb-2 last:border-b-0'>
-                <div className='flex items-center'>
-                  <div className='flex flex-col text-sm'>
-                    <div className='flex items-center text-xs text-gray-500'>
-                      <span>random & A.K member</span>
+                className='py-3'>
+                <div className='flex justify-between items-center text-sm'>
+                  <div>
+                    <div className='text-xs text-gray-500'>
+                      random & A.K member
                     </div>
-                    <div className='flex items-center mt-1'>
-                      <span className='font-medium'>{booking.from}</span>
-                      <span className='mx-2 text-gray-300'>————→</span>
-                      <span className='font-medium'>{booking.to}</span>
+                    <div className='font-medium'>
+                      {booking.from} ————→ {booking.to}
                     </div>
-                    <div className='flex items-center mt-1 text-xs text-gray-500'>
-                      <span>{booking.date}</span>
-                      <span className='mx-2'>•</span>
-                      <span>{booking.time}</span>
+                    <div className='text-xs text-gray-500'>
+                      {booking.date} • {booking.time}
                     </div>
                   </div>
-                </div>
-                <div className='mt-1 flex justify-between'>
-                  <span className='text-xs text-gray-500'>{booking.type}</span>
-                  <span className='font-medium'>{booking.amount}</span>
+                  <div className='text-right'>
+                    <div className='text-xs text-gray-500'>{booking.type}</div>
+                    <div className='font-medium'>{booking.amount}</div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -278,27 +297,26 @@ export function Dashboard() {
       </div>
 
       {/* Vendors, Users, and Reviews */}
-      <div className='mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4'>
+      <div className='mt-6 grid grid-cols-1 lg:grid-cols-3 gap-2'>
         {/* Top Vendors */}
-        <div className='card'>
+        <div className='card bg-[#e9f7f4] border border-gray-200 rounded-md p-5'>
           <div className='flex justify-between items-center mb-4'>
             <h3 className='font-medium'>Top Vendors</h3>
-            <button className='text-gray-500 text-sm'>Stats</button>
+            <button className='text-gray-500 text-sm border border-gray-300 px-2 py-1 rounded-md'>
+              Stats
+            </button>
           </div>
-
           <div className='space-y-4'>
-            {vendors.slice(0, 3).map((vendor, index) => (
+            {vendors.slice(0, 5).map((vendor, index) => (
               <div
                 key={index}
                 className='flex items-center justify-between'>
                 <div className='flex items-center'>
-                  <div className='h-10 w-10 rounded-full overflow-hidden bg-gray-200'>
-                    <img
-                      src={vendor.img || '/placeholder.svg'}
-                      alt={vendor.name}
-                      className='h-full w-full object-cover'
-                    />
-                  </div>
+                  <img
+                    src={vendor.img}
+                    alt={vendor.name}
+                    className='h-10 w-10 rounded-full bg-gray-200'
+                  />
                   <div className='ml-3'>
                     <h4 className='font-medium'>{vendor.name}</h4>
                     <p className='text-sm text-gray-500'>{vendor.location}</p>
@@ -311,35 +329,35 @@ export function Dashboard() {
               </div>
             ))}
           </div>
-
           <button className='mt-4 text-center w-full text-gray-500 text-sm'>
             SEE ALL VENDORS
           </button>
         </div>
 
         {/* Recent Users */}
-        <div className='card'>
+        <div className='card bg-[#f7f7f7] border border-gray-200 rounded-md p-5'>
           <div className='flex justify-between items-center mb-4'>
             <h3 className='font-medium'>Recent Users</h3>
-            <button className='text-gray-500 text-sm'>Stats</button>
+            <button className='text-gray-500 text-sm border border-gray-300 px-2 py-1 rounded-md'>
+              Stats
+            </button>
           </div>
-
           <div className='space-y-4'>
-            {users.slice(0, 3).map((user, index) => (
+            {users.slice(0, 5).map((user, index) => (
               <div
                 key={index}
                 className='flex items-center justify-between'>
                 <div className='flex items-center'>
-                  <div className='h-10 w-10 rounded-full overflow-hidden bg-gray-200'>
-                    <img
-                      src={user.img || '/placeholder.svg'}
-                      alt={user.name}
-                      className='h-full w-full object-cover'
-                    />
-                  </div>
-                  <div className='ml-3'>
+                  <img
+                    src={user.img}
+                    alt={user.name}
+                    className='h-10 w-10 rounded-full bg-gray-200'
+                  />
+                  <div className='ml-3 flex-1'>
                     <h4 className='font-medium'>{user.name}</h4>
-                    <p className='text-xs text-gray-500'>{user.email}</p>
+                    <p className='text-xs text-gray-500 truncate'>
+                      {user.email}
+                    </p>
                   </div>
                 </div>
                 <div className='text-right'>
@@ -349,31 +367,29 @@ export function Dashboard() {
               </div>
             ))}
           </div>
-
           <button className='mt-4 text-center w-full text-gray-500 text-sm'>
             SEE ALL USERS
           </button>
         </div>
 
         {/* Reviews */}
-        <div className='card'>
+        <div className='card bg-white border border-gray-200 rounded-md p-5'>
           <div className='flex justify-between items-center mb-4'>
             <h3 className='font-medium'>Reviews</h3>
-            <button className='text-gray-500 text-sm'>Stats</button>
+            <button className='text-gray-500 text-sm border border-gray-300 px-2 py-1 rounded-md'>
+              Stats
+            </button>
           </div>
-
           <div className='space-y-4'>
             {reviews.slice(0, 3).map((review, index) => (
               <div
                 key={index}
                 className='flex items-start'>
-                <div className='h-10 w-10 rounded-full overflow-hidden bg-gray-200 shrink-0'>
-                  <img
-                    src={review.img || '/placeholder.svg'}
-                    alt={review.name}
-                    className='h-full w-full object-cover'
-                  />
-                </div>
+                <img
+                  src={review.img}
+                  alt={review.name}
+                  className='h-10 w-10 rounded-full bg-gray-200'
+                />
                 <div className='ml-3'>
                   <h4 className='font-medium'>{review.name}</h4>
                   <div className='flex items-center mt-1'>
@@ -395,7 +411,6 @@ export function Dashboard() {
               </div>
             ))}
           </div>
-
           <button className='mt-4 text-center w-full text-gray-500 text-sm'>
             SEE ALL REVIEWS
           </button>

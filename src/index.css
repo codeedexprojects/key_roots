@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600&family=Lato:wght@400;700&display=swap');
+
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -121,5 +123,62 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer base {
+  :root {
+    --color-primary: #9c0101;
+    --color-accent: #1f81ec;
+    --color-success: #00d38d;
+    --color-danger: #d30700;
+    --color-background: #ffffff;
+  }
+
+  html {
+    font-family: 'Open Sans', sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Roboto', sans-serif;
+  }
+
+  .font-highlight {
+    font-family: 'Lato', sans-serif;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-lg shadow-sm p-4;
+  }
+
+  .stat-card {
+    @apply card flex flex-col;
+  }
+
+  .stat-value {
+    @apply text-2xl font-bold mt-2;
+  }
+
+  .percentage-up {
+    @apply text-[#00d38d] text-xs font-medium;
+  }
+
+  .percentage-down {
+    @apply text-[#d30700] text-xs font-medium;
+  }
+
+  .tab {
+    @apply px-4 py-1 text-sm rounded-md;
+  }
+
+  .tab-active {
+    @apply bg-[#1f81ec] text-white;
   }
 }
