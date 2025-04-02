@@ -2,14 +2,19 @@ import { Layout } from '@/components/common';
 import { UsersPage } from '@/features/users/pages/UsersPage';
 import { DashboardPage } from '@/features/dashboard/pages/Dashboard';
 import { UserDetailsPage } from '@/features/users/pages/UserDetailsPage';
+import {
+  VendorDetailsPage,
+  VendorInventoryPage,
+  VendorsListPage,
+} from '@/features/vendor/pages';
 
 const routes = [
   {
-    path: '/admin',
+    path: '/',
     element: <Layout />,
     children: [
       {
-        path: 'dashboard',
+        index: true,
         element: <DashboardPage />,
       },
       {
@@ -20,8 +25,25 @@ const routes = [
             element: <UsersPage />,
           },
           {
-            path: 'details/:userId',
+            path: ':userId',
             element: <UserDetailsPage />,
+          },
+        ],
+      },
+      {
+        path: 'vendors',
+        children: [
+          {
+            index: true,
+            element: <VendorsListPage />,
+          },
+          {
+            path: ':vendorId',
+            element: <VendorDetailsPage />,
+          },
+          {
+            path: ':vendorId/inventory',
+            element: <VendorInventoryPage />,
           },
         ],
       },

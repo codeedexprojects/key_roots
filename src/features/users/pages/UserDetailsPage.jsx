@@ -168,22 +168,23 @@ export function UserDetailsPage() {
   };
 
   return (
-    <div className='min-h-screen px-4 py-6 md:px-6'>
-      <div className='mb-6'>
+    <div className='min-h-screen'>
+      <div className='mb-6 flex item-center justify-between'>
+        <h1 className='text-2xl font-semibold'>User Details</h1>
+
         <Link
-          href='/admin/users'
-          className='inline-flex items-center text-gray-600 hover:text-gray-900 text-sm'>
-          <ArrowLeft className='h-4 w-4 mr-1' /> Back to Users
+          to='/users'
+          className='inline-flex items-center text-gray-600 hover:text-gray-900'>
+          <ArrowLeft className='h-4 w-4 mr-2' />
+          <span>Go Back</span>
         </Link>
       </div>
-
-      <h1 className='text-2xl font-semibold mb-6'>User Details</h1>
 
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
         <div className='bg-white rounded-md shadow-sm p-6'>
           <div className='flex flex-col items-center mb-6'>
             <img
-              src='/placeholder.svg?height=96&width=96'
+              src='https://img.freepik.com/premium-vector/user-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg'
               alt={user.name}
               className='w-24 h-24 rounded-md bg-gray-200 object-cover mb-4'
             />

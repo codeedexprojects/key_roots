@@ -17,15 +17,15 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { NavLink } from 'react-router';
 
 const menuItems = [
-  { name: 'Dashboard', icon: Home, to: '/admin/dashboard' },
-  { name: 'Users', icon: Users, to: '/admin/users' },
-  { name: 'Vendor', icon: Store, to: '/admin/vendors' },
-  { name: 'Booking Details', icon: Calendar, to: '/admin/bookings' },
-  { name: 'Payments', icon: CreditCard, to: '/admin/payments' },
-  { name: 'Advertisement', icon: MonitorSmartphone, to: '/admin/ads' },
-  { name: 'Category', icon: Grid3X3, to: '/admin/categories' },
-  { name: 'Pay Out', icon: DollarSign, to: '/admin/payouts' },
-  { name: 'Reward', icon: Award, to: '/admin/rewards' },
+  { name: 'Dashboard', icon: Home, to: '/' },
+  { name: 'Users', icon: Users, to: '/users' },
+  { name: 'Vendor', icon: Store, to: '/vendors' },
+  { name: 'Booking Details', icon: Calendar, to: '/bookings' },
+  { name: 'Payments', icon: CreditCard, to: '/payments' },
+  { name: 'Advertisement', icon: MonitorSmartphone, to: '/ads' },
+  { name: 'Category', icon: Grid3X3, to: '/categories' },
+  { name: 'Pay Out', icon: DollarSign, to: '/payouts' },
+  { name: 'Reward', icon: Award, to: '/rewards' },
 ];
 
 export const Sidebar = () => {

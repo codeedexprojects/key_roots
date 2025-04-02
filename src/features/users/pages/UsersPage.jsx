@@ -74,7 +74,7 @@ export function UsersPage() {
   ];
 
   return (
-    <div className='flex flex-col min-h-screen p-4'>
+    <div className='flex flex-col min-h-screen'>
       <h1 className='text-2xl font-semibold mb-6'>Total Users</h1>
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6'>
@@ -142,12 +142,12 @@ export function UsersPage() {
           <table className='min-w-full divide-y divide-gray-200'>
             <thead>
               <tr>
-                <th className='w-12 px-4 py-3 text-left'>
+                {/* <th className='w-12 px-4 py-3 text-left'>
                   <input
                     type='checkbox'
                     className='h-4 w-4 rounded border-gray-300'
                   />
-                </th>
+                </th> */}
                 {[
                   'Customer',
                   'Phone Number',
@@ -171,18 +171,18 @@ export function UsersPage() {
                 <tr
                   key={user.id}
                   className='hover:bg-gray-50 cursor-pointer'
-                  onClick={() => navigate(`/admin/users/details/${user.id}`)}>
-                  <td className='px-4 py-4'>
+                  onClick={() => navigate(`/users/${user.id}`)}>
+                  {/* <td className='px-4 py-4'>
                     <input
                       type='checkbox'
                       className='h-4 w-4 rounded border-gray-300'
                     />
-                  </td>
+                  </td> */}
                   <td className='px-4 py-4'>
                     <div className='flex items-center'>
                       <img
                         className='h-10 w-10 rounded-md'
-                        src='/placeholder.svg?height=40&width=40'
+                        src='https://img.freepik.com/premium-vector/user-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg'
                         alt=''
                       />
                       <div className='ml-4'>
