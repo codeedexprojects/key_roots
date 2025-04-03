@@ -20,7 +20,7 @@ const menuItems = [
   { name: 'Dashboard', icon: Home, to: '/' },
   { name: 'Users', icon: Users, to: '/users' },
   { name: 'Vendor', icon: Store, to: '/vendors' },
-  { name: 'Booking Details', icon: Calendar, to: '/bookings' },
+  { name: 'Booking Details', icon: Calendar, to: '/booking' },
   { name: 'Payments', icon: CreditCard, to: '/payments' },
   { name: 'Advertisement', icon: MonitorSmartphone, to: '/ads' },
   { name: 'Category', icon: Grid3X3, to: '/categories' },

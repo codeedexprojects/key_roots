@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Search, ChevronDown, MoreHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
-export function UsersPage() {
+export function UsersListPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
 

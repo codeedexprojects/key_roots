@@ -194,11 +194,10 @@ export const VendorDetailsPage = () => {
 
   return (
     <>
-      {/* Back Button */}
-
       <div className='mb-6 flex flex-row justify-between items-center'>
         <h1 className='text-2xl font-semibold'>Vendor Details</h1>
 
+        {/* Back Button */}
         <Link
           to='/vendors'
           className='inline-flex items-center text-gray-600 hover:text-gray-900'>

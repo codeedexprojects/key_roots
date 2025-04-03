@@ -1,0 +1,334 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
+import {
+  Search,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+} from 'lucide-react';
+
+export const PaymentsListPage = () => {
+  const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
+  const [filterBy, setFilterBy] = useState('all');
+
+  // Sample data for payments
+  const payments = [
+    {
+      id: 1,
+      vendorName: 'Shajahan travel',
+      trip: 'Varkala → Ernakulam',
+      totalAmount: '₹ 25000',
+      status: 'Pending',
+      income: '₹ 2500',
+    },
+    {
+      id: 2,
+      vendorName: 'Shajahan travel',
+      trip: 'Varkala → Ernakulam',
+      totalAmount: '₹ 25000',
+      status: 'Pending',
+      income: '₹ 2500',
+    },
+    {
+      id: 3,
+      vendorName: 'Shajahan travel',
+      trip: 'Varkala → Ernakulam',
+      totalAmount: '₹ 25000',
+      status: 'Completed',
+      income: '₹ 2500',
+    },
+    {
+      id: 4,
+      vendorName: 'Shajahan travel',
+      trip: 'Varkala → Ernakulam',
+      totalAmount: '₹ 25000',
+      status: 'Pending',
+      income: '₹ 2500',
+    },
+    {
+      id: 5,
+      vendorName: 'Shajahan travel',
+      trip: 'Varkala → Ernakulam',
+      totalAmount: '₹ 25000',
+      status: 'Pending',
+      income: '₹ 2500',
+    },
+    {
+      id: 6,
+      vendorName: 'Shajahan travel',
+      trip: 'Varkala → Ernakulam',
+      totalAmount: '₹ 25000',
+      status: 'Cancelled',
+      income: 'Amount Returned',
+    },
+    {
+      id: 7,
+      vendorName: 'Shajahan travel',
+      trip: 'Varkala → Ernakulam',
+      totalAmount: '₹ 25000',
+      status: 'Pending',
+      income: '₹ 2500',
+    },
+    {
+      id: 8,
+      vendorName: 'Shajahan travel',
+      trip: 'Varkala → Ernakulam',
+      totalAmount: '₹ 25000',
+      status: 'Pending',
+      income: '₹ 2500',
+    },
+    {
+      id: 9,
+      vendorName: 'Shajahan travel',
+      trip: 'Varkala → Ernakulam',
+      totalAmount: '₹ 25000',
+      status: 'Pending',
+      income: '₹ 2500',
+    },
+  ];
+
+  // Filter and sort payments
+  const filteredPayments = payments
+    .filter((payment) => {
+      // Apply search filter
+      if (searchTerm) {
+        return (
+          payment.vendorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          payment.trip.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      // Apply status filter
+      if (filterBy === 'all') return true;
+      if (filterBy === 'completed') return payment.status === 'Completed';
+      if (filterBy === 'pending') return payment.status === 'Pending';
+      if (filterBy === 'cancelled') return payment.status === 'Cancelled';
+
+      return true;
+    })
+    .sort((a, b) => {
+      // Apply sorting (in a real app, you'd use actual date objects)
+      if (sortBy === 'newest') return b.id - a.id;
+      if (sortBy === 'oldest') return a.id - b.id;
+      if (sortBy === 'amount') {
+        const aAmount = a.totalAmount.replace('₹ ', '');
+        const bAmount = b.totalAmount.replace('₹ ', '');
+        return Number.parseInt(bAmount) - Number.parseInt(aAmount);
+      }
+
+      return 0;
+    });
+
+  // Pagination
+  const paymentsPerPage = 6;
+  const totalPages = Math.ceil(filteredPayments.length / paymentsPerPage);
+  const indexOfLastPayment = currentPage * paymentsPerPage;
+  const indexOfFirstPayment = indexOfLastPayment - paymentsPerPage;
+  const currentPayments = filteredPayments.slice(
+    indexOfFirstPayment,
+    indexOfLastPayment
+  );
+
+  const paginate = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'Completed':
+        return 'bg-green-100 text-green-800';
+      case 'Pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <div className='flex-1'>
+      <h1 className='text-2xl font-semibold mb-6'>Payments</h1>
+
+      {/* Search and Filters */}
+      <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4'>
+        <div className='relative w-full md:w-64'>
+          <input
+            type='text'
+            placeholder='Search payments...'
+            className='w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <Search className='absolute left-3 top-2.5 h-5 w-5 text-gray-400' />
+        </div>
+
+        <div className='flex flex-col sm:flex-row gap-2 w-full md:w-auto'>
+          <div className='relative'>
+            <select
+              className='appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm'
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}>
+              <option value='newest'>Sort by: Newest</option>
+              <option value='oldest'>Sort by: Oldest</option>
+              <option value='amount'>Sort by: Amount</option>
+            </select>
+            <ChevronDown className='absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none' />
+          </div>
+
+          <div className='relative'>
+            <select
+              className='appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm'
+              value={filterBy}
+              onChange={(e) => setFilterBy(e.target.value)}>
+              <option value='all'>Filter by: All</option>
+              <option value='completed'>Completed</option>
+              <option value='pending'>Pending</option>
+              <option value='cancelled'>Cancelled</option>
+            </select>
+            <ChevronDown className='absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none' />
+          </div>
+
+          <button className='inline-flex items-center px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50'>
+            <Download className='h-4 w-4 mr-2' />
+            Export PDF
+          </button>
+        </div>
+      </div>
+
+      {/* Payments Table */}
+      <div className='bg-white rounded-lg shadow-sm overflow-hidden mb-6'>
+        <div className='overflow-x-auto'>
+          <table className='min-w-full divide-y divide-gray-200'>
+            <thead>
+              <tr>
+                {[
+                  'Vendor Name',
+                  'Trip',
+                  'Total Amount',
+                  'Status',
+                  'Income',
+                ].map((header, i) => (
+                  <th
+                    key={`${header}-${i}`}
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider'>
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className='bg-white divide-y divide-gray-200'>
+              {currentPayments.map((payment) => (
+                <tr
+                  key={payment.id}
+                  className='hover:bg-gray-50 cursor-pointer'
+                  onClick={() => navigate(`/payments/${payment.id}`)}>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <div className='flex items-center'>
+                      <img
+                        className='h-10 w-10 rounded-md'
+                        src='https://img.freepik.com/premium-vector/booking-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg'
+                        alt=''
+                      />
+                      <div className='ml-4'>
+                        <div className='text-sm font-medium text-gray-900'>
+                          {payment.vendorName}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <div className='text-sm text-gray-500'>{payment.trip}</div>
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <div className='text-sm font-medium'>
+                      {payment.totalAmount}
+                    </div>
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(
+                        payment.status
+                      )}`}>
+                      {payment.status}
+                    </span>
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <div
+                      className={`text-sm ${
+                        payment.status === 'Cancelled'
+                          ? 'text-red-500'
+                          : 'text-green-500'
+                      }`}>
+                      {payment.income}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div className='px-6 py-4 bg-white border-t border-gray-200'>
+          <div className='flex items-center justify-between'>
+            <div className='text-sm text-gray-700'>
+              Showing{' '}
+              <span className='font-medium'>{indexOfFirstPayment + 1}</span> to{' '}
+              <span className='font-medium'>
+                {Math.min(indexOfLastPayment, filteredPayments.length)}
+              </span>{' '}
+              of <span className='font-medium'>{filteredPayments.length}</span>{' '}
+              payments
+            </div>
+
+            <div className='flex space-x-1'>
+              <button
+                onClick={() => paginate(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                  currentPage === 1
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}>
+                <span className='sr-only'>Previous</span>
+                <ChevronLeft className='h-5 w-5' />
+              </button>
+
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => paginate(i + 1)}
+                  className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
+                    currentPage === i + 1
+                      ? 'bg-primary text-white'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  } rounded-md`}>
+                  {i + 1}
+                </button>
+              ))}
+
+              <button
+                onClick={() => paginate(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                  currentPage === totalPages
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}>
+                <span className='sr-only'>Next</span>
+                <ChevronRight className='h-5 w-5' />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
