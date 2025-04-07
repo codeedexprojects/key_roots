@@ -11,6 +11,7 @@ import {
   PaymentDetailsPage,
   PaymentsListPage,
 } from '@/features/payments/pages';
+import { AdvertisementPage } from '@/features/advertisement/pages/Advertisement';
 
 const routes = [
   {
@@ -46,6 +47,10 @@ const routes = [
           { index: true, element: <PaymentsListPage /> },
           { path: ':paymentId', element: <PaymentDetailsPage /> },
         ],
+      },
+      {
+        path: 'advertisements',
+        children: [{ index: true, element: <AdvertisementPage /> }],
       },
     ],
   },

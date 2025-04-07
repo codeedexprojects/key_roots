@@ -22,7 +22,7 @@ const menuItems = [
   { name: 'Vendor', icon: Store, to: '/vendors' },
   { name: 'Booking Details', icon: Calendar, to: '/booking' },
   { name: 'Payments', icon: CreditCard, to: '/payments' },
-  { name: 'Advertisement', icon: MonitorSmartphone, to: '/ads' },
+  { name: 'Advertisement', icon: MonitorSmartphone, to: '/advertisements' },
   { name: 'Category', icon: Grid3X3, to: '/categories' },
   { name: 'Pay Out', icon: DollarSign, to: '/payouts' },
   { name: 'Reward', icon: Award, to: '/rewards' },
@@ -101,23 +101,27 @@ export const Sidebar = () => {
       </nav>
 
       {/* Collapse Toggle & Logout */}
-      <div className='p-4 mt-auto flex flex-col items-start'>
+      <div
+        className={`p-4 mb-4 flex ${
+          isOpen
+            ? 'flex-row justify-between items-center'
+            : 'flex-col items-start gap-4'
+        }`}>
+        <button
+          onClick={() => console.log('Handle logout')}
+          className='flex items-center text-white text-md hover:text-red-200 transition-colors'>
+          <LogOut className='w-6 h-6' />
+          {isOpen && <span className='ml-2'>Logout</span>}
+        </button>
+
         <button
           onClick={() => setIsOpen(!isOpen)}
-          aria-label={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-          className='mb-4'>
+          aria-label={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}>
           {isOpen ? (
             <PanelLeftOpen className='h-6 w-6' />
           ) : (
             <PanelRightOpen className='h-6 w-6' />
           )}
-        </button>
-
-        <button
-          onClick={() => console.log('Handle logout')}
-          className='flex items-center text-white text-sm hover:text-red-200 transition-colors'>
-          <LogOut className='w-4 h-4 mr-2' />
-          {isOpen && 'Logout'}
         </button>
       </div>
     </motion.aside>

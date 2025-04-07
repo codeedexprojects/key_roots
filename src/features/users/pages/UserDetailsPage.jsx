@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Link, useParams } from 'react-router';
 
-export function UserDetailsPage() {
+export const UserDetailsPage = () => {
   const { userId } = useParams();
   const [activeTab, setActiveTab] = useState('rewards');
 
@@ -339,4 +339,4 @@ export function UserDetailsPage() {
       </div>
     </div>
   );
-}
+};
