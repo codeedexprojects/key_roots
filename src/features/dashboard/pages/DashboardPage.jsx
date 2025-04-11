@@ -176,7 +176,7 @@ export function DashboardPage() {
   const tabs = ['12 Months', '6 Months', '30 Days', '7 Days'];
 
   return (
-    <div className='p-2 md:p-4 lg:p-6 space-y-6'>
+    <div className='space-y-6'>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
         {[
           {
@@ -378,7 +378,7 @@ export function DashboardPage() {
             <div className='flex justify-between items-center mb-4'>
               <h3 className='font-medium'>{title}</h3>
               <button className='text-gray-500 text-sm border border-gray-300 px-2 py-1 rounded-md'>
-                Stats
+                States
               </button>
             </div>
             <div className='space-y-4'>

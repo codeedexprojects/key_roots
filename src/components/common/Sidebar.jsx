@@ -9,6 +9,7 @@ import {
   CreditCard,
   MonitorSmartphone,
   Grid3X3,
+  Star,
   DollarSign,
   Award,
 } from 'lucide-react';
@@ -20,12 +21,13 @@ const menuItems = [
   { name: 'Dashboard', icon: Home, to: '/' },
   { name: 'Users', icon: Users, to: '/users' },
   { name: 'Vendor', icon: Store, to: '/vendors' },
+  { name: 'Reviews', icon: Star, to: '/reviews' },
   { name: 'Booking Details', icon: Calendar, to: '/booking' },
   { name: 'Payments', icon: CreditCard, to: '/payments' },
   { name: 'Advertisement', icon: MonitorSmartphone, to: '/advertisements' },
-  { name: 'Category', icon: Grid3X3, to: '/categories' },
-  { name: 'Pay Out', icon: DollarSign, to: '/payouts' },
+  { name: 'Category', icon: Grid3X3, to: '/category' },
   { name: 'Reward', icon: Award, to: '/rewards' },
+  { name: 'Pay Out', icon: DollarSign, to: '/payouts' },
 ];
 
 export const Sidebar = () => {
@@ -108,13 +110,6 @@ export const Sidebar = () => {
             : 'flex-col items-start gap-4'
         }`}>
         <button
-          onClick={() => console.log('Handle logout')}
-          className='flex items-center text-white text-md hover:text-red-200 transition-colors'>
-          <LogOut className='w-6 h-6' />
-          {isOpen && <span className='ml-2'>Logout</span>}
-        </button>
-
-        <button
           onClick={() => setIsOpen(!isOpen)}
           aria-label={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}>
           {isOpen ? (
@@ -122,6 +117,13 @@ export const Sidebar = () => {
           ) : (
             <PanelRightOpen className='h-6 w-6' />
           )}
+        </button>
+
+        <button
+          onClick={() => console.log('Handle logout')}
+          className='flex items-center text-white text-md hover:text-red-200 transition-colors'>
+          <LogOut className='w-6 h-6' />
+          {isOpen && <span className='ml-2'>Logout</span>}
         </button>
       </div>
     </motion.aside>

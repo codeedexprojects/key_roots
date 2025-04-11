@@ -123,7 +123,7 @@ export const AdvertisementPage = () => {
   };
 
   return (
-    <div className='flex-1 overflow-auto p-2 md:p-4 lg:p-6'>
+    <div className='flex-1 overflow-auto '>
       <h1 className='text-2xl font-semibold mb-6'>Advertisement & Explore</h1>
 
       <Tabs

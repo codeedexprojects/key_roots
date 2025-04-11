@@ -160,7 +160,7 @@ export const BookingListPage = () => {
 
   return (
     <div className='flex-1'>
-      <h1 className='text-2xl font-semibold mb-6'>Recent Bookings</h1>
+      <h1 className='text-2xl font-semibold mb-6'>Bookings</h1>
 
       {/* Search and Filters */}
       <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4'>

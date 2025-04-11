@@ -1,6 +1,6 @@
 import { Layout } from '@/components/common';
 import { UsersListPage, UserDetailsPage } from '@/features/users/pages';
-import { DashboardPage } from '@/features/dashboard/pages/Dashboard';
+import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 import {
   VendorDetailsPage,
   VendorInventoryPage,
@@ -11,7 +11,10 @@ import {
   PaymentDetailsPage,
   PaymentsListPage,
 } from '@/features/payments/pages';
-import { AdvertisementPage } from '@/features/advertisement/pages/Advertisement';
+import { AdvertisementPage } from '@/features/advertisement/pages/AdvertisementPage';
+import { CategoryPage, BusDetailsPage } from '@/features/category/pages';
+import { RewardDetailsPage, RewardsListPage } from '@/features/rewards/pages';
+import { ReviewsListPage } from '@/features/reviews/pages';
 
 const routes = [
   {
@@ -51,6 +54,24 @@ const routes = [
       {
         path: 'advertisements',
         children: [{ index: true, element: <AdvertisementPage /> }],
+      },
+      {
+        path: 'category',
+        children: [
+          { index: true, element: <CategoryPage /> },
+          { path: 'buses/:busId', element: <BusDetailsPage /> },
+        ],
+      },
+      {
+        path: 'rewards',
+        children: [
+          { index: true, element: <RewardsListPage /> },
+          { path: ':rewardId', element: <RewardDetailsPage /> },
+        ],
+      },
+      {
+        path: 'reviews',
+        children: [{ index: true, element: <ReviewsListPage /> }],
       },
     ],
   },
