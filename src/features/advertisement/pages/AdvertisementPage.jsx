@@ -4,6 +4,8 @@ import { AdvertisementGrid } from '../components/AdvertisementGrid';
 import { AdvertisementForm } from '../components/AdvertisementForm';
 import { ExploreGrid } from '../components/ExploreGrid';
 import { ExploreForm } from '../components/ExploreForm';
+import { LoadingSpinner, EmptyState } from '@/components/common';
+import { useToast } from '@/components/ui/toast-provider';
 import {
   getAdvertisements,
   saveAdvertisement,
@@ -13,6 +15,7 @@ import {
 
 export const AdvertisementPage = () => {
   const [activeTab, setActiveTab] = useState('advertisement');
+  const { addToast } = useToast();
 
   // Advertisement state
   const [advertisements, setAdvertisements] = useState([]);
@@ -82,10 +85,44 @@ export const AdvertisementPage = () => {
   const fetchExploreItems = async () => {
     setExploreIsLoading(true);
     try {
-      const items = await getExploreItems();
-      setExploreItems(items);
+      const response = await getExploreItems();
+      if (response && !response.error && response.data) {
+        // Transform API response to match the expected format
+        const transformedItems = response.data.map((item) => ({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          seasonDescription: item.season_description,
+          image: item.image,
+          sights: item.experiences
+            ? item.experiences.map((exp) => ({
+                id: exp.id || Math.random().toString(36).substr(2, 9),
+                description: exp.description,
+                image: exp.image,
+              }))
+            : [],
+        }));
+        setExploreItems(transformedItems);
+      } else {
+        console.error(
+          'Error in API response:',
+          response?.message || 'Unknown error'
+        );
+        addToast({
+          title: 'Error',
+          message: response?.message || 'Failed to load explore items',
+          type: 'error',
+        });
+        setExploreItems([]);
+      }
     } catch (error) {
       console.error('Error fetching explore items:', error);
+      addToast({
+        title: 'Error',
+        message: 'Failed to load explore items. Please try again later.',
+        type: 'error',
+      });
+      setExploreItems([]);
     } finally {
       setExploreIsLoading(false);
     }
@@ -94,14 +131,35 @@ export const AdvertisementPage = () => {
   const handleSaveExploreItem = async (data) => {
     setExploreIsLoading(true);
     try {
-      await saveExploreItem(data);
-      fetchExploreItems();
-      setExploreEditMode(false);
-      setCurrentExploreItem(null);
-      alert('Explore item saved successfully!');
+      const response = await saveExploreItem(data);
+
+      if (response && !response.error) {
+        addToast({
+          title: 'Success',
+          message: 'Explore item saved successfully!',
+          type: 'success',
+        });
+        fetchExploreItems();
+        setExploreEditMode(false);
+        setCurrentExploreItem(null);
+      } else {
+        console.error(
+          'Error in API response:',
+          response?.message || 'Unknown error'
+        );
+        addToast({
+          title: 'Error',
+          message: response?.message || 'Failed to save explore item',
+          type: 'error',
+        });
+      }
     } catch (error) {
       console.error('Error saving explore item:', error);
-      alert('Failed to save explore item. Please try again.');
+      addToast({
+        title: 'Error',
+        message: 'Failed to save explore item. Please try again later.',
+        type: 'error',
+      });
     } finally {
       setExploreIsLoading(false);
     }

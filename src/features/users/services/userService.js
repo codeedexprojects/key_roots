@@ -7,3 +7,15 @@ export function getAllUsers() {
     'Error occurred while getting the users.'
   );
 }
+
+// Function to create a new user
+export const createUser = async (userData) => {
+  return apiRequest(
+    () =>
+      axiosInstance.post(
+        'https://keyroute.pythonanywhere.com/api/admin/create-user/',
+        userData
+      ),
+    'Error occurred while creating user.'
+  );
+};

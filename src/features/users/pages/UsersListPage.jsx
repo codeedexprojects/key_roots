@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Search, ChevronDown, MoreHorizontal } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { Search, ChevronDown, MoreHorizontal, Plus } from 'lucide-react';
+import { useNavigate, Link } from 'react-router';
 
 export const UsersListPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -75,7 +75,15 @@ export const UsersListPage = () => {
 
   return (
     <div className='flex flex-col min-h-screen'>
-      <h1 className='text-2xl font-semibold mb-6'>Total Users</h1>
+      <div className='flex justify-between items-center mb-6'>
+        <h1 className='text-2xl font-semibold'>Total Users</h1>
+        <Link
+          to='/users/create'
+          className='inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'>
+          <Plus className='h-4 w-4 mr-2' />
+          Add User
+        </Link>
+      </div>
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6'>
         {[

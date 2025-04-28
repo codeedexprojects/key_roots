@@ -1,5 +1,9 @@
 import { Layout } from '@/components/common';
-import { UsersListPage, UserDetailsPage } from '@/features/users/pages';
+import {
+  UsersListPage,
+  UserDetailsPage,
+  UserCreatePage,
+} from '@/features/users/pages';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 import {
   VendorDetailsPage,
@@ -30,6 +34,7 @@ const routes = [
         path: 'users',
         children: [
           { index: true, element: <UsersListPage /> },
+          { path: 'create', element: <UserCreatePage /> },
           { path: ':userId', element: <UserDetailsPage /> },
         ],
       },

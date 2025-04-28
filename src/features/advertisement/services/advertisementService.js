@@ -1,4 +1,7 @@
-// Mock API service for Advertisement & Explore module
+import { axiosInstance } from '@/lib/axiosInstance';
+import { apiRequest } from '@/lib/apiRequest';
+
+// Advertisement & Explore module service
 
 // Mock data for advertisements
 const mockAdvertisements = [
@@ -165,26 +168,59 @@ export const saveAdvertisement = async (data) => {
   return { success: true, message: 'Advertisement saved successfully' };
 };
 
-// Mock function to get explore items
+// Function to get explore items
 export const getExploreItems = async () => {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 800));
-
-  // In a real app, this would be an API call
-  // return await apiClient.get('/api/explore');
-
-  return mockExploreItems;
+  return apiRequest(
+    () =>
+      axiosInstance.get('https://keyroute.pythonanywhere.com/explore/list/'),
+    'Error occurred while fetching explore items.'
+  );
 };
 
-// Mock function to save explore item
+// Function to save explore item
 export const saveExploreItem = async (data) => {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  // Create FormData object for file uploads
+  const formData = new FormData();
 
-  console.log('Explore item saved:', data);
+  // Add main explore data
+  formData.append('title', data.title);
+  formData.append('description', data.description);
+  formData.append('season_description', data.seasonDescription);
 
-  // In a real app, this would be an API call
-  // return await apiClient.post('/api/explore', data);
+  // Add main image if available
+  if (data.image) {
+    formData.append('image', data.image);
+  }
 
-  return { success: true, message: 'Explore item saved successfully' };
+  // Add experiences (sights)
+  if (data.sights && data.sights.length > 0) {
+    // Create experiences array
+    const experiences = data.sights.map((sight) => ({
+      description: sight.description,
+      // We'll handle the image upload separately
+    }));
+
+    formData.append('experiences', JSON.stringify(experiences));
+
+    // Add experience images
+    data.sights.forEach((sight, index) => {
+      if (sight.image) {
+        formData.append(`experience_images_${index}`, sight.image);
+      }
+    });
+  }
+
+  return apiRequest(
+    () =>
+      axiosInstance.post(
+        'https://keyroute.pythonanywhere.com/api/admin/explore/create/',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      ),
+    'Error occurred while creating explore item.'
+  );
 };
