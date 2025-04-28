@@ -4,6 +4,9 @@ import { ArrowLeft, DollarSign, Calendar, ChevronRight } from 'lucide-react';
 import { VendorInfoCard } from '../components/VendorInfoCard';
 import { BusCard } from '../components/BusCard';
 import { PackageCard } from '../components/PackageCard';
+import { getVendorById } from '../services/vendorService';
+import { EmptyState } from '@/components/common/EmptyState';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 export const VendorDetailsPage = () => {
   const { vendorId } = useParams();
@@ -14,154 +17,77 @@ export const VendorDetailsPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call to fetch vendor details
-    const fetchVendorDetails = () => {
+    const fetchVendorDetails = async () => {
       setLoading(true);
+      try {
+        const response = await getVendorById(vendorId);
 
-      // Sample vendor data
-      const vendorData = {
-        id: Number.parseInt(vendorId),
-        name: 'Skyway Travels',
-        location: 'Palakkad',
-        earnings: 2500,
-        bookings: 25,
-        busesCount: 5,
-        packagesCount: 7,
-        availableBuses: 4,
-        ongoingBuses: 1,
-        image:
-          'https://www.indifi.com/blog/wp-content/uploads/2020/03/Offers-to-Customers-For-Travel-Agencies-.jpg',
-        contactPerson: 'John Doe',
-        phone: '+91 9876543210',
-        email: 'contact@skywaytravels.com',
-        address: '123 Main Street, Palakkad, Kerala, India - 678001',
-      };
+        if (response && response.data) {
+          const vendorData = response.data;
+          const transformedVendor = {
+            id: vendorData.user_id,
+            name: vendorData.travels_name,
+            location: vendorData.location || vendorData.city,
+            earnings: 0,
+            bookings: vendorData.buses?.length || 0,
+            busesCount: vendorData.bus_count || 0,
+            packagesCount: vendorData.package_count || 0,
+            availableBuses: vendorData.buses?.length || 0,
+            ongoingBuses: vendorData.ongoing_buses?.length || 0,
+            image:
+              vendorData.buses?.[0]?.travels_logo ||
+              '/placeholder.svg?height=96&width=96',
+            contactPerson: vendorData.full_name,
+            phone: '+91 9876543210',
+            email: vendorData.email_address,
+            address: `${vendorData.address || ''}, ${vendorData.city || ''}, ${
+              vendorData.state || ''
+            } - ${vendorData.pincode || ''}`,
+          };
 
-      // Sample buses data
-      const busesData = [
-        {
-          id: 1,
-          title: 'Volvo AC Sleeper',
-          type: 'Sleeper',
-          capacity: 36,
-          vehicleRC: 'KL-10-AB-1234',
-          status: 'Available',
-          image:
-            'https://gst-contracts.s3.ap-southeast-1.amazonaws.com/uploads/bcc/cms/asset/avatar/324800/banner6.jpg',
-        },
-        {
-          id: 2,
-          title: 'Mercedes Benz Traveller',
-          type: 'Seater',
-          capacity: 20,
-          vehicleRC: 'KL-10-CD-5678',
-          status: 'Ongoing',
-          image:
-            'https://gst-contracts.s3.ap-southeast-1.amazonaws.com/uploads/bcc/cms/asset/avatar/324800/banner6.jpg',
-        },
-        {
-          id: 3,
-          title: 'Scania Multi-Axle',
-          type: 'Sleeper',
-          capacity: 42,
-          vehicleRC: 'KL-10-EF-9012',
-          status: 'Available',
-          image:
-            'https://gst-contracts.s3.ap-southeast-1.amazonaws.com/uploads/bcc/cms/asset/avatar/324800/banner6.jpg',
-        },
-        {
-          id: 4,
-          title: 'Tata AC Seater',
-          type: 'Seater',
-          capacity: 32,
-          vehicleRC: 'KL-10-GH-3456',
-          status: 'Available',
-          image:
-            'https://gst-contracts.s3.ap-southeast-1.amazonaws.com/uploads/bcc/cms/asset/avatar/324800/banner6.jpg',
-        },
-        {
-          id: 5,
-          title: 'Ashok Leyland Sleeper',
-          type: 'Sleeper',
-          capacity: 30,
-          vehicleRC: 'KL-10-IJ-7890',
-          status: 'Available',
-          image:
-            'https://gst-contracts.s3.ap-southeast-1.amazonaws.com/uploads/bcc/cms/asset/avatar/324800/banner6.jpg',
-        },
-      ];
+          setVendor(transformedVendor);
 
-      // Sample packages data
-      const packagesData = [
-        {
-          id: 'PKG001',
-          destination: 'Munnar Hill Station',
-          route: 'Palakkad → Munnar',
-          availableDates: 'Mon, Wed, Fri',
-          status: 'Open',
-          image:
-            'https://www.indiantempletour.com/wp-content/uploads/2016/08/Untitled-design109.png',
-        },
-        {
-          id: 'PKG002',
-          destination: 'Wayanad Wildlife',
-          route: 'Palakkad → Wayanad',
-          availableDates: 'Tue, Thu, Sat',
-          status: 'Open',
-          image:
-            'https://www.indiantempletour.com/wp-content/uploads/2016/08/Untitled-design109.png',
-        },
-        {
-          id: 'PKG003',
-          destination: 'Alleppey Backwaters',
-          route: 'Palakkad → Alleppey',
-          availableDates: 'Wed, Sat, Sun',
-          status: 'Closed',
-          image:
-            'https://www.indiantempletour.com/wp-content/uploads/2016/08/Untitled-design109.png',
-        },
-        {
-          id: 'PKG004',
-          destination: 'Kovalam Beach',
-          route: 'Palakkad → Trivandrum → Kovalam',
-          availableDates: 'Fri, Sat, Sun',
-          status: 'Open',
-          image:
-            'https://www.indiantempletour.com/wp-content/uploads/2016/08/Untitled-design109.png',
-        },
-        {
-          id: 'PKG005',
-          destination: 'Thekkady Wildlife',
-          route: 'Palakkad → Thekkady',
-          availableDates: 'Mon, Thu, Sun',
-          status: 'Open',
-          image:
-            'https://www.indiantempletour.com/wp-content/uploads/2016/08/Untitled-design109.png',
-        },
-        {
-          id: 'PKG006',
-          destination: 'Vagamon Hills',
-          route: 'Palakkad → Vagamon',
-          availableDates: 'Tue, Fri, Sun',
-          status: 'Closed',
-          image:
-            'https://www.indiantempletour.com/wp-content/uploads/2016/08/Untitled-design109.png',
-        },
-        {
-          id: 'PKG007',
-          destination: 'Kochi City Tour',
-          route: 'Palakkad → Kochi',
-          availableDates: 'Mon, Wed, Sat',
-          status: 'Open',
-          image:
-            'https://www.indiantempletour.com/wp-content/uploads/2016/08/Untitled-design109.png',
-        },
-      ];
+          if (vendorData.buses && vendorData.buses.length > 0) {
+            const transformedBuses = vendorData.buses.map((bus) => ({
+              id: bus.id,
+              title: bus.bus_name,
+              type: 'Bus',
+              capacity: bus.capacity,
+              vehicleRC: bus.vehicle_rc_number,
+              status: 'Available',
+              image:
+                bus.travels_logo || '/placeholder.svg?height=192&width=384',
+            }));
+            setBuses(transformedBuses);
+          } else {
+            setBuses([]);
+          }
 
-      setVendor(vendorData);
-      setBuses(busesData);
-      setPackages(packagesData);
-      setLoading(false);
+          if (vendorData.packages && vendorData.packages.length > 0) {
+            const transformedPackages = vendorData.packages.map((pkg) => ({
+              id: pkg.id,
+              destination: pkg.places || 'Package Tour',
+              route: pkg.places || 'Tour Package',
+              availableDates: `${pkg.days} days, ${pkg.nights} nights`,
+              status: 'Open',
+              image:
+                pkg.header_image || '/placeholder.svg?height=192&width=384',
+            }));
+            setPackages(transformedPackages);
+          } else {
+            setPackages([]);
+          }
+        } else {
+          setVendor(null);
+          setBuses([]);
+          setPackages([]);
+        }
+      } catch (error) {
+        console.error('Error fetching vendor details:', error);
+        setVendor(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchVendorDetails();
@@ -169,11 +95,9 @@ export const VendorDetailsPage = () => {
 
   if (loading) {
     return (
-      <>
-        <div className='flex justify-center items-center h-64'>
-          <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500'></div>
-        </div>
-      </>
+      <div className='flex justify-center items-center min-h-[500px]'>
+        <LoadingSpinner size='large' />
+      </div>
     );
   }
 
@@ -252,13 +176,28 @@ export const VendorDetailsPage = () => {
 
         <div className='relative'>
           <div className='flex overflow-x-auto pb-4 -mx-2 px-2 space-x-4 no-scrollbar'>
-            {buses.map((bus) => (
-              <div
-                key={bus.id}
-                className='w-72 flex-shrink-0'>
-                <BusCard bus={bus} />
-              </div>
-            ))}
+            {buses && buses.length > 0 ? (
+              buses.map((bus) => (
+                <div
+                  key={bus.id}
+                  className='w-72 flex-shrink-0'>
+                  <BusCard
+                    bus={bus}
+                    vendorId={vendorId}
+                  />
+                </div>
+              ))
+            ) : (
+              <EmptyState
+                title='No buses added yet'
+                description="Add buses to this vendor's inventory to get started."
+                actionLabel='Add Bus'
+                onAction={() =>
+                  navigate(`/vendors/${vendorId}/inventory?tab=buses`)
+                }
+                icon='bus'
+              />
+            )}
           </div>
         </div>
       </div>
@@ -277,13 +216,28 @@ export const VendorDetailsPage = () => {
 
         <div className='relative'>
           <div className='flex overflow-x-auto pb-4 -mx-2 px-2 space-x-4 no-scrollbar'>
-            {packages.map((pkg) => (
-              <div
-                key={pkg.id}
-                className='w-72 flex-shrink-0'>
-                <PackageCard pkg={pkg} />
-              </div>
-            ))}
+            {packages && packages.length > 0 ? (
+              packages.map((pkg) => (
+                <div
+                  key={pkg.id}
+                  className='w-72 flex-shrink-0'>
+                  <PackageCard
+                    pkg={pkg}
+                    vendorId={vendorId}
+                  />
+                </div>
+              ))
+            ) : (
+              <EmptyState
+                title='No buses added yet'
+                description="Add buses to this vendor's inventory to get started."
+                actionLabel='Add Bus'
+                onAction={() =>
+                  navigate(`/vendors/${vendorId}/inventory?tab=buses`)
+                }
+                icon='bus'
+              />
+            )}
           </div>
         </div>
       </div>

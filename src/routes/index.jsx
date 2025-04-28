@@ -5,6 +5,9 @@ import {
   VendorDetailsPage,
   VendorInventoryPage,
   VendorsListPage,
+  VendorBusDetailsPage,
+  PackageDetailsPage,
+  VendorCreatePage,
 } from '@/features/vendor/pages';
 import { BookingDetailsPage, BookingListPage } from '@/features/booking/pages';
 import {
@@ -15,6 +18,7 @@ import { AdvertisementPage } from '@/features/advertisement/pages/AdvertisementP
 import { CategoryPage, BusDetailsPage } from '@/features/category/pages';
 import { RewardDetailsPage, RewardsListPage } from '@/features/rewards/pages';
 import { ReviewsListPage } from '@/features/reviews/pages';
+import { Navigate } from 'react-router';
 
 const routes = [
   {
@@ -33,8 +37,15 @@ const routes = [
         path: 'vendors',
         children: [
           { index: true, element: <VendorsListPage /> },
+          { path: 'create', element: <VendorCreatePage /> },
+          { path: ':vendorId', element: <VendorDetailsPage /> },
           { path: ':vendorId', element: <VendorDetailsPage /> },
           { path: ':vendorId/inventory', element: <VendorInventoryPage /> },
+          { path: ':vendorId/buses/:busId', element: <VendorBusDetailsPage /> },
+          {
+            path: ':vendorId/packages/:packageId',
+            element: <PackageDetailsPage />,
+          },
         ],
       },
       {
@@ -72,6 +83,15 @@ const routes = [
       {
         path: 'reviews',
         children: [{ index: true, element: <ReviewsListPage /> }],
+      },
+      {
+        path: '*',
+        element: (
+          <Navigate
+            to='/'
+            replace
+          />
+        ),
       },
     ],
   },

@@ -16,6 +16,7 @@ import {
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { NavLink } from 'react-router';
+import Logo from '../../../public/Logo.png';
 
 const menuItems = [
   { name: 'Dashboard', icon: Home, to: '/' },
@@ -52,9 +53,9 @@ export const Sidebar = () => {
           to='/admin/dashboard'
           className='flex items-center'>
           <img
-            src='https://www.svgrepo.com/show/4263/placeholder.svg'
+            src={Logo}
             alt='Logo'
-            className='w-8'
+            className='w-20'
           />
           <AnimatePresence>
             {isOpen && (

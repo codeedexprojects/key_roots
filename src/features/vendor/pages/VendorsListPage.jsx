@@ -1,172 +1,61 @@
-import { useState } from 'react';
-import { Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import {
+  Plus,
+  Search,
+  ChevronLeft,
+  ChevronDown,
+  ChevronRight,
+} from 'lucide-react';
+import { Link } from 'react-router';
 import { VendorCard } from '../components/VendorCard';
+import { getAllVendors } from '../services/vendorService';
+import { LoadingSpinner } from '@/components/common';
 
 export const VendorsListPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [filterBy, setFilterBy] = useState('all');
+  const [vendors, setVendors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Sample data for vendors
-  const allVendors = [
-    {
-      id: 1,
-      name: 'Skyway Travels',
-      location: 'Palakkad',
-      earnings: 2500,
-      bookings: 25,
-      busesCount: 5,
-      packagesCount: 7,
-      availableBuses: 4,
-      ongoingBuses: 1,
-      image:
-        'https://media.istockphoto.com/id/177447843/photo/house-boat-in-backwaters.jpg?s=612x612&w=0&k=20&c=9RnNr22SKJiNKuOukgfo82TtSgvSLMIZALXNf4m_VPM=',
-    },
-    {
-      id: 2,
-      name: 'Kerala Tours',
-      location: 'Kochi',
-      earnings: 3200,
-      bookings: 32,
-      busesCount: 8,
-      packagesCount: 12,
-      availableBuses: 6,
-      ongoingBuses: 2,
-      image:
-        'https://media.istockphoto.com/id/177447843/photo/house-boat-in-backwaters.jpg?s=612x612&w=0&k=20&c=9RnNr22SKJiNKuOukgfo82TtSgvSLMIZALXNf4m_VPM=',
-    },
-    {
-      id: 3,
-      name: 'Malabar Travels',
-      location: 'Kozhikode',
-      earnings: 1800,
-      bookings: 18,
-      busesCount: 4,
-      packagesCount: 5,
-      availableBuses: 3,
-      ongoingBuses: 1,
-      image:
-        'https://media.istockphoto.com/id/177447843/photo/house-boat-in-backwaters.jpg?s=612x612&w=0&k=20&c=9RnNr22SKJiNKuOukgfo82TtSgvSLMIZALXNf4m_VPM=',
-    },
-    {
-      id: 4,
-      name: 'Wayanad Explorers',
-      location: 'Wayanad',
-      earnings: 2100,
-      bookings: 21,
-      busesCount: 6,
-      packagesCount: 9,
-      availableBuses: 5,
-      ongoingBuses: 1,
-      image:
-        'https://media.istockphoto.com/id/177447843/photo/house-boat-in-backwaters.jpg?s=612x612&w=0&k=20&c=9RnNr22SKJiNKuOukgfo82TtSgvSLMIZALXNf4m_VPM=',
-    },
-    {
-      id: 5,
-      name: 'Trivandrum Tours',
-      location: 'Trivandrum',
-      earnings: 2800,
-      bookings: 28,
-      busesCount: 7,
-      packagesCount: 10,
-      availableBuses: 5,
-      ongoingBuses: 2,
-      image:
-        'https://media.istockphoto.com/id/177447843/photo/house-boat-in-backwaters.jpg?s=612x612&w=0&k=20&c=9RnNr22SKJiNKuOukgfo82TtSgvSLMIZALXNf4m_VPM=',
-    },
-    {
-      id: 6,
-      name: 'Munnar Holidays',
-      location: 'Munnar',
-      earnings: 3500,
-      bookings: 35,
-      busesCount: 9,
-      packagesCount: 14,
-      availableBuses: 7,
-      ongoingBuses: 2,
-      image:
-        'https://media.istockphoto.com/id/177447843/photo/house-boat-in-backwaters.jpg?s=612x612&w=0&k=20&c=9RnNr22SKJiNKuOukgfo82TtSgvSLMIZALXNf4m_VPM=',
-    },
-    {
-      id: 7,
-      name: 'Alleppey Backwaters',
-      location: 'Alleppey',
-      earnings: 2900,
-      bookings: 29,
-      busesCount: 6,
-      packagesCount: 8,
-      availableBuses: 4,
-      ongoingBuses: 2,
-      image:
-        'https://media.istockphoto.com/id/177447843/photo/house-boat-in-backwaters.jpg?s=612x612&w=0&k=20&c=9RnNr22SKJiNKuOukgfo82TtSgvSLMIZALXNf4m_VPM=',
-    },
-    {
-      id: 8,
-      name: 'Thekkady Wildlife Tours',
-      location: 'Thekkady',
-      earnings: 2200,
-      bookings: 22,
-      busesCount: 5,
-      packagesCount: 7,
-      availableBuses: 4,
-      ongoingBuses: 1,
-      image:
-        'https://media.istockphoto.com/id/177447843/photo/house-boat-in-backwaters.jpg?s=612x612&w=0&k=20&c=9RnNr22SKJiNKuOukgfo82TtSgvSLMIZALXNf4m_VPM=',
-    },
-    {
-      id: 9,
-      name: 'Varkala Beach Travels',
-      location: 'Varkala',
-      earnings: 1900,
-      bookings: 19,
-      busesCount: 4,
-      packagesCount: 6,
-      availableBuses: 3,
-      ongoingBuses: 1,
-      image:
-        'https://media.istockphoto.com/id/177447843/photo/house-boat-in-backwaters.jpg?s=612x612&w=0&k=20&c=9RnNr22SKJiNKuOukgfo82TtSgvSLMIZALXNf4m_VPM=',
-    },
-    {
-      id: 10,
-      name: 'Kovalam Express',
-      location: 'Kovalam',
-      earnings: 2400,
-      bookings: 24,
-      busesCount: 6,
-      packagesCount: 8,
-      availableBuses: 5,
-      ongoingBuses: 1,
-      image:
-        'https://media.istockphoto.com/id/177447843/photo/house-boat-in-backwaters.jpg?s=612x612&w=0&k=20&c=9RnNr22SKJiNKuOukgfo82TtSgvSLMIZALXNf4m_VPM=',
-    },
-    {
-      id: 11,
-      name: 'Kannur Adventures',
-      location: 'Kannur',
-      earnings: 2000,
-      bookings: 20,
-      busesCount: 5,
-      packagesCount: 7,
-      availableBuses: 4,
-      ongoingBuses: 1,
-      image:
-        'https://media.istockphoto.com/id/177447843/photo/house-boat-in-backwaters.jpg?s=612x612&w=0&k=20&c=9RnNr22SKJiNKuOukgfo82TtSgvSLMIZALXNf4m_VPM=',
-    },
-    {
-      id: 12,
-      name: 'Kasaragod Tours',
-      location: 'Kasaragod',
-      earnings: 1700,
-      bookings: 17,
-      busesCount: 4,
-      packagesCount: 5,
-      availableBuses: 3,
-      ongoingBuses: 1,
-      image:
-        'https://media.istockphoto.com/id/177447843/photo/house-boat-in-backwaters.jpg?s=612x612&w=0&k=20&c=9RnNr22SKJiNKuOukgfo82TtSgvSLMIZALXNf4m_VPM=',
-    },
-  ];
+  useEffect(() => {
+    const fetchVendors = async () => {
+      setLoading(true);
+      try {
+        const response = await getAllVendors();
+        if (response && response.data) {
+          const transformedVendors = response.data.map((vendor) => ({
+            id: vendor.user_id,
+            name: vendor.travels_name,
+            location: vendor.location || vendor.city,
+            busesCount: vendor.bus_count || 0,
+            packagesCount: vendor.package_count || 0,
+            availableBuses: vendor.buses?.length || 0,
+            ongoingBuses: vendor.ongoing_buses?.length || 0,
+            bookings: vendor.buses?.length || 0,
+            earnings: 0,
+            image:
+              vendor.buses?.[0]?.travels_logo ||
+              '/placeholder.svg?height=48&width=48',
+          }));
+          setVendors(transformedVendors);
+          console.log(vendors);
+        }
+      } catch (err) {
+        console.error('Error fetching vendors:', err);
+        setError('Failed to load vendors. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVendors();
+  }, []);
+
+  // Use the fetched vendors
+  const allVendors = vendors;
 
   // Filter and sort vendors
   const filteredVendors = allVendors
@@ -211,7 +100,15 @@ export const VendorsListPage = () => {
 
   return (
     <>
-      <h1 className='text-2xl font-semibold mb-6'>Vendors</h1>
+      <div className='flex justify-between items-center mb-6'>
+        <h1 className='text-2xl font-semibold'>Vendors</h1>
+        <Link
+          to='/vendors/create'
+          className='px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center'>
+          <Plus className='h-4 w-4 mr-2' />
+          Add Vendor
+        </Link>
+      </div>
 
       {/* Search and Filters */}
       <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4'>
@@ -219,7 +116,7 @@ export const VendorsListPage = () => {
           <input
             type='text'
             placeholder='Search vendors...'
-            className='w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            className='w-full pl-10 pr-4 py-2 bg-gray-50 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white'
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -229,7 +126,7 @@ export const VendorsListPage = () => {
         <div className='flex flex-col sm:flex-row gap-2 w-full md:w-auto'>
           <div className='relative'>
             <select
-              className='appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm'
+              className='appearance-none pl-4 pr-10 py-2 bg-gray-50 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white text-sm'
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}>
               <option value='name'>Sort by: Name</option>
@@ -242,7 +139,7 @@ export const VendorsListPage = () => {
 
           <div className='relative'>
             <select
-              className='appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm'
+              className='appearance-none pl-4 pr-10 py-2 bg-gray-50 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white text-sm'
               value={filterBy}
               onChange={(e) => setFilterBy(e.target.value)}>
               <option value='all'>Filter by: All</option>
@@ -254,8 +151,16 @@ export const VendorsListPage = () => {
         </div>
       </div>
 
-      {/* Vendors Grid */}
-      {currentVendors.length > 0 ? (
+      {/* Loading State */}
+      {loading ? (
+        <div className='flex justify-center items-center min-h-[200px]'>
+          <LoadingSpinner size='large' />
+        </div>
+      ) : error ? (
+        <div className='bg-red-50 border border-red-200 rounded-lg p-6 text-center mb-6'>
+          <p className='text-red-600'>{error}</p>
+        </div>
+      ) : currentVendors.length > 0 ? (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6'>
           {currentVendors.map((vendor) => (
             <VendorCard
@@ -274,7 +179,7 @@ export const VendorsListPage = () => {
 
       {/* Pagination */}
       {filteredVendors.length > 0 && (
-        <div className='flex justify-between items-center'>
+        <div className='flex justify-between items-center sticky bottom-0 py-4mt-4'>
           <p className='text-sm text-gray-500'>
             Showing {indexOfFirstVendor + 1}-
             {Math.min(indexOfLastVendor, filteredVendors.length)} of{' '}

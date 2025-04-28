@@ -1,0 +1,300 @@
+import { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router';
+import { ArrowLeft, Users, FileText, Check, X } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getBusDetails } from '../services/vendorService';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+
+export const VendorBusDetailsPage = () => {
+  const { busId, vendorId } = useParams();
+  const [busDetails, setBusDetails] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('details');
+
+  useEffect(() => {
+    const fetchBusData = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getBusDetails(vendorId, busId);
+
+        console.log(data);
+        if (data) {
+          setBusDetails(data);
+        } else {
+          // If no data is returned, use sample data for demonstration
+          setBusDetails(sampleBusDetails);
+        }
+      } catch (error) {
+        console.error('Error fetching bus details:', error);
+        // Use sample data as fallback
+        setBusDetails(sampleBusDetails);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBusData();
+  }, [busId, vendorId]);
+
+  if (isLoading) {
+    return (
+      <div className='flex justify-center items-center min-h-[500px]'>
+        <LoadingSpinner size='large' />
+      </div>
+    );
+  }
+
+  if (!busDetails) {
+    return (
+      <div className='bg-white rounded-lg shadow-sm p-8 text-center'>
+        <p className='text-gray-500'>Bus not found.</p>
+        <Link
+          to={vendorId ? `/vendors/${vendorId}` : '/vendors'}
+          className='mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors'>
+          Back to Vendor
+        </Link>
+      </div>
+    );
+  }
+
+  // Sample bus details data
+  const sampleBusDetails = {
+    id: busId,
+    bus_name: 'Sunshine Travels Deluxe',
+    bus_number: 'KL10AB1234',
+    capacity: 40,
+    vehicle_description:
+      'Comfortable long-distance sleeper bus with ample luggage space.',
+    vehicle_rc_number: 'RC4567893210',
+    travels_logo: '/placeholder.svg?height=400&width=600',
+    base_price: '₹200.00',
+    price_per_km: '₹100.00',
+    amenities: [
+      { id: 1, name: 'Air Conditioning', available: true },
+      { id: 2, name: 'WiFi', available: true },
+      { id: 3, name: 'USB Charging', available: true },
+      { id: 4, name: 'Reclining Seats', available: true },
+      { id: 5, name: 'Blankets', available: true },
+      { id: 6, name: 'Snacks', available: false },
+      { id: 7, name: 'TV', available: false },
+      { id: 8, name: 'Toilet', available: true },
+    ],
+    documents: [
+      {
+        name: 'RC Certificate',
+        status: 'Verified',
+        path: '/placeholder.svg?height=150&width=200',
+        expiry: '2025-12-31',
+      },
+      {
+        name: 'License',
+        status: 'Verified',
+        path: '/placeholder.svg?height=150&width=200',
+        expiry: '2026-05-15',
+      },
+      {
+        name: 'Contract Carriage Permit',
+        status: 'Verified',
+        path: '/placeholder.svg?height=150&width=200',
+        expiry: '2025-08-22',
+      },
+      {
+        name: 'Passenger Insurance',
+        status: 'Verified',
+        path: '/placeholder.svg?height=150&width=200',
+        expiry: '2025-10-10',
+      },
+      {
+        name: 'Vehicle Insurance',
+        status: 'Verified',
+        path: '/placeholder.svg?height=150&width=200',
+        expiry: '2025-11-05',
+      },
+    ],
+    features: [
+      'Sleeper Bus',
+      'Push-back Seats',
+      'Reading Lights',
+      'Bottle Holders',
+      'Emergency Exit',
+      'First Aid Kit',
+      'Fire Extinguisher',
+    ],
+  };
+
+  return (
+    <div className='flex-1 overflow-auto'>
+      {/* Back Button */}
+      <div className='mb-6'>
+        <Link
+          to={vendorId ? `/vendors/${vendorId}` : '/vendors'}
+          className='inline-flex items-center text-gray-600 hover:text-gray-900'>
+          <ArrowLeft className='h-4 w-4 mr-2' />
+          <span>Back to {vendorId ? 'Vendor' : 'Vendors'}</span>
+        </Link>
+      </div>
+
+      <div className='bg-white rounded-lg shadow-sm overflow-hidden mb-6'>
+        <div className='p-6'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
+            <div>
+              <img
+                src={busDetails.travels_logo || '/placeholder.svg'}
+                alt={busDetails.bus_name}
+                className='w-full h-64 object-cover rounded-lg'
+              />
+            </div>
+            <div>
+              <h1 className='text-2xl font-semibold text-gray-900 mb-2'>
+                {busDetails.bus_name}
+              </h1>
+              <p className='text-gray-600 mb-4'>{busDetails.bus_number}</p>
+
+              <div className='space-y-4'>
+                <div>
+                  <p className='text-sm text-gray-500'>Description</p>
+                  <p className='font-medium'>
+                    {busDetails.vehicle_description}
+                  </p>
+                </div>
+
+                <div>
+                  <p className='text-sm text-gray-500'>Capacity</p>
+                  <div className='flex items-center'>
+                    <Users className='h-4 w-4 mr-2 text-gray-500' />
+                    <p className='font-medium'>{busDetails.capacity} seats</p>
+                  </div>
+                </div>
+
+                <div>
+                  <p className='text-sm text-gray-500'>RC Number</p>
+                  <div className='flex items-center'>
+                    <FileText className='h-4 w-4 mr-2 text-gray-500' />
+                    <p className='font-medium'>
+                      {busDetails.vehicle_rc_number}
+                    </p>
+                  </div>
+                </div>
+
+                <div className='grid grid-cols-2 gap-4'>
+                  <div>
+                    <p className='text-sm text-gray-500'>Base Price</p>
+                    <p className='text-lg font-semibold text-blue-600'>
+                      {busDetails.base_price}
+                    </p>
+                  </div>
+                  <div>
+                    <p className='text-sm text-gray-500'>Price per KM</p>
+                    <p className='text-lg font-semibold text-blue-600'>
+                      {busDetails.price_per_km}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className='w-full'>
+            <TabsList className='mb-6'>
+              <TabsTrigger value='details'>Features</TabsTrigger>
+              <TabsTrigger value='amenities'>Amenities</TabsTrigger>
+              <TabsTrigger value='documents'>Documents</TabsTrigger>
+            </TabsList>
+
+            <TabsContent
+              value='details'
+              className='space-y-6'>
+              <div>
+                <h3 className='text-lg font-semibold mb-3'>Bus Features</h3>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                  {busDetails.features.map((feature, index) => (
+                    <div
+                      key={index}
+                      className='flex items-center'>
+                      <Check className='h-4 w-4 text-green-500 mr-2' />
+                      <span className='text-gray-700'>{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value='amenities'
+              className='space-y-6'>
+              <div>
+                <h3 className='text-lg font-semibold mb-3'>Bus Amenities</h3>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                  {busDetails?.amenities &&
+                    busDetails.amenities.map((amenity) => (
+                      <div
+                        key={amenity.id}
+                        className='flex items-center'>
+                        {amenity.available ? (
+                          <Check className='h-4 w-4 text-green-500 mr-2' />
+                        ) : (
+                          <X className='h-4 w-4 text-red-500 mr-2' />
+                        )}
+                        <span
+                          className={`${
+                            amenity.available
+                              ? 'text-gray-700'
+                              : 'text-gray-400'
+                          }`}>
+                          {amenity.name}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value='documents'
+              className='space-y-6'>
+              <div>
+                <h3 className='text-lg font-semibold mb-3'>Bus Documents</h3>
+                <div className='space-y-4'>
+                  {busDetails.documents &&
+                    busDetails.documents.map((doc, index) => (
+                      <div
+                        key={index}
+                        className='flex items-start border-b pb-4'>
+                        <div className='w-16 h-16 rounded-md overflow-hidden flex-shrink-0 mr-4'>
+                          <img
+                            src={doc.path}
+                            alt={doc.name}
+                            className='w-full h-full object-cover'
+                          />
+                        </div>
+                        <div className='flex-1'>
+                          <h4 className='font-semibold'>{doc.name}</h4>
+                          <div className='flex items-center mt-1'>
+                            <div
+                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                doc.status === 'Verified'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                              {doc.status}
+                            </div>
+                            <span className='text-sm text-gray-500 ml-2'>
+                              Expires: {doc.expiry}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    </div>
+  );
+};

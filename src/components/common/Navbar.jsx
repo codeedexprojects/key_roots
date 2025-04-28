@@ -2,16 +2,16 @@ import { Bell, Search } from 'lucide-react';
 
 export function Navbar() {
   return (
-    <header className='w-full bg-white p-4 shadow-sm flex items-center justify-between'>
+    <header className='w-full bg-white p-4 shadow-sm flex items-end justify-end'>
       {/* Search Bar */}
-      <div className='relative hidden md:block'>
+      {/* <div className='relative hidden md:block'>
         <input
           type='text'
           placeholder='Search...'
           className='w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:border-blue-300'
         />
         <Search className='absolute left-3 top-2.5 h-4 w-4 text-gray-400' />
-      </div>
+      </div> */}
 
       {/* Notifications & Profile */}
       <div className='flex items-center gap-4'>

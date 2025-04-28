@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
+import { LoadingIndicator } from '@/components/common/LoadingIndicator';
+import { EmptyState } from '@/components/common/EmptyState';
+import {
+  getVendorById,
+  getVendorBuses,
+  getVendorPackages,
+} from '../services/vendorService';
+import { LoadingSpinner } from '@/components/common';
 
 export const VendorInventoryPage = () => {
   const { vendorId } = useParams();
@@ -16,142 +24,102 @@ export const VendorInventoryPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call to fetch vendor details
-    const fetchVendorDetails = () => {
+    const fetchVendorDetails = async () => {
       setLoading(true);
+      try {
+        // Fetch vendor details
+        const vendorResponse = await getVendorById(vendorId);
 
-      // Sample vendor data
-      const vendorData = {
-        id: Number.parseInt(vendorId),
-        name: 'Skyway Travels',
-        location: 'Palakkad',
-      };
+        if (vendorResponse?.error) {
+          console.error(
+            'Error fetching vendor details:',
+            vendorResponse.message
+          );
+          setVendor(null);
+          setLoading(false);
+          return;
+        }
 
-      // Sample buses data
-      const busesData = [
-        {
-          id: 1,
-          title: 'Volvo AC Sleeper',
-          type: 'Sleeper',
-          capacity: 36,
-          vehicleRC: 'KL-10-AB-1234',
-          status: 'Available',
-          image:
-            'https://gst-contracts.s3.ap-southeast-1.amazonaws.com/uploads/bcc/cms/asset/avatar/324800/banner6.jpg',
-        },
-        {
-          id: 2,
-          title: 'Mercedes Benz Traveller',
-          type: 'Seater',
-          capacity: 20,
-          vehicleRC: 'KL-10-CD-5678',
-          status: 'Ongoing',
-          image:
-            'https://gst-contracts.s3.ap-southeast-1.amazonaws.com/uploads/bcc/cms/asset/avatar/324800/banner6.jpg',
-        },
-        {
-          id: 3,
-          title: 'Scania Multi-Axle',
-          type: 'Sleeper',
-          capacity: 42,
-          vehicleRC: 'KL-10-EF-9012',
-          status: 'Available',
-          image:
-            'https://gst-contracts.s3.ap-southeast-1.amazonaws.com/uploads/bcc/cms/asset/avatar/324800/banner6.jpg',
-        },
-        {
-          id: 4,
-          title: 'Tata AC Seater',
-          type: 'Seater',
-          capacity: 32,
-          vehicleRC: 'KL-10-GH-3456',
-          status: 'Available',
-          image:
-            'https://gst-contracts.s3.ap-southeast-1.amazonaws.com/uploads/bcc/cms/asset/avatar/324800/banner6.jpg',
-        },
-        {
-          id: 5,
-          title: 'Ashok Leyland Sleeper',
-          type: 'Sleeper',
-          capacity: 30,
-          vehicleRC: 'KL-10-IJ-7890',
-          status: 'Available',
-          image:
-            'https://gst-contracts.s3.ap-southeast-1.amazonaws.com/uploads/bcc/cms/asset/avatar/324800/banner6.jpg',
-        },
-      ];
+        if (vendorResponse && vendorResponse.data) {
+          const vendorData = vendorResponse.data;
 
-      // Sample packages data
-      const packagesData = [
-        {
-          id: 'PKG001',
-          destination: 'Munnar Hill Station',
-          route: 'Palakkad → Munnar',
-          availableDates: 'Mon, Wed, Fri',
-          status: 'Open',
-          image:
-            'https://www.indiantempletour.com/wp-content/uploads/2016/08/Untitled-design109.png',
-        },
-        {
-          id: 'PKG002',
-          destination: 'Wayanad Wildlife',
-          route: 'Palakkad → Wayanad',
-          availableDates: 'Tue, Thu, Sat',
-          status: 'Open',
-          image:
-            'https://www.indiantempletour.com/wp-content/uploads/2016/08/Untitled-design109.png',
-        },
-        {
-          id: 'PKG003',
-          destination: 'Alleppey Backwaters',
-          route: 'Palakkad → Alleppey',
-          availableDates: 'Wed, Sat, Sun',
-          status: 'Closed',
-          image:
-            'https://www.indiantempletour.com/wp-content/uploads/2016/08/Untitled-design109.png',
-        },
-        {
-          id: 'PKG004',
-          destination: 'Kovalam Beach',
-          route: 'Palakkad → Trivandrum → Kovalam',
-          availableDates: 'Fri, Sat, Sun',
-          status: 'Open',
-          image:
-            'https://www.indiantempletour.com/wp-content/uploads/2016/08/Untitled-design109.png',
-        },
-        {
-          id: 'PKG005',
-          destination: 'Thekkady Wildlife',
-          route: 'Palakkad → Thekkady',
-          availableDates: 'Mon, Thu, Sun',
-          status: 'Open',
-          image:
-            'https://www.indiantempletour.com/wp-content/uploads/2016/08/Untitled-design109.png',
-        },
-        {
-          id: 'PKG006',
-          destination: 'Vagamon Hills',
-          route: 'Palakkad → Vagamon',
-          availableDates: 'Tue, Fri, Sun',
-          status: 'Closed',
-          image:
-            'https://www.indiantempletour.com/wp-content/uploads/2016/08/Untitled-design109.png',
-        },
-        {
-          id: 'PKG007',
-          destination: 'Kochi City Tour',
-          route: 'Palakkad → Kochi',
-          availableDates: 'Mon, Wed, Sat',
-          status: 'Open',
-          image:
-            'https://www.indiantempletour.com/wp-content/uploads/2016/08/Untitled-design109.png',
-        },
-      ];
+          // Transform vendor data
+          const transformedVendor = {
+            id: vendorData.user_id,
+            name: vendorData.travels_name,
+            location: vendorData.location || vendorData.city,
+            email: vendorData.email_address,
+            fullName: vendorData.full_name,
+          };
 
-      setVendor(vendorData);
-      setBuses(busesData);
-      setPackages(packagesData);
-      setLoading(false);
+          setVendor(transformedVendor);
+
+          // Fetch buses
+          const busesResponse = await getVendorBuses(vendorId);
+
+          if (busesResponse && !busesResponse.error && busesResponse.data) {
+            // Transform buses data
+            const transformedBuses = busesResponse.data.map((bus) => ({
+              id: bus.id,
+              title: bus.bus_name,
+              type:
+                bus.features?.length > 0 ? bus.features.join(', ') : 'Standard',
+              capacity: bus.capacity,
+              vehicleRC: bus.vehicle_rc_number,
+              status: 'Available',
+              image:
+                bus.travels_logo || '/placeholder.svg?height=192&width=384',
+              description: bus.vehicle_description,
+              basePrice: bus.base_price,
+              pricePerKm: bus.price_per_km,
+            }));
+
+            setBuses(transformedBuses);
+          } else {
+            setBuses([]);
+          }
+
+          // Fetch packages
+          const packagesResponse = await getVendorPackages(vendorId);
+
+          if (
+            packagesResponse &&
+            !packagesResponse.error &&
+            packagesResponse.data
+          ) {
+            // Transform packages data
+            const transformedPackages = packagesResponse.data.map((pkg) => ({
+              id: pkg.id,
+              destination: pkg.places || 'Package Tour',
+              route: pkg.places || 'Tour Package',
+              availableDates: `${pkg.days} days, ${pkg.nights} nights`,
+              status: pkg.ac_available ? 'Open' : 'Closed',
+              image:
+                pkg.header_image || '/placeholder.svg?height=192&width=384',
+              acAvailable: pkg.ac_available,
+              guideIncluded: pkg.guide_included,
+              subCategoryName: pkg.sub_category_name,
+              days: pkg.days,
+              nights: pkg.nights,
+            }));
+
+            setPackages(transformedPackages);
+          } else {
+            setPackages([]);
+          }
+        } else {
+          setVendor(null);
+          setBuses([]);
+          setPackages([]);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setVendor(null);
+        setBuses([]);
+        setPackages([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchVendorDetails();
@@ -168,26 +136,22 @@ export const VendorInventoryPage = () => {
 
   if (loading) {
     return (
-      <>
-        <div className='flex justify-center items-center h-64'>
-          <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500'></div>
-        </div>
-      </>
+      <div className='flex justify-center items-center min-h-[600px]'>
+        <LoadingSpinner size='large' />
+      </div>
     );
   }
 
   if (!vendor) {
     return (
-      <>
-        <div className='bg-white rounded-lg shadow-sm p-8 text-center'>
-          <p className='text-gray-500'>Vendor not found.</p>
-          <button
-            onClick={() => navigate('/admin/vendors')}
-            className='mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors'>
-            Back
-          </button>
-        </div>
-      </>
+      <EmptyState
+        title='Vendor Not Found'
+        description="We couldn't find the vendor you're looking for."
+        action={{
+          label: 'Back to Vendors',
+          onClick: () => navigate('/vendors'),
+        }}
+      />
     );
   }
 
@@ -236,109 +200,153 @@ export const VendorInventoryPage = () => {
       {/* Tab Content */}
       {activeTab === 'buses' ? (
         <div className='space-y-6'>
-          {buses.map((bus) => (
-            <div
-              key={bus.id}
-              className='bg-white rounded-lg shadow-sm overflow-hidden'>
-              <div className='md:flex'>
-                <div className='md:w-1/3 h-48 md:h-auto bg-gray-200'>
-                  <img
-                    src={bus.image || '/placeholder.svg?height=192&width=384'}
-                    alt={bus.title}
-                    className='h-full w-full object-cover'
-                  />
-                </div>
-                <div className='p-6 md:w-2/3'>
-                  <h3 className='font-semibold text-lg mb-2'>{bus.title}</h3>
-
-                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
-                    <div>
-                      <p className='text-sm text-gray-500'>Type</p>
-                      <p className='font-medium'>{bus.type}</p>
-                    </div>
-                    <div>
-                      <p className='text-sm text-gray-500'>Capacity</p>
-                      <p className='font-medium'>{bus.capacity} seats</p>
-                    </div>
-                    <div>
-                      <p className='text-sm text-gray-500'>Vehicle RC</p>
-                      <p className='font-medium'>{bus.vehicleRC}</p>
-                    </div>
-                    <div>
-                      <p className='text-sm text-gray-500'>Status</p>
-                      <p
-                        className={`font-medium ${
-                          bus.status === 'Available'
-                            ? 'text-green-600'
-                            : bus.status === 'Ongoing'
-                            ? 'text-blue-600'
-                            : 'text-gray-600'
-                        }`}>
-                        {bus.status}
-                      </p>
-                    </div>
+          {buses.length > 0 ? (
+            buses.map((bus) => (
+              <div
+                key={bus.id}
+                className='bg-white rounded-lg shadow-sm overflow-hidden'>
+                <div className='md:flex'>
+                  <div className='md:w-1/3 h-48 md:h-auto bg-gray-200'>
+                    <img
+                      src={bus.image || '/placeholder.svg?height=192&width=384'}
+                      alt={bus.title}
+                      className='h-full w-full object-cover'
+                    />
                   </div>
+                  <div className='p-6 md:w-2/3'>
+                    <h3 className='font-semibold text-lg mb-2'>{bus.title}</h3>
 
-                  <button className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors'>
-                    View More
-                  </button>
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
+                      <div>
+                        <p className='text-sm text-gray-500'>Type</p>
+                        <p className='font-medium'>{bus.type}</p>
+                      </div>
+                      <div>
+                        <p className='text-sm text-gray-500'>Capacity</p>
+                        <p className='font-medium'>{bus.capacity} seats</p>
+                      </div>
+                      <div>
+                        <p className='text-sm text-gray-500'>Vehicle RC</p>
+                        <p className='font-medium'>{bus.vehicleRC}</p>
+                      </div>
+                      <div>
+                        <p className='text-sm text-gray-500'>Status</p>
+                        <p
+                          className={`font-medium ${
+                            bus.status === 'Available'
+                              ? 'text-green-600'
+                              : bus.status === 'Ongoing'
+                              ? 'text-blue-600'
+                              : 'text-gray-600'
+                          }`}>
+                          {bus.status}
+                        </p>
+                      </div>
+                      {bus.basePrice && (
+                        <div>
+                          <p className='text-sm text-gray-500'>Base Price</p>
+                          <p className='font-medium'>₹{bus.basePrice}</p>
+                        </div>
+                      )}
+                      {bus.pricePerKm && (
+                        <div>
+                          <p className='text-sm text-gray-500'>Price per KM</p>
+                          <p className='font-medium'>₹{bus.pricePerKm}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <Link
+                      to={`/vendors/${vendorId}/buses/${bus.id}`}
+                      className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors inline-block'>
+                      View Details
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <EmptyState
+              title='No Buses Found'
+              description="This vendor doesn't have any buses yet."
+            />
+          )}
         </div>
       ) : (
         <div className='space-y-6'>
-          {packages.map((pkg) => (
-            <div
-              key={pkg.id}
-              className='bg-white rounded-lg shadow-sm overflow-hidden'>
-              <div className='md:flex'>
-                <div className='md:w-1/3 h-48 md:h-auto bg-gray-200'>
-                  <img
-                    src={pkg.image || '/placeholder.svg?height=192&width=384'}
-                    alt={pkg.destination}
-                    className='h-full w-full object-cover'
-                  />
-                </div>
-                <div className='p-6 md:w-2/3'>
-                  <h3 className='font-semibold text-lg mb-2'>
-                    {pkg.destination}
-                  </h3>
-
-                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
-                    <div>
-                      <p className='text-sm text-gray-500'>Route</p>
-                      <p className='font-medium'>{pkg.route}</p>
-                    </div>
-                    <div>
-                      <p className='text-sm text-gray-500'>Available Dates</p>
-                      <p className='font-medium'>{pkg.availableDates}</p>
-                    </div>
-                    <div>
-                      <p className='text-sm text-gray-500'>Package ID</p>
-                      <p className='font-medium'>{pkg.id}</p>
-                    </div>
-                    <div>
-                      <p className='text-sm text-gray-500'>Status</p>
-                      <p
-                        className={`font-medium ${
-                          pkg.status === 'Open'
-                            ? 'text-green-600'
-                            : 'text-red-600'
-                        }`}>
-                        {pkg.status}
-                      </p>
-                    </div>
+          {packages.length > 0 ? (
+            packages.map((pkg) => (
+              <div
+                key={pkg.id}
+                className='bg-white rounded-lg shadow-sm overflow-hidden'>
+                <div className='md:flex'>
+                  <div className='md:w-1/3 h-48 md:h-auto bg-gray-200'>
+                    <img
+                      src={pkg.image || '/placeholder.svg?height=192&width=384'}
+                      alt={pkg.destination}
+                      className='h-full w-full object-cover'
+                    />
                   </div>
+                  <div className='p-6 md:w-2/3'>
+                    <h3 className='font-semibold text-lg mb-2'>
+                      {pkg.destination}
+                    </h3>
 
-                  <button className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors'>
-                    View More
-                  </button>
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
+                      <div>
+                        <p className='text-sm text-gray-500'>Route</p>
+                        <p className='font-medium'>{pkg.route}</p>
+                      </div>
+                      <div>
+                        <p className='text-sm text-gray-500'>Duration</p>
+                        <p className='font-medium'>{pkg.availableDates}</p>
+                      </div>
+                      {pkg.subCategoryName && (
+                        <div>
+                          <p className='text-sm text-gray-500'>Category</p>
+                          <p className='font-medium'>{pkg.subCategoryName}</p>
+                        </div>
+                      )}
+                      <div>
+                        <p className='text-sm text-gray-500'>Status</p>
+                        <p
+                          className={`font-medium ${
+                            pkg.status === 'Open'
+                              ? 'text-green-600'
+                              : 'text-red-600'
+                          }`}>
+                          {pkg.status}
+                        </p>
+                      </div>
+                      <div>
+                        <p className='text-sm text-gray-500'>AC Available</p>
+                        <p className='font-medium'>
+                          {pkg.acAvailable ? 'Yes' : 'No'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className='text-sm text-gray-500'>Guide Included</p>
+                        <p className='font-medium'>
+                          {pkg.guideIncluded ? 'Yes' : 'No'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <Link
+                      to={`/vendors/${vendorId}/packages/${pkg.id}`}
+                      className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors inline-block'>
+                      View Details
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <EmptyState
+              title='No Packages Found'
+              description="This vendor doesn't have any packages yet."
+            />
+          )}
         </div>
       )}
     </>

@@ -1,8 +1,15 @@
 import { MapPin, Calendar, Hash } from 'lucide-react';
+import { Link } from 'react-router';
 
-export const PackageCard = ({ pkg }) => {
+export const PackageCard = ({ pkg, vendorId }) => {
   return (
-    <div className='bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden'>
+    <Link
+      to={
+        vendorId
+          ? `/vendors/${vendorId}/packages/${pkg.id}`
+          : `/category/packages/${pkg.id}`
+      }
+      className='block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden'>
       <div className='h-48 bg-gray-200 overflow-hidden'>
         <img
           src={pkg.image || '/placeholder.svg?height=192&width=384'}
@@ -41,6 +48,6 @@ export const PackageCard = ({ pkg }) => {
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };

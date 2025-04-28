@@ -1,7 +1,5 @@
 import { Outlet } from 'react-router';
-import { Navbar } from './Navbar';
-import { Sidebar } from './Sidebar';
-import ScrollToTop from './ScrollToTop';
+import { ScrollToTop, Navbar, Sidebar } from '@/components/common';
 
 export function Layout() {
   return (

@@ -11,17 +11,17 @@ export const VendorCard = ({ vendor }) => {
           <div className='h-12 w-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0'>
             <img
               src={vendor.image || '/placeholder.svg?height=48&width=48'}
-              alt={vendor.name}
+              alt={vendor.name || 'Vendor'}
               className='h-full w-full object-cover'
             />
           </div>
           <div className='ml-3'>
             <h3 className='font-semibold text-gray-900 truncate'>
-              {vendor.name}
+              {vendor.name || 'Unnamed Vendor'}
             </h3>
             <div className='flex items-center text-gray-500 text-sm'>
               <MapPin className='h-3.5 w-3.5 mr-1' />
-              <span>{vendor.location}</span>
+              <span>{vendor.location || 'Unknown Location'}</span>
             </div>
           </div>
         </div>

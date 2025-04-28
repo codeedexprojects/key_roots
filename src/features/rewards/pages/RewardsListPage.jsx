@@ -7,7 +7,6 @@ export const RewardsListPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Sample data for rewards
   const rewards = [
     {
       id: 1,
@@ -101,7 +100,6 @@ export const RewardsListPage = () => {
     },
   ];
 
-  // Filter rewards based on search term
   const filteredRewards = rewards.filter((reward) => {
     if (searchTerm === '') return true;
     return (
@@ -110,7 +108,6 @@ export const RewardsListPage = () => {
     );
   });
 
-  // Pagination
   const rewardsPerPage = 5;
   const totalPages = Math.ceil(filteredRewards.length / rewardsPerPage);
   const indexOfLastReward = currentPage * rewardsPerPage;
@@ -166,44 +163,17 @@ export const RewardsListPage = () => {
         <div className='overflow-x-auto'>
           <table className='min-w-full divide-y divide-gray-200'>
             <thead>
-              {[
-                'SL NO',
-                'Name',
-                'Date',
-                'Refer ID',
-                'Amount',
-                'Status',
-                'Source',
-              ].map((header, i) => (
-                <th
-                  key={`${header}-${i}`}
-                  className='px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider'>
-                  {header}
-                </th>
-              ))}
-              {/* <tr>
-                <th className='px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  SL NO
-                </th>
-                <th className='px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Name
-                </th>
-                <th className='px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Date
-                </th>
-                <th className='px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Refer ID
-                </th>
-                <th className='px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Amount
-                </th>
-                <th className='px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Status
-                </th>
-                <th className='px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Source
-                </th>
-              </tr> */}
+              <tr>
+                {['Name', 'Date', 'Refer ID', 'Amount', 'Status', 'Source'].map(
+                  (header, i) => (
+                    <th
+                      key={i}
+                      className='px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider'>
+                      {header}
+                    </th>
+                  )
+                )}
+              </tr>
             </thead>
             <tbody className='bg-white divide-y divide-gray-200'>
               {currentRewards.map((reward) => (
@@ -211,9 +181,6 @@ export const RewardsListPage = () => {
                   key={reward.id}
                   className='hover:bg-gray-50 cursor-pointer'
                   onClick={() => handleRowClick(reward.id)}>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='text-sm text-gray-900'>{reward.id}</div>
-                  </td>
                   <td className='px-6 py-4 whitespace-nowrap'>
                     <div className='flex items-center'>
                       <img

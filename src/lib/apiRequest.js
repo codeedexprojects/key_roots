@@ -7,6 +7,13 @@ export const apiRequest = async (
     return response?.data;
   } catch (error) {
     const errorMessage = error?.response?.data?.message || message;
-    console.log(error, errorMessage);
+    console.error(error, errorMessage);
+
+    // Return the error so it can be handled by the caller
+    return {
+      error: true,
+      message: errorMessage,
+      details: error?.response?.data || error?.message || 'Unknown error',
+    };
   }
 };
