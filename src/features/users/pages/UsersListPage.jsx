@@ -1,77 +1,69 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, ChevronDown, MoreHorizontal, Plus } from 'lucide-react';
 import { useNavigate, Link } from 'react-router';
+import { LoadingSpinner, EmptyState } from '@/components/common';
+import { getAllUsers } from '../services/userService';
+import { useToast } from '@/components/ui/toast-provider';
 
 export const UsersListPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
+  const { addToast } = useToast();
 
-  const users = [
-    {
-      id: 1,
-      name: 'Customer name',
-      phone: '9585622559',
-      email: 'customer@gmail.com',
-      place: 'Kerala',
-      status: 'ACTIVE',
-    },
-    {
-      id: 2,
-      name: 'Customer name',
-      phone: '9585622559',
-      email: 'customer@gmail.com',
-      place: 'Kerala',
-      status: 'ACTIVE',
-    },
-    {
-      id: 3,
-      name: 'Customer name',
-      phone: '9585622559',
-      email: 'customer@gmail.com',
-      place: 'Kerala',
-      status: 'ACTIVE',
-    },
-    {
-      id: 4,
-      name: 'Customer name',
-      phone: '9585622559',
-      email: 'customer@gmail.com',
-      place: 'Kerala',
-      status: 'ACTIVE',
-    },
-    {
-      id: 5,
-      name: 'Customer name',
-      phone: '9585622559',
-      email: 'customer@gmail.com',
-      place: 'Kerala',
-      status: 'ACTIVE',
-    },
-    {
-      id: 6,
-      name: 'Customer name',
-      phone: '9585622559',
-      email: 'customer@gmail.com',
-      place: 'Kerala',
-      status: 'ACTIVE',
-    },
-    {
-      id: 7,
-      name: 'Customer name',
-      phone: '9585622559',
-      email: 'customer@gmail.com',
-      place: 'Kerala',
-      status: 'ACTIVE',
-    },
-    {
-      id: 8,
-      name: 'Customer name',
-      phone: '9585622559',
-      email: 'customer@gmail.com',
-      place: 'Kerala',
-      status: 'ACTIVE',
-    },
-  ];
+  // State for API data
+  const [users, setUsers] = useState([]);
+  const [userStats, setUserStats] = useState({
+    total_users: 0,
+    booked_users_count: 0,
+    active_users_count: 0,
+    inactive_users_count: 0,
+  });
+
+  // Loading and error states
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch users data
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setIsLoading(true);
+      try {
+        const response = await getAllUsers();
+
+        if (response && !response.error) {
+          // Set users data
+          setUsers(response.users || []);
+
+          // Set user stats
+          setUserStats({
+            total_users: response.total_users || 0,
+            booked_users_count: response.booked_users_count || 0,
+            active_users_count: response.active_users_count || 0,
+            inactive_users_count: response.inactive_users_count || 0,
+          });
+        } else {
+          setError(response?.message || 'Failed to load users');
+          addToast({
+            title: 'Error',
+            message: response?.message || 'Failed to load users',
+            type: 'error',
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        setError('Failed to load users. Please try again later.');
+        addToast({
+          title: 'Error',
+          message: 'Failed to load users. Please try again later.',
+          type: 'error',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [addToast]);
 
   return (
     <div className='flex flex-col min-h-screen'>
@@ -85,41 +77,71 @@ export const UsersListPage = () => {
         </Link>
       </div>
 
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6'>
-        {[
-          { label: 'Total Users', value: 2500, change: '+36%', color: 'green' },
-          { label: 'Booked Users', value: 25, change: '-26%', color: 'red' },
-          { label: 'Active Users', value: 250, change: '+36%', color: 'green' },
-          { label: 'Inactive Users', value: 250, change: '-36%', color: 'red' },
-        ].map((stat, index) => (
-          <div
-            key={index}
-            className='bg-white p-4 rounded-md shadow-sm'>
-            <div className='flex items-center'>
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                className='h-5 w-5 text-gray-500 mr-2'
-                fill='none'
-                viewBox='0 0 24 24'
-                stroke='currentColor'>
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
-                />
-              </svg>
-              <h3 className='text-gray-600 text-sm'>{stat.label}</h3>
+      {isLoading ? (
+        <div className='flex justify-center items-center min-h-[100px]'>
+          <LoadingSpinner size='medium' />
+        </div>
+      ) : error ? (
+        <div className='bg-red-50 border border-red-200 rounded-lg p-6 text-center'>
+          <p className='text-red-600'>{error}</p>
+        </div>
+      ) : (
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6'>
+          {[
+            {
+              label: 'Total Users',
+              value: userStats.total_users,
+              change: '+0%',
+              color: 'green',
+            },
+            {
+              label: 'Booked Users',
+              value: userStats.booked_users_count,
+              change: '+0%',
+              color: 'green',
+            },
+            {
+              label: 'Active Users',
+              value: userStats.active_users_count,
+              change: '+0%',
+              color: 'green',
+            },
+            {
+              label: 'Inactive Users',
+              value: userStats.inactive_users_count,
+              change: '+0%',
+              color: 'red',
+            },
+          ].map((stat, index) => (
+            <div
+              key={index}
+              className='bg-white p-4 rounded-md shadow-sm'>
+              <div className='flex items-center'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-5 w-5 text-gray-500 mr-2'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
+                  />
+                </svg>
+                <h3 className='text-gray-600 text-sm'>{stat.label}</h3>
+              </div>
+              <div className='mt-2 flex items-baseline'>
+                <p className='text-2xl font-semibold'>{stat.value}</p>
+                <span className={`ml-2 text-xs text-${stat.color}-500`}>
+                  {stat.change}
+                </span>
+              </div>
             </div>
-            <div className='mt-2 flex items-baseline'>
-              <p className='text-2xl font-semibold'>{stat.value}</p>
-              <span className={`ml-2 text-xs text-${stat.color}-500`}>
-                {stat.change}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       <div className='bg-white rounded-md shadow-sm p-4'>
         <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4'>
@@ -146,82 +168,91 @@ export const UsersListPage = () => {
           </div>
         </div>
 
-        <div className='overflow-x-auto'>
-          <table className='min-w-full divide-y divide-gray-200'>
-            <thead>
-              <tr>
-                {/* <th className='w-12 px-4 py-3 text-left'>
-                  <input
-                    type='checkbox'
-                    className='h-4 w-4 rounded border-gray-300'
-                  />
-                </th> */}
-                {[
-                  'Customer',
-                  'Phone Number',
-                  'Email',
-                  'Place',
-                  'Status',
-                  'Action',
-                ].map((header, i) => (
-                  <th
-                    key={i}
-                    className={`px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
-                      header === 'Email' ? 'hidden md:table-cell' : ''
-                    }`}>
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className='bg-white divide-y divide-gray-200'>
-              {users.map((user) => (
-                <tr
-                  key={user.id}
-                  className='hover:bg-gray-50 cursor-pointer'
-                  onClick={() => navigate(`/users/${user.id}`)}>
-                  {/* <td className='px-4 py-4'>
-                    <input
-                      type='checkbox'
-                      className='h-4 w-4 rounded border-gray-300'
-                    />
-                  </td> */}
-                  <td className='px-4 py-4'>
-                    <div className='flex items-center'>
-                      <img
-                        className='h-10 w-10 rounded-md'
-                        src='https://img.freepik.com/premium-vector/user-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg'
-                        alt=''
-                      />
-                      <div className='ml-4'>
-                        <div className='text-sm font-medium text-gray-900'>
-                          {user.name}
+        {isLoading ? (
+          <div className='flex justify-center items-center min-h-[100px]'>
+            <LoadingSpinner size='medium' />
+          </div>
+        ) : error ? (
+          <div className='bg-red-50 border border-red-200 rounded-lg p-6 text-center min-h-[300px] flex items-center justify-center'>
+            <p className='text-red-600'>{error}</p>
+          </div>
+        ) : users.length === 0 ? (
+          <EmptyState
+            title='No users found'
+            description='There are no users to display.'
+            icon='default'
+          />
+        ) : (
+          <div className='overflow-x-auto'>
+            <table className='min-w-full divide-y divide-gray-200'>
+              <thead>
+                <tr>
+                  {[
+                    'Customer',
+                    'Phone Number',
+                    'Email',
+                    'Place',
+                    'Status',
+                    'Action',
+                  ].map((header, i) => (
+                    <th
+                      key={i}
+                      className={`px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                        header === 'Email' ? 'hidden md:table-cell' : ''
+                      }`}>
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className='bg-white divide-y divide-gray-200'>
+                {users.map((user) => (
+                  <tr
+                    key={user.id}
+                    className='hover:bg-gray-50 cursor-pointer'
+                    onClick={() => navigate(`/users/${user.id}`)}>
+                    <td className='px-4 py-4'>
+                      <div className='flex items-center'>
+                        <img
+                          className='h-10 w-10 rounded-md'
+                          src='https://img.freepik.com/premium-vector/user-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg'
+                          alt=''
+                        />
+                        <div className='ml-4'>
+                          <div className='text-sm font-medium text-gray-900'>
+                            {user.name}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className='px-4 py-4 text-sm text-gray-500'>
-                    {user.phone}
-                  </td>
-                  <td className='px-4 py-4 text-sm text-gray-500 hidden md:table-cell'>
-                    {user.email}
-                  </td>
-                  <td className='px-4 py-4 text-sm text-gray-500'>
-                    {user.place}
-                  </td>
-                  <td className='px-4 py-4'>
-                    <span className='px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800'>
-                      {user.status}
-                    </span>
-                  </td>
-                  <td className='px-4 py-4 text-right text-sm font-medium'>
-                    <MoreHorizontal className='h-5 w-5 text-gray-400 hover:text-gray-500' />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    </td>
+                    <td className='px-4 py-4 text-sm text-gray-500'>
+                      {user.mobile}
+                    </td>
+                    <td className='px-4 py-4 text-sm text-gray-500 hidden md:table-cell'>
+                      {user.email}
+                    </td>
+                    <td className='px-4 py-4 text-sm text-gray-500'>
+                      {user.place || 'Not specified'}
+                    </td>
+                    <td className='px-4 py-4'>
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          user.is_active
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                        {user.is_active ? 'ACTIVE' : 'INACTIVE'}
+                      </span>
+                    </td>
+                    <td className='px-4 py-4 text-right text-sm font-medium'>
+                      <MoreHorizontal className='h-5 w-5 text-gray-400 hover:text-gray-500' />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         <div className='flex justify-between items-center border-t border-gray-200 px-4 py-3 mt-4'>
           <p className='text-sm text-gray-700'>Page {currentPage} of 10</p>

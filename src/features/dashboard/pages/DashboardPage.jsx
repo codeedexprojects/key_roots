@@ -8,33 +8,36 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { Star } from 'lucide-react';
+import { Star, ArrowRight } from 'lucide-react';
 import { LoadingSpinner, EmptyState } from '@/components/common';
-import { Link, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import {
   getVendorCount,
   getUserCount,
   getTopVendors,
+  getRecentUsers,
 } from '../services/dashboardService';
 
 export function DashboardPage() {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('12 Months');
 
   // State for API data
   const [vendorCount, setVendorCount] = useState(null);
   const [userCount, setUserCount] = useState(null);
   const [topVendors, setTopVendors] = useState([]);
+  const [recentUsers, setRecentUsers] = useState([]);
 
   // Loading states
   const [vendorCountLoading, setVendorCountLoading] = useState(true);
   const [userCountLoading, setUserCountLoading] = useState(true);
   const [topVendorsLoading, setTopVendorsLoading] = useState(true);
+  const [recentUsersLoading, setRecentUsersLoading] = useState(true);
 
   // Error states
   const [vendorCountError, setVendorCountError] = useState(null);
   const [userCountError, setUserCountError] = useState(null);
   const [topVendorsError, setTopVendorsError] = useState(null);
+  const [recentUsersError, setRecentUsersError] = useState(null);
 
   // Fetch vendor count
   useEffect(() => {
@@ -91,18 +94,17 @@ export function DashboardPage() {
       setTopVendorsLoading(true);
       try {
         const response = await getTopVendors();
-        console.log(response);
-        if (response && !response.error && response.data) {
-          const transformedVendors = response.data.map((vendor) => ({
-            id: vendor.user_id,
-            name: vendor.travels_name,
-            location: vendor.location || vendor.city,
-            bookings: vendor.bus_count || 0,
-            img: vendor.travels_logo || '/placeholder.svg?height=40&width=40',
+        console.log('Top vendors response:', response);
+        if (response && !response.error) {
+          const transformedVendors = response.map((vendor) => ({
+            name: vendor.name,
+            location: vendor.place,
+            bookings: vendor.total_booking_count || 0,
+            img: '/placeholder.svg?height=40&width=40',
           }));
           setTopVendors(transformedVendors);
         } else {
-          setTopVendorsError(response.message || 'Failed to load top vendors');
+          setTopVendorsError(response?.message || 'Failed to load top vendors');
         }
       } catch (error) {
         console.error('Error fetching top vendors:', error);
@@ -115,6 +117,40 @@ export function DashboardPage() {
     };
 
     fetchTopVendors();
+  }, []);
+
+  // Fetch recent users
+  useEffect(() => {
+    const fetchRecentUsers = async () => {
+      setRecentUsersLoading(true);
+      try {
+        const response = await getRecentUsers();
+        console.log('Recent users response:', response);
+        if (response && !response.error) {
+          const transformedUsers = response.map((user) => ({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            joined: new Date(user.created_at).toLocaleDateString(),
+            img: '/placeholder.svg?height=40&width=40',
+          }));
+          setRecentUsers(transformedUsers);
+        } else {
+          setRecentUsersError(
+            response?.message || 'Failed to load recent users'
+          );
+        }
+      } catch (error) {
+        console.error('Error fetching recent users:', error);
+        setRecentUsersError(
+          'Failed to load recent users. Please try again later.'
+        );
+      } finally {
+        setRecentUsersLoading(false);
+      }
+    };
+
+    fetchRecentUsers();
   }, []);
 
   // Sample data for charts
@@ -131,46 +167,6 @@ export function DashboardPage() {
     { name: 'Oct', value1: 75, value2: 65 },
     { name: 'Nov', value1: 80, value2: 70 },
     { name: 'Dec', value1: 85, value2: 75 },
-  ];
-
-  // Sample users data
-  const users = [
-    {
-      name: 'Kaja husain',
-      email: 'kajahusain23@gmail.com',
-      joined: '12/3/25',
-      img: '/placeholder.svg?height=40&width=40',
-    },
-    {
-      name: 'Kaja husain',
-      email: 'kajahusain23@gmail.com',
-      joined: '12/3/25',
-      img: '/placeholder.svg?height=40&width=40',
-    },
-    {
-      name: 'Kaja husain',
-      email: 'kajahusain23@gmail.com',
-      joined: '12/3/25',
-      img: '/placeholder.svg?height=40&width=40',
-    },
-    {
-      name: 'Kaja husain',
-      email: 'kajahusain23@gmail.com',
-      joined: '12/3/25',
-      img: '/placeholder.svg?height=40&width=40',
-    },
-    {
-      name: 'Kaja husain',
-      email: 'kajahusain23@gmail.com',
-      joined: '12/3/25',
-      img: '/placeholder.svg?height=40&width=40',
-    },
-    {
-      name: 'Kaja husain',
-      email: 'kajahusain23@gmail.com',
-      joined: '12/3/25',
-      img: '/placeholder.svg?height=40&width=40',
-    },
   ];
 
   // Sample approved bookings
@@ -384,9 +380,11 @@ export function DashboardPage() {
         <div className='card bg-[#e9f7f4] border border-gray-200 rounded-md p-5'>
           <div className='flex justify-between items-center mb-4'>
             <h3 className='font-medium'>Top Vendors</h3>
-            <button className='text-gray-500 text-sm border border-gray-300 px-2 py-1 rounded-md'>
-              States
-            </button>
+            <Link
+              to='/vendors'
+              className='text-gray-500 text-sm border border-gray-300 px-2 py-1 rounded-md hover:bg-gray-100'>
+              See All
+            </Link>
           </div>
           {topVendorsLoading ? (
             <div className='flex justify-center items-center min-h-[200px]'>
@@ -427,58 +425,82 @@ export function DashboardPage() {
               ))}
             </div>
           )}
-          <button
-            onClick={() => navigate('/vendors')}
-            className='mt-4 text-center w-full text-gray-500 text-sm hover:text-primary hover:underline'>
-            SEE ALL VENDORS
-          </button>
+          <Link
+            to='/vendors'
+            className='mt-4 flex items-center justify-center w-full text-gray-500 text-sm hover:text-primary hover:underline'>
+            <span>SEE ALL VENDORS</span>
+            <ArrowRight className='h-4 w-4 ml-1' />
+          </Link>
         </div>
 
         {/* Recent Users Card */}
         <div className='card bg-[#f7f7f7] border border-gray-200 rounded-md p-5'>
           <div className='flex justify-between items-center mb-4'>
             <h3 className='font-medium'>Recent Users</h3>
-            <button className='text-gray-500 text-sm border border-gray-300 px-2 py-1 rounded-md'>
-              States
-            </button>
+            <Link
+              to='/users'
+              className='text-gray-500 text-sm border border-gray-300 px-2 py-1 rounded-md hover:bg-gray-100'>
+              See All
+            </Link>
           </div>
-          <div className='space-y-4'>
-            {users.slice(0, 5).map((user, idx) => (
-              <div
-                key={idx}
-                className='flex items-center justify-between'>
-                <div className='flex items-center w-full'>
-                  <img
-                    src={user.img}
-                    alt={user.name}
-                    className='h-10 w-10 rounded-full bg-gray-200'
-                  />
-                  <div className='ml-3 flex-1'>
-                    <h4 className='font-medium'>{user.name}</h4>
-                    <p className='text-xs text-gray-500 truncate'>
-                      {user.email}
-                    </p>
+          {recentUsersLoading ? (
+            <div className='flex justify-center items-center min-h-[200px]'>
+              <LoadingSpinner size='medium' />
+            </div>
+          ) : recentUsersError ? (
+            <div className='bg-red-50 border border-red-200 rounded-lg p-4 text-center'>
+              <p className='text-red-600 text-sm'>{recentUsersError}</p>
+            </div>
+          ) : recentUsers.length === 0 ? (
+            <EmptyState
+              title='No users found'
+              description='There are no recent users to display.'
+              icon='default'
+            />
+          ) : (
+            <div className='space-y-4'>
+              {recentUsers.slice(0, 5).map((user, idx) => (
+                <div
+                  key={user.id || idx}
+                  className='flex items-center justify-between'>
+                  <div className='flex items-center w-full'>
+                    <img
+                      src={user.img}
+                      alt={user.name}
+                      className='h-10 w-10 rounded-full bg-gray-200'
+                    />
+                    <div className='ml-3 flex-1'>
+                      <h4 className='font-medium'>{user.name}</h4>
+                      <p className='text-xs text-gray-500 truncate'>
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                  <div className='text-right'>
+                    <p className='text-xs text-gray-500'>Joined on</p>
+                    <p className='font-medium'>{user.joined}</p>
                   </div>
                 </div>
-                <div className='text-right'>
-                  <p className='text-xs text-gray-500'>Joined in</p>
-                  <p className='font-medium'>{user.joined}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <button className='mt-4 text-center w-full text-gray-500 text-sm'>
-            SEE ALL USERS
-          </button>
+              ))}
+            </div>
+          )}
+          <Link
+            to='/users'
+            className='mt-4 flex items-center justify-center w-full text-gray-500 text-sm hover:text-primary hover:underline'>
+            <span>SEE ALL USERS</span>
+            <ArrowRight className='h-4 w-4 ml-1' />
+          </Link>
         </div>
 
         {/* Reviews Card */}
         <div className='card bg-white border border-gray-200 rounded-md p-5'>
           <div className='flex justify-between items-center mb-4'>
             <h3 className='font-medium'>Reviews</h3>
-            <button className='text-gray-500 text-sm border border-gray-300 px-2 py-1 rounded-md'>
-              States
-            </button>
+            <Link
+              to='/reviews'
+              className='text-gray-500 text-sm border border-gray-300 px-2 py-1 rounded-md hover:bg-gray-100'>
+              See All
+            </Link>
           </div>
           <div className='space-y-4'>
             {reviews.slice(0, 5).map((review, idx) => (
@@ -513,9 +535,12 @@ export function DashboardPage() {
               </div>
             ))}
           </div>
-          <button className='mt-4 text-center w-full text-gray-500 text-sm'>
-            SEE ALL REVIEWS
-          </button>
+          <Link
+            to='/reviews'
+            className='mt-4 flex items-center justify-center w-full text-gray-500 text-sm hover:text-primary hover:underline'>
+            <span>SEE ALL REVIEWS</span>
+            <ArrowRight className='h-4 w-4 ml-1' />
+          </Link>
         </div>
       </div>
     </div>

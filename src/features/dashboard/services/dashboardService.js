@@ -24,22 +24,22 @@ export const getUserCount = async () => {
 };
 
 // Function to get top vendors
-export const getTopVendors = async (limit = 5) => {
+export const getTopVendors = async () => {
   return apiRequest(
     () =>
       axiosInstance.get(
-        `https://keyroute.pythonanywhere.com/api/admin/vendors/list/?limit=${limit}`
+        'https://keyroute.pythonanywhere.com/api/admin/top-vendors/'
       ),
     'Error occurred while fetching top vendors.'
   );
 };
 
 // Function to get recent users
-export const getRecentUsers = async (limit = 5) => {
+export const getRecentUsers = async () => {
   return apiRequest(
     () =>
       axiosInstance.get(
-        `https://keyroute.pythonanywhere.com/api/admin/users/list/?limit=${limit}`
+        'https://keyroute.pythonanywhere.com/api/admin/recent-users/'
       ),
     'Error occurred while fetching recent users.'
   );
