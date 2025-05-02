@@ -12,8 +12,7 @@ import { Star, ArrowRight } from 'lucide-react';
 import { LoadingSpinner, EmptyState } from '@/components/common';
 import { Link } from 'react-router';
 import {
-  getVendorCount,
-  getUserCount,
+  getDashboardCounts,
   getTopVendors,
   getRecentUsers,
 } from '../services/dashboardService';
@@ -22,70 +21,55 @@ export function DashboardPage() {
   const [activeTab, setActiveTab] = useState('12 Months');
 
   // State for API data
-  const [vendorCount, setVendorCount] = useState(null);
-  const [userCount, setUserCount] = useState(null);
+  const [dashboardCounts, setDashboardCounts] = useState({
+    total_vendors: null,
+    total_users: null,
+    total_bookings: null,
+    today_bookings: null,
+  });
   const [topVendors, setTopVendors] = useState([]);
   const [recentUsers, setRecentUsers] = useState([]);
 
   // Loading states
-  const [vendorCountLoading, setVendorCountLoading] = useState(true);
-  const [userCountLoading, setUserCountLoading] = useState(true);
+  const [dashboardCountsLoading, setDashboardCountsLoading] = useState(true);
   const [topVendorsLoading, setTopVendorsLoading] = useState(true);
   const [recentUsersLoading, setRecentUsersLoading] = useState(true);
 
   // Error states
-  const [vendorCountError, setVendorCountError] = useState(null);
-  const [userCountError, setUserCountError] = useState(null);
+  const [dashboardCountsError, setDashboardCountsError] = useState(null);
   const [topVendorsError, setTopVendorsError] = useState(null);
   const [recentUsersError, setRecentUsersError] = useState(null);
 
-  // Fetch vendor count
+  // Fetch dashboard counts
   useEffect(() => {
-    const fetchVendorCount = async () => {
-      setVendorCountLoading(true);
+    const fetchDashboardCounts = async () => {
+      setDashboardCountsLoading(true);
       try {
-        const response = await getVendorCount();
-        console.log(response);
+        const response = await getDashboardCounts();
+        console.log('Dashboard counts response:', response);
         if (response && !response.error) {
-          setVendorCount(response.total_vendors);
+          setDashboardCounts({
+            total_vendors: response.total_vendors,
+            total_users: response.total_users,
+            total_bookings: response.total_bookings,
+            today_bookings: response.today_bookings,
+          });
         } else {
-          setVendorCountError(
-            response.message || 'Failed to load vendor count'
+          setDashboardCountsError(
+            response?.message || 'Failed to load dashboard counts'
           );
         }
       } catch (error) {
-        console.error('Error fetching vendor count:', error);
-        setVendorCountError(
-          'Failed to load vendor count. Please try again later.'
+        console.error('Error fetching dashboard counts:', error);
+        setDashboardCountsError(
+          'Failed to load dashboard counts. Please try again later.'
         );
       } finally {
-        setVendorCountLoading(false);
+        setDashboardCountsLoading(false);
       }
     };
 
-    fetchVendorCount();
-  }, []);
-
-  // Fetch user count
-  useEffect(() => {
-    const fetchUserCount = async () => {
-      setUserCountLoading(true);
-      try {
-        const response = await getUserCount();
-        if (response && !response.error) {
-          setUserCount(response.user_count);
-        } else {
-          setUserCountError(response.message || 'Failed to load user count');
-        }
-      } catch (error) {
-        console.error('Error fetching user count:', error);
-        setUserCountError('Failed to load user count. Please try again later.');
-      } finally {
-        setUserCountLoading(false);
-      }
-    };
-
-    fetchUserCount();
+    fetchDashboardCounts();
   }, []);
 
   // Fetch top vendors
@@ -242,36 +226,58 @@ export function DashboardPage() {
         <div className='p-4 bg-white rounded-lg shadow-sm'>
           <div className='flex justify-between items-center'>
             <h3 className='text-gray-600'>Today booking</h3>
-            <span className='text-gray-500'>05</span>
+            {dashboardCountsLoading && <LoadingSpinner size='small' />}
           </div>
-          <div className='text-xl font-semibold'>₹25000</div>
-          <div className='text-green-500 text-sm'>+34%</div>
+          {dashboardCountsError ? (
+            <div className='text-red-500 text-sm'>Error loading data</div>
+          ) : (
+            <>
+              <div className='text-xl font-semibold'>
+                {dashboardCounts.today_bookings !== null
+                  ? dashboardCounts.today_bookings
+                  : '-'}
+              </div>
+              <div className='text-green-500 text-sm'>+0%</div>
+            </>
+          )}
         </div>
 
         {/* Total Booking Card */}
         <div className='p-4 bg-white rounded-lg shadow-sm'>
           <div className='flex justify-between items-center'>
             <h3 className='text-gray-600'>Total booking</h3>
-            <span className='text-gray-500'>15</span>
+            {dashboardCountsLoading && <LoadingSpinner size='small' />}
           </div>
-          <div className='text-xl font-semibold'>₹1409090</div>
-          <div className='text-red-500 text-sm'>-26%</div>
+          {dashboardCountsError ? (
+            <div className='text-red-500 text-sm'>Error loading data</div>
+          ) : (
+            <>
+              <div className='text-xl font-semibold'>
+                {dashboardCounts.total_bookings !== null
+                  ? dashboardCounts.total_bookings
+                  : '-'}
+              </div>
+              <div className='text-red-500 text-sm'>+0%</div>
+            </>
+          )}
         </div>
 
         {/* Total Vendor Card */}
         <div className='p-4 bg-white rounded-lg shadow-sm'>
           <div className='flex justify-between items-center'>
             <h3 className='text-gray-600'>Total vendor</h3>
-            {vendorCountLoading && <LoadingSpinner size='small' />}
+            {dashboardCountsLoading && <LoadingSpinner size='small' />}
           </div>
-          {vendorCountError ? (
+          {dashboardCountsError ? (
             <div className='text-red-500 text-sm'>Error loading data</div>
           ) : (
             <>
               <div className='text-xl font-semibold'>
-                {vendorCount !== null ? vendorCount : '-'}
+                {dashboardCounts.total_vendors !== null
+                  ? dashboardCounts.total_vendors
+                  : '-'}
               </div>
-              <div className='text-red-500 text-sm'>-26%</div>
+              <div className='text-red-500 text-sm'>+0%</div>
             </>
           )}
         </div>
@@ -280,16 +286,18 @@ export function DashboardPage() {
         <div className='p-4 bg-white rounded-lg shadow-sm'>
           <div className='flex justify-between items-center'>
             <h3 className='text-gray-600'>Total Users</h3>
-            {userCountLoading && <LoadingSpinner size='small' />}
+            {dashboardCountsLoading && <LoadingSpinner size='small' />}
           </div>
-          {userCountError ? (
+          {dashboardCountsError ? (
             <div className='text-red-500 text-sm'>Error loading data</div>
           ) : (
             <>
               <div className='text-xl font-semibold'>
-                {userCount !== null ? userCount : '-'}
+                {dashboardCounts.total_users !== null
+                  ? dashboardCounts.total_users
+                  : '-'}
               </div>
-              <div className='text-green-500 text-sm'>+56%</div>
+              <div className='text-green-500 text-sm'>+0%</div>
             </>
           )}
         </div>

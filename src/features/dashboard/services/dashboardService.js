@@ -1,25 +1,14 @@
 import { axiosInstance } from '@/lib/axiosInstance';
 import { apiRequest } from '@/lib/apiRequest';
 
-// Function to get vendor count
-export const getVendorCount = async () => {
+// Function to get dashboard counts (vendors, users, bookings)
+export const getDashboardCounts = async () => {
   return apiRequest(
     () =>
       axiosInstance.get(
-        'https://keyroute.pythonanywhere.com/api/admin/vendor/count/'
+        'https://keyroute.pythonanywhere.com/api/admin/dashbord-count'
       ),
-    'Error occurred while fetching vendor count.'
-  );
-};
-
-// Function to get user count
-export const getUserCount = async () => {
-  return apiRequest(
-    () =>
-      axiosInstance.get(
-        'https://keyroute.pythonanywhere.com/api/admin/user/count/'
-      ),
-    'Error occurred while fetching user count.'
+    'Error occurred while fetching dashboard counts.'
   );
 };
 
