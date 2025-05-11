@@ -1,3 +1,4 @@
+import { getImageUrl } from '@/lib/getImageUrl';
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Upload, ArrowLeft } from 'lucide-react';
 
@@ -136,7 +137,7 @@ export const ExploreForm = ({ item, onSave, onCancel, isLoading }) => {
               onClick={() => document.getElementById('main-image').click()}>
               {formData.imagePreview ? (
                 <img
-                  src={formData.imagePreview || '/placeholder.svg'}
+                  src={getImageUrl(formData.imagePreview) || '/placeholder.svg'}
                   alt='Main preview'
                   className='max-h-full object-contain'
                 />
@@ -243,7 +244,9 @@ export const ExploreForm = ({ item, onSave, onCancel, isLoading }) => {
                   }>
                   {sight.imagePreview ? (
                     <img
-                      src={sight.imagePreview || '/placeholder.svg'}
+                      src={
+                        getImageUrl(sight.imagePreview) || '/placeholder.svg'
+                      }
                       alt={`Sight ${index + 1} preview`}
                       className='max-h-full object-contain'
                     />

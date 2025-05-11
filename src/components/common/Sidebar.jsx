@@ -16,7 +16,8 @@ import {
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { NavLink } from 'react-router';
-import Logo from '../../../public/Logo.png';
+import Logo from '../../public/Logo.png';
+import { useAuth } from '@/hooks/useAuth';
 
 const menuItems = [
   { name: 'Dashboard', icon: Home, to: '/' },
@@ -32,6 +33,8 @@ const menuItems = [
 ];
 
 export const Sidebar = () => {
+  const { logout } = useAuth();
+
   const [isOpen, setIsOpen] = useState(window.innerWidth >= 768);
 
   useEffect(() => {
@@ -46,7 +49,7 @@ export const Sidebar = () => {
     <motion.aside
       animate={{ width: isOpen ? '16rem' : '4rem' }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className='flex flex-col h-screen text-white bg-primary shadow-md z-20'>
+      className='flex flex-col h-screen text-white bg-primary-red shadow-md z-20'>
       {/* Logo */}
       <div className='flex items-center justify-between p-4'>
         <NavLink
@@ -121,7 +124,7 @@ export const Sidebar = () => {
         </button>
 
         <button
-          onClick={() => console.log('Handle logout')}
+          onClick={() => logout()}
           className='flex items-center text-white text-md hover:text-red-200 transition-colors'>
           <LogOut className='w-6 h-6' />
           {isOpen && <span className='ml-2'>Logout</span>}

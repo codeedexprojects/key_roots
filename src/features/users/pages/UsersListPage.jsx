@@ -1,14 +1,25 @@
-import { useState, useEffect } from 'react';
-import { Search, ChevronDown, MoreHorizontal, Plus } from 'lucide-react';
-import { useNavigate, Link } from 'react-router';
-import { LoadingSpinner, EmptyState } from '@/components/common';
-import { getAllUsers } from '../services/userService';
+import {
+  Plus,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+} from 'lucide-react';
 import { useToast } from '@/components/ui/toast-provider';
+import { getAllUsers } from '../services/userService';
+import { useNavigate, Link } from 'react-router';
+import { useState, useEffect } from 'react';
+import { LoadingSpinner, EmptyState } from '@/components/common';
 
 export const UsersListPage = () => {
-  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
+
+  const [currentPage, setCurrentPage] = useState(1);
   const { addToast } = useToast();
+
+  const [sortBy, setSortBy] = useState('name');
+  const [filterState, setFilterState] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   // State for API data
   const [users, setUsers] = useState([]);
@@ -31,10 +42,8 @@ export const UsersListPage = () => {
         const response = await getAllUsers();
 
         if (response && !response.error) {
-          // Set users data
           setUsers(response.users || []);
 
-          // Set user stats
           setUserStats({
             total_users: response.total_users || 0,
             booked_users_count: response.booked_users_count || 0,
@@ -65,6 +74,45 @@ export const UsersListPage = () => {
     fetchUsers();
   }, [addToast]);
 
+  let processedUsers = [...users];
+
+  if (searchTerm.trim() !== '') {
+    processedUsers = processedUsers.filter(
+      (user) =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.mobile.includes(searchTerm)
+    );
+  }
+
+  // Filtering by state
+  if (filterState !== 'all') {
+    processedUsers = processedUsers.filter(
+      (user) => user.place === filterState
+    );
+  }
+
+  // Sorting
+  processedUsers.sort((a, b) => {
+    if (sortBy === 'name') return a.name.localeCompare(b.name);
+    if (sortBy === 'place') return (a.place || '').localeCompare(b.place || '');
+    if (sortBy === 'status') return b.is_active - a.is_active; // Active first
+    return 0;
+  });
+
+  // Pagination
+  const usersPerPage = 8;
+  const totalPages = Math.ceil(processedUsers.length / usersPerPage);
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = processedUsers.slice(indexOfFirstUser, indexOfLastUser);
+
+  const paginate = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
   return (
     <div className='flex flex-col min-h-screen'>
       <div className='flex justify-between items-center mb-6'>
@@ -91,26 +139,18 @@ export const UsersListPage = () => {
             {
               label: 'Total Users',
               value: userStats.total_users,
-              change: '+0%',
-              color: 'green',
             },
             {
               label: 'Booked Users',
               value: userStats.booked_users_count,
-              change: '+0%',
-              color: 'green',
             },
             {
               label: 'Active Users',
               value: userStats.active_users_count,
-              change: '+0%',
-              color: 'green',
             },
             {
               label: 'Inactive Users',
               value: userStats.inactive_users_count,
-              change: '+0%',
-              color: 'red',
             },
           ].map((stat, index) => (
             <div
@@ -152,18 +192,37 @@ export const UsersListPage = () => {
                 type='text'
                 placeholder='Search Users'
                 className='pl-8 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none text-sm w-full'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
               <Search className='absolute left-2 top-2.5 h-4 w-4 text-gray-400' />
             </div>
             <div className='flex gap-2'>
-              <button className='flex items-center space-x-1 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm'>
-                <span>Sort by: Newest</span>
-                <ChevronDown className='h-4 w-4' />
-              </button>
-              <button className='flex items-center space-x-1 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm'>
-                <span>Filter by: State</span>
-                <ChevronDown className='h-4 w-4' />
-              </button>
+              <select
+                className='appearance-none pl-4 pr-10 py-2 border rounded-md text-sm'
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}>
+                <option value='name'>Sort by: Name</option>
+                <option value='place'>Sort by: Place</option>
+                <option value='status'>Sort by: Status</option>
+              </select>
+
+              {/* State Filter Dropdown */}
+              <select
+                className='appearance-none pl-4 pr-10 py-2 border rounded-md text-sm'
+                value={filterState}
+                onChange={(e) => setFilterState(e.target.value)}>
+                <option value='all'>Filter by: All States</option>
+                {Array.from(
+                  new Set(users.map((u) => u.place).filter(Boolean))
+                ).map((state) => (
+                  <option
+                    key={state}
+                    value={state}>
+                    {state}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
@@ -176,65 +235,82 @@ export const UsersListPage = () => {
           <div className='bg-red-50 border border-red-200 rounded-lg p-6 text-center min-h-[300px] flex items-center justify-center'>
             <p className='text-red-600'>{error}</p>
           </div>
-        ) : users.length === 0 ? (
+        ) : processedUsers.length === 0 ? (
           <EmptyState
             title='No users found'
             description='There are no users to display.'
             icon='default'
           />
         ) : (
-          <div className='overflow-x-auto'>
-            <table className='min-w-full divide-y divide-gray-200'>
+          <div className='overflow-x-auto min-h-[400px]'>
+            <table className='min-w-full lg:table-fixed divide-y divide-gray-200'>
               <thead>
                 <tr>
-                  {[
-                    'Customer',
-                    'Phone Number',
-                    'Email',
-                    'Place',
-                    'Status',
-                    'Action',
-                  ].map((header, i) => (
-                    <th
-                      key={i}
-                      className={`px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
-                        header === 'Email' ? 'hidden md:table-cell' : ''
-                      }`}>
-                      {header}
-                    </th>
-                  ))}
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-16'>
+                    ID
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-48'>
+                    Customer
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-40'>
+                    Phone Number
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-56 hidden md:table-cell'>
+                    Email
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-40'>
+                    Place
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-32'>
+                    Status
+                  </th>
+                  <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-16'>
+                    Action
+                  </th>
                 </tr>
               </thead>
+
               <tbody className='bg-white divide-y divide-gray-200'>
-                {users.map((user) => (
+                {processedUsers.map((user) => (
                   <tr
                     key={user.id}
                     className='hover:bg-gray-50 cursor-pointer'
                     onClick={() => navigate(`/users/${user.id}`)}>
-                    <td className='px-4 py-4'>
+                    <td className='px-4 py-4 text-sm text-gray-500 w-auto lg:w-16'>
+                      {user.id}
+                    </td>
+                    <td className='px-4 py-4 w-auto lg:w-48 truncate'>
                       <div className='flex items-center'>
                         <img
-                          className='h-10 w-10 rounded-md'
+                          className='h-10 w-10 rounded-md flex-shrink-0'
                           src='https://img.freepik.com/premium-vector/user-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg'
                           alt=''
                         />
-                        <div className='ml-4'>
-                          <div className='text-sm font-medium text-gray-900'>
+                        <div className='ml-4 w-full'>
+                          <div
+                            className='text-sm font-medium text-gray-900 truncate'
+                            title={user.name}>
                             {user.name}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className='px-4 py-4 text-sm text-gray-500'>
-                      {user.mobile}
+                    <td
+                      className='px-4 py-4 text-sm text-gray-500 truncate w-auto lg:w-40'
+                      title={user.mobile}>
+                      {user.mobile || 'Not specified'}
                     </td>
-                    <td className='px-4 py-4 text-sm text-gray-500 hidden md:table-cell'>
-                      {user.email}
+                    <td
+                      className='px-4 py-4 text-sm text-gray-500 truncate hidden md:table-cell w-auto lg:w-56'
+                      title={user.email}>
+                      {user.email || 'Not specified'}
                     </td>
-                    <td className='px-4 py-4 text-sm text-gray-500'>
+                    <td
+                      className='px-4 py-4 text-sm text-gray-500 truncate w-auto lg:w-40'
+                      title={user.place}>
                       {user.place || 'Not specified'}
                     </td>
-                    <td className='px-4 py-4'>
+                    <td className='px-4 py-4 w-auto lg:w-32'>
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                           user.is_active
@@ -244,7 +320,7 @@ export const UsersListPage = () => {
                         {user.is_active ? 'ACTIVE' : 'INACTIVE'}
                       </span>
                     </td>
-                    <td className='px-4 py-4 text-right text-sm font-medium'>
+                    <td className='px-4 py-4 text-right text-sm font-medium w-auto lg:w-16'>
                       <MoreHorizontal className='h-5 w-5 text-gray-400 hover:text-gray-500' />
                     </td>
                   </tr>
@@ -254,25 +330,51 @@ export const UsersListPage = () => {
           </div>
         )}
 
-        <div className='flex justify-between items-center border-t border-gray-200 px-4 py-3 mt-4'>
-          <p className='text-sm text-gray-700'>Page {currentPage} of 10</p>
-          <div className='flex space-x-2'>
-            {[1, 2, 3, '...', 10].map((page, idx) => (
+        {processedUsers.length > 0 && (
+          <div className='flex justify-between items-center border-t border-gray-200 px-4 py-3 mt-4'>
+            <p className='text-sm text-gray-700'>
+              Showing {indexOfFirstUser + 1}–
+              {Math.min(indexOfLastUser, users.length)} of {users.length} users
+            </p>
+
+            <div className='flex items-center space-x-2'>
               <button
-                key={idx}
-                className={`px-3 py-1 rounded-md text-sm ${
-                  currentPage === page
-                    ? 'bg-primary text-white'
-                    : 'bg-white text-gray-700 border border-gray-300'
-                }`}
-                onClick={() =>
-                  typeof page === 'number' && setCurrentPage(page)
-                }>
-                {page}
+                onClick={() => paginate(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`p-2 rounded-md ${
+                  currentPage === 1
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}>
+                <ChevronLeft className='h-5 w-5' />
               </button>
-            ))}
+
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => paginate(i + 1)}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === i + 1
+                      ? 'bg-blue-500 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}>
+                  {i + 1}
+                </button>
+              ))}
+
+              <button
+                onClick={() => paginate(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-md ${
+                  currentPage === totalPages
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}>
+                <ChevronRight className='h-5 w-5' />
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

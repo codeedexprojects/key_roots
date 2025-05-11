@@ -6,30 +6,30 @@ import SightCard from '../components/SightCard';
 import StayCard from '../components/StayCard';
 import MealCard from '../components/MealCard';
 import ActivityCard from '../components/ActivityCard';
-import { getBusDetails } from '../services/categoryService.js';
+import { getPackageDetails } from '../services/categoryService.js';
 import { LoadingSpinner, EmptyState } from '@/components/common';
 
-export const BusDetailsPage = () => {
-  const { busId } = useParams();
-  const [busDetails, setBusDetails] = useState(null);
+export const PackageDetailsPage = () => {
+  const { packageId } = useParams();
+  const [packageDetails, setPackageDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('sightseeing');
 
-  const fetchBusDetails = async () => {
+  const fetchPackageDetails = async () => {
     setIsLoading(true);
     try {
-      const data = await getBusDetails(busId);
-      setBusDetails(data);
+      const data = await getPackageDetails(packageId);
+      setPackageDetails(data);
     } catch (error) {
-      console.error('Error fetching bus details:', error);
+      console.error('Error fetching package details:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchBusDetails();
-  }, [busId]);
+    fetchPackageDetails();
+  }, [packageId]);
 
   if (isLoading) {
     return (
@@ -39,19 +39,19 @@ export const BusDetailsPage = () => {
     );
   }
 
-  if (!busDetails && !isLoading) {
+  if (!packageDetails && !isLoading) {
     return (
       <EmptyState
-        title='Bus not found'
-        description='The requested bus could not be found.'
-        icon='bus'
+        title='Package not found'
+        description='The requested package could not be found.'
+        icon='package'
       />
     );
   }
 
   // Sample data for demonstration
-  const sampleBusDetails = {
-    id: busId,
+  const samplePackageDetails = {
+    id: packageId,
     name: 'Komban Holidays',
     numberPlate: 'KL 58M 6018',
     packagePlaces: ['Munnar', 'Varkala'],
@@ -61,6 +61,7 @@ export const BusDetailsPage = () => {
       days: 2,
       nights: 3,
     },
+    price: '₹5500/person',
     image: '/placeholder.svg?height=400&width=600',
     sightseeing: [
       {
@@ -89,7 +90,7 @@ export const BusDetailsPage = () => {
       location: 'Munnar',
       distance: '2.7 km from Centre',
       rating: 4.5,
-      facilities: ['Breakfast Included'],
+      facilities: ['Breakfast Included', 'Standard non AC'],
       image: '/placeholder.svg?height=200&width=300',
     },
     meals: {
@@ -97,19 +98,19 @@ export const BusDetailsPage = () => {
       location: 'Munnar',
       name: 'Backwater Banquet',
       description:
-        "Enjoy a taste of Kerala's rich culinary tradition, featuring local spices, seafood, and more. You can enjoy the experience at local hotel.",
+        "Get a taste of Kerala with a delicious, authentic meal at an exotic restaurant. Relish kerala's seafood, curries, and more. You can enjoy the experience en route from Varkala to Munnar.",
       image: '/placeholder.svg?height=200&width=300',
     },
     activity: {
       title: 'Tour manager assistance',
       description:
-        'Our experienced tour guides will assist you throughout the trip. They are knowledgeable and attentive at the destination to help navigate and through the tour.',
+        'Get personalized on-ground assistance from a tour manager. Our tour manager is multilingual and stationed at the destination to help and guide you through the tour.',
       image: '/placeholder.svg?height=200&width=300',
     },
   };
 
-  // Use sample data if no bus details are provided
-  const details = busDetails || sampleBusDetails;
+  // Use sample data if no package details are provided
+  const details = packageDetails || samplePackageDetails;
 
   return (
     <div className='flex-1 overflow-auto'>
@@ -162,6 +163,11 @@ export const BusDetailsPage = () => {
                   <p className='font-medium'>
                     {details.duration.days} day, {details.duration.nights} night
                   </p>
+                </div>
+
+                <div>
+                  <p className='text-sm text-gray-500'>Price</p>
+                  <p className='font-medium text-red-600'>{details.price}</p>
                 </div>
               </div>
             </div>

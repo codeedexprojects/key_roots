@@ -157,8 +157,8 @@ export const VendorCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.full_name
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
                 />
                 {errors.full_name && (
                   <p className='mt-1 text-sm text-red-500'>
@@ -182,8 +182,8 @@ export const VendorCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.travels_name
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
                 />
                 {errors.travels_name && (
                   <p className='mt-1 text-sm text-red-500'>
@@ -207,8 +207,8 @@ export const VendorCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.mobile
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
                 />
                 {errors.mobile && (
                   <p className='mt-1 text-sm text-red-500'>{errors.mobile}</p>
@@ -230,8 +230,8 @@ export const VendorCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.email_address
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
                 />
                 {errors.email_address && (
                   <p className='mt-1 text-sm text-red-500'>
@@ -255,8 +255,8 @@ export const VendorCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.password
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
                 />
                 {errors.password && (
                   <p className='mt-1 text-sm text-red-500'>{errors.password}</p>
@@ -286,8 +286,8 @@ export const VendorCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.location
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
                 />
                 {errors.location && (
                   <p className='mt-1 text-sm text-red-500'>{errors.location}</p>
@@ -309,8 +309,8 @@ export const VendorCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.landmark
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
                 />
                 {errors.landmark && (
                   <p className='mt-1 text-sm text-red-500'>{errors.landmark}</p>
@@ -332,8 +332,8 @@ export const VendorCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.address
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}></textarea>
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}></textarea>
                 {errors.address && (
                   <p className='mt-1 text-sm text-red-500'>{errors.address}</p>
                 )}
@@ -354,8 +354,8 @@ export const VendorCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.city
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
                 />
                 {errors.city && (
                   <p className='mt-1 text-sm text-red-500'>{errors.city}</p>
@@ -377,8 +377,8 @@ export const VendorCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.district
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
                 />
                 {errors.district && (
                   <p className='mt-1 text-sm text-red-500'>{errors.district}</p>
@@ -400,8 +400,8 @@ export const VendorCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.state
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
                 />
                 {errors.state && (
                   <p className='mt-1 text-sm text-red-500'>{errors.state}</p>
@@ -423,8 +423,8 @@ export const VendorCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.pincode
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
                 />
                 {errors.pincode && (
                   <p className='mt-1 text-sm text-red-500'>{errors.pincode}</p>

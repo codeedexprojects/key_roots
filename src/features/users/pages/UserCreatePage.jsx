@@ -52,10 +52,7 @@ export const UserCreatePage = () => {
     }
 
     // Validate email format
-    if (
-      formData.email &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
-    ) {
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
 
@@ -156,8 +153,8 @@ export const UserCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.mobile
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
                 />
                 {errors.mobile && (
                   <p className='mt-1 text-sm text-red-500'>{errors.mobile}</p>
@@ -179,8 +176,8 @@ export const UserCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.email
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
                 />
                 {errors.email && (
                   <p className='mt-1 text-sm text-red-500'>{errors.email}</p>
@@ -202,8 +199,8 @@ export const UserCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.password
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
                 />
                 {errors.password && (
                   <p className='mt-1 text-sm text-red-500'>{errors.password}</p>
@@ -224,8 +221,8 @@ export const UserCreatePage = () => {
                   className={`w-full px-4 py-2 ${
                     errors.role
                       ? 'border border-red-500'
-                      : 'border-0 bg-gray-50'
-                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white`}>
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}>
                   <option value='vendor'>Vendor</option>
                   <option value='customer'>Customer</option>
                   <option value='admin'>Admin</option>

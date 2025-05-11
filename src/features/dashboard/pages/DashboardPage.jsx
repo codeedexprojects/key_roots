@@ -8,18 +8,19 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { Star, ArrowRight } from 'lucide-react';
+import { Star, ArrowRight, ChevronDown } from 'lucide-react';
 import { LoadingSpinner, EmptyState } from '@/components/common';
 import { Link } from 'react-router';
 import {
   getDashboardCounts,
   getTopVendors,
   getRecentUsers,
+  getRecentApprovedBookings,
+  getRevenueData,
+  getRecentReviews,
 } from '../services/dashboardService';
 
 export function DashboardPage() {
-  const [activeTab, setActiveTab] = useState('12 Months');
-
   // State for API data
   const [dashboardCounts, setDashboardCounts] = useState({
     total_vendors: null,
@@ -29,16 +30,43 @@ export function DashboardPage() {
   });
   const [topVendors, setTopVendors] = useState([]);
   const [recentUsers, setRecentUsers] = useState([]);
+  const [recentApproved, setRecentApproved] = useState([]);
+  const [revenueData, setRevenueData] = useState({
+    monthly_revenue: [],
+    all_bookings: [],
+  });
+  const [selectedMonth, setSelectedMonth] = useState(null);
+
+  // State filter states
+  const [topVendorsState, setTopVendorsState] = useState('');
+  const [recentUsersState, setRecentUsersState] = useState('');
+  const [recentApprovedState, setRecentApprovedState] = useState('');
+  const [reviewsState, setReviewsState] = useState('');
+
+  // State options
+  const stateOptions = [
+    { value: '', label: 'All States' },
+    { value: 'kerala', label: 'Kerala' },
+    { value: 'tamil_nadu', label: 'Tamil Nadu' },
+    { value: 'karnataka', label: 'Karnataka' },
+    { value: 'andhra_pradesh', label: 'Andhra Pradesh' },
+  ];
 
   // Loading states
   const [dashboardCountsLoading, setDashboardCountsLoading] = useState(true);
   const [topVendorsLoading, setTopVendorsLoading] = useState(true);
   const [recentUsersLoading, setRecentUsersLoading] = useState(true);
+  const [recentApprovedLoading, setRecentApprovedLoading] = useState(true);
+  const [revenueLoading, setRevenueLoading] = useState(true);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
 
   // Error states
   const [dashboardCountsError, setDashboardCountsError] = useState(null);
   const [topVendorsError, setTopVendorsError] = useState(null);
   const [recentUsersError, setRecentUsersError] = useState(null);
+  const [recentApprovedError, setRecentApprovedError] = useState(null);
+  const [revenueError, setRevenueError] = useState(null);
+  const [reviewsError, setReviewsError] = useState(null);
 
   // Fetch dashboard counts
   useEffect(() => {
@@ -77,7 +105,7 @@ export function DashboardPage() {
     const fetchTopVendors = async () => {
       setTopVendorsLoading(true);
       try {
-        const response = await getTopVendors();
+        const response = await getTopVendors(topVendorsState);
         console.log('Top vendors response:', response);
         if (response && !response.error) {
           const transformedVendors = response.map((vendor) => ({
@@ -101,14 +129,14 @@ export function DashboardPage() {
     };
 
     fetchTopVendors();
-  }, []);
+  }, [topVendorsState]);
 
   // Fetch recent users
   useEffect(() => {
     const fetchRecentUsers = async () => {
       setRecentUsersLoading(true);
       try {
-        const response = await getRecentUsers();
+        const response = await getRecentUsers(recentUsersState);
         console.log('Recent users response:', response);
         if (response && !response.error) {
           const transformedUsers = response.map((user) => ({
@@ -135,89 +163,154 @@ export function DashboardPage() {
     };
 
     fetchRecentUsers();
+  }, [recentUsersState]);
+
+  // Fetch recent approved bookings
+  useEffect(() => {
+    const fetchRecentApproved = async () => {
+      setRecentApprovedLoading(true);
+      try {
+        const response = await getRecentApprovedBookings(recentApprovedState);
+        console.log('Recent approved bookings response:', response);
+        if (response && !response.error) {
+          setRecentApproved(response);
+        } else {
+          setRecentApprovedError(
+            response?.message || 'Failed to load recent approved bookings'
+          );
+        }
+      } catch (error) {
+        console.error('Error fetching recent approved bookings:', error);
+        setRecentApprovedError(
+          'Failed to load recent approved bookings. Please try again later.'
+        );
+      } finally {
+        setRecentApprovedLoading(false);
+      }
+    };
+
+    fetchRecentApproved();
+  }, [recentApprovedState]);
+
+  // Fetch revenue data
+  useEffect(() => {
+    const fetchRevenueData = async () => {
+      setRevenueLoading(true);
+      try {
+        const response = await getRevenueData();
+        console.log('Revenue data response:', response);
+        if (response && !response.error) {
+          setRevenueData(response);
+
+          // Set the most recent month as the default selected month
+          if (response.monthly_revenue && response.monthly_revenue.length > 0) {
+            setSelectedMonth(
+              response.monthly_revenue[response.monthly_revenue.length - 1]
+                .month
+            );
+          }
+        } else {
+          setRevenueError(response?.message || 'Failed to load revenue data');
+        }
+      } catch (error) {
+        console.error('Error fetching revenue data:', error);
+        setRevenueError('Failed to load revenue data. Please try again later.');
+      } finally {
+        setRevenueLoading(false);
+      }
+    };
+
+    fetchRevenueData();
   }, []);
 
-  // Sample data for charts
-  const chartData = [
-    { name: 'Jan', value1: 30, value2: 20 },
-    { name: 'Feb', value1: 35, value2: 25 },
-    { name: 'Mar', value1: 40, value2: 30 },
-    { name: 'Apr', value1: 45, value2: 35 },
-    { name: 'May', value1: 50, value2: 40 },
-    { name: 'Jun', value1: 55, value2: 45 },
-    { name: 'Jul', value1: 60, value2: 50 },
-    { name: 'Aug', value1: 65, value2: 55 },
-    { name: 'Sep', value1: 70, value2: 60 },
-    { name: 'Oct', value1: 75, value2: 65 },
-    { name: 'Nov', value1: 80, value2: 70 },
-    { name: 'Dec', value1: 85, value2: 75 },
-  ];
+  // Transform revenue data for the chart
+  const getChartData = () => {
+    if (!revenueData.all_bookings || revenueData.all_bookings.length === 0) {
+      return [];
+    }
 
-  // Sample approved bookings
-  const approvedBookings = [
-    {
-      from: 'Varkala',
-      to: 'Ernakulam',
-      amount: '₹25000',
-      time: '8:00 Am',
-      date: '12/3/2025',
-      type: 'Full amount paid',
-    },
-    {
-      from: 'Varkala',
-      to: 'Ernakulam',
-      amount: '₹25000',
-      time: '8:00 Am',
-      date: '12/3/2025',
-      type: 'Full amount paid',
-    },
-    {
-      from: 'Varkala',
-      to: 'Ernakulam',
-      amount: '₹25000',
-      time: '8:00 Am',
-      date: '12/3/2025',
-      type: 'Full amount paid',
-    },
-    {
-      from: 'Varkala',
-      to: 'Ernakulam',
-      amount: '₹25000',
-      time: '8:00 Am',
-      date: '12/3/2025',
-      type: 'Full amount paid',
-    },
-  ];
+    const revenueByMonth = {};
 
-  // Sample reviews
-  const reviews = [
-    {
-      name: 'Kaja husain',
-      img: '/placeholder.svg?height=40&width=40',
-      rating: 5,
-      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    },
-    {
-      name: 'Kaja husain',
-      img: '/placeholder.svg?height=40&width=40',
-      rating: 4,
-      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    },
-    {
-      name: 'Kaja husain',
-      img: '/placeholder.svg?height=40&width=40',
-      rating: 4,
-      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    },
-    {
-      name: 'Kaja husain',
-      img: '/placeholder.svg?height=40&width=40',
-      rating: 3,
-      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    },
-  ];
+    revenueData.all_bookings.forEach((booking) => {
+      // Only consider accepted + non-cancelled
+      if (
+        booking.booking_status === 'accepted' &&
+        booking.payment_status !== 'cancelled'
+      ) {
+        const date = new Date(booking.created_at);
+        const monthKey = `${date.getFullYear()}-${String(
+          date.getMonth() + 1
+        ).padStart(2, '0')}`;
+        if (!revenueByMonth[monthKey]) {
+          revenueByMonth[monthKey] = 0;
+        }
+        revenueByMonth[monthKey] += booking.total_amount;
+      }
+    });
 
-  const tabs = ['12 Months', '6 Months', '30 Days', '7 Days'];
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    return Object.entries(revenueByMonth).map(([month, total]) => {
+      const [year, monthIndex] = month.split('-');
+      return {
+        name: `${monthNames[parseInt(monthIndex) - 1]} ${year}`,
+        month,
+        revenue: total,
+      };
+    });
+  };
+
+  const chartData = getChartData();
+
+  // Format date function
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  };
+
+  // Format time function
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  // Fetch reviews
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      setReviewsLoading(true);
+      try {
+        const response = await getRecentReviews(5, reviewsState);
+        console.log('Reviews response:', response);
+        if (response && !response.error) {
+          setReviews(response);
+        } else {
+          setReviewsError(response?.message || 'Failed to load reviews');
+        }
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
+        setReviewsError('Failed to load reviews. Please try again later.');
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, [reviewsState]);
 
   return (
     <div className='space-y-6'>
@@ -237,7 +330,6 @@ export function DashboardPage() {
                   ? dashboardCounts.today_bookings
                   : '-'}
               </div>
-              <div className='text-green-500 text-sm'>+0%</div>
             </>
           )}
         </div>
@@ -257,7 +349,6 @@ export function DashboardPage() {
                   ? dashboardCounts.total_bookings
                   : '-'}
               </div>
-              <div className='text-red-500 text-sm'>+0%</div>
             </>
           )}
         </div>
@@ -277,7 +368,6 @@ export function DashboardPage() {
                   ? dashboardCounts.total_vendors
                   : '-'}
               </div>
-              <div className='text-red-500 text-sm'>+0%</div>
             </>
           )}
         </div>
@@ -297,7 +387,6 @@ export function DashboardPage() {
                   ? dashboardCounts.total_users
                   : '-'}
               </div>
-              <div className='text-green-500 text-sm'>+0%</div>
             </>
           )}
         </div>
@@ -308,78 +397,187 @@ export function DashboardPage() {
           <div className='flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4'>
             <h3 className='font-medium text-lg'>Total Revenue</h3>
             <div className='flex flex-wrap gap-2'>
-              {tabs.map((tab) => (
+              {chartData.map((item) => (
                 <button
-                  key={tab}
-                  className={`px-3 py-1 rounded-md border text-sm ${
-                    activeTab === tab
+                  key={item.month}
+                  onClick={() => setSelectedMonth(item.month)}
+                  className={`text-sm px-2 py-1 rounded-md ${
+                    selectedMonth === item.month
                       ? 'bg-primary text-white'
-                      : 'text-gray-600 border-gray-300 hover:bg-gray-100'
-                  }`}
-                  onClick={() => setActiveTab(tab)}>
-                  {tab}
+                      : 'text-gray-500 border border-gray-300 hover:bg-gray-100'
+                  }`}>
+                  {item.month.split('-')[0]}-{item.month.split('-')[1]}
                 </button>
               ))}
             </div>
           </div>
-          <div className='h-64'>
-            <ResponsiveContainer
-              width='100%'
-              height='100%'>
-              <AreaChart data={chartData}>
-                <CartesianGrid strokeDasharray='3 3' />
-                <XAxis dataKey='name' />
-                <YAxis />
-                <Tooltip />
-                <Area
-                  type='monotone'
-                  dataKey='value1'
-                  stroke='#00d38d'
-                  fill='#00d38d'
-                  fillOpacity={0.2}
-                />
-                <Area
-                  type='monotone'
-                  dataKey='value2'
-                  stroke='#d30700'
-                  fill='#d30700'
-                  fillOpacity={0.2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
 
-        <div className='bg-white border border-gray-200 rounded-md p-5 overflow-y-auto max-h-80'>
-          <div className='flex justify-between items-center mb-4'>
-            <h3 className='font-medium'>Recent approved</h3>
-            <button className='text-[#1f81ec] text-sm'>Export PDF</button>
-          </div>
-          <div className='divide-y divide-gray-200'>
-            {approvedBookings.map((b, i) => (
-              <div
-                key={i}
-                className='py-3 text-sm'>
-                <div className='flex justify-between'>
-                  <div>
-                    <div className='text-xs text-gray-500'>
-                      random & A.K member
+          {revenueLoading ? (
+            <div className='flex justify-center items-center min-h-[256px]'>
+              <LoadingSpinner size='medium' />
+            </div>
+          ) : revenueError ? (
+            <div className='bg-red-50 border border-red-200 rounded-lg p-4 text-center min-h-[256px] flex items-center justify-center'>
+              <p className='text-red-600 text-sm'>{revenueError}</p>
+            </div>
+          ) : chartData.length === 0 ? (
+            <div className='min-h-[256px] flex items-center justify-center'>
+              <EmptyState
+                title='No revenue data'
+                description='There is no revenue data to display.'
+                icon='default'
+              />
+            </div>
+          ) : (
+            <>
+              {selectedMonth && (
+                <div className='mb-4 p-3 bg-gray-50 rounded-md'>
+                  <div className='flex justify-between items-center'>
+                    <div>
+                      <p className='text-sm text-gray-500'>
+                        Selected Month Revenue
+                      </p>
+                      <p className='text-xl font-semibold'>
+                        ₹
+                        {chartData
+                          .find((item) => item.month === selectedMonth)
+                          ?.revenue.toLocaleString() || 0}
+                      </p>
                     </div>
-                    <div className='font-medium'>
-                      {b.from} ————→ {b.to}
+                    <div className='text-right'>
+                      <p className='text-sm text-gray-500'>Total Bookings</p>
+                      <p className='text-xl font-semibold'>
+                        {
+                          revenueData.all_bookings.filter((booking) =>
+                            booking.created_at.startsWith(selectedMonth)
+                          ).length
+                        }
+                      </p>
                     </div>
-                    <div className='text-xs text-gray-500'>
-                      {b.date} • {b.time}
-                    </div>
-                  </div>
-                  <div className='text-right'>
-                    <div className='text-xs text-gray-500'>{b.type}</div>
-                    <div className='font-medium'>{b.amount}</div>
                   </div>
                 </div>
+              )}
+
+              <div className='h-64'>
+                <ResponsiveContainer
+                  width='100%'
+                  height='100%'>
+                  <AreaChart
+                    data={chartData}
+                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient
+                        id='colorRevenue'
+                        x1='0'
+                        y1='0'
+                        x2='0'
+                        y2='1'>
+                        <stop
+                          offset='5%'
+                          stopColor='#00d38d'
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset='95%'
+                          stopColor='#00d38d'
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey='name' />
+                    <YAxis />
+                    <CartesianGrid strokeDasharray='3 3' />
+                    <Tooltip
+                      formatter={(value) => [
+                        `₹${value.toLocaleString()}`,
+                        'Revenue',
+                      ]}
+                    />
+                    <Area
+                      type='monotone'
+                      dataKey='revenue'
+                      stroke='#00d38d'
+                      fillOpacity={1}
+                      fill='url(#colorRevenue)'
+                      name='Revenue'
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
-            ))}
+            </>
+          )}
+        </div>
+
+        <div className='bg-white border border-gray-200 rounded-md p-5 overflow-y-auto max-h-110 no-scrollbar'>
+          <div className='flex justify-between items-center mb-4'>
+            <h3 className='font-medium'>Recent approved</h3>
+            <div className='relative'>
+              <select
+                value={recentApprovedState}
+                onChange={(e) => setRecentApprovedState(e.target.value)}
+                className='text-gray-500 text-sm border border-gray-300 px-2 py-1 pr-8 rounded-md hover:bg-gray-100 appearance-none cursor-pointer'>
+                {stateOptions.map((option) => (
+                  <option
+                    key={option.value}
+                    value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className='absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none' />
+            </div>
           </div>
+          {recentApprovedLoading ? (
+            <div className='flex justify-center items-center min-h-[200px]'>
+              <LoadingSpinner size='medium' />
+            </div>
+          ) : recentApprovedError ? (
+            <div className='bg-red-50 border border-red-200 rounded-lg p-4 text-center'>
+              <p className='text-red-600 text-sm'>{recentApprovedError}</p>
+            </div>
+          ) : recentApproved.length === 0 ? (
+            <EmptyState
+              title='No approved bookings'
+              description='There are no recent approved bookings to display.'
+              icon='default'
+            />
+          ) : (
+            <div className='divide-y divide-gray-200'>
+              {recentApproved.slice(0, 5).map((booking) => (
+                <div
+                  key={booking.id}
+                  className='py-3 text-sm'>
+                  <div className='flex justify-between'>
+                    <div>
+                      <div className='text-xs text-gray-500'>
+                        {booking.default_member_name} • {booking.total_members}{' '}
+                        members
+                      </div>
+                      <div className='font-medium'>
+                        {booking.from_location} ————→ {booking.to_location}
+                      </div>
+                      <div className='text-xs text-gray-500'>
+                        {formatDate(booking.created_at)} •{' '}
+                        {formatTime(booking.created_at)}
+                      </div>
+                    </div>
+                    <div className='text-right'>
+                      <div className='text-xs text-gray-500'>
+                        {booking.booking_type}
+                      </div>
+                      <div className='font-medium'>₹{booking.total_amount}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <Link
+            to='/bookings'
+            className='mt-4 flex items-center justify-center w-full text-gray-500 text-sm hover:text-primary hover:underline'>
+            <span>SEE ALL BOOKINGS</span>
+            <ArrowRight className='h-4 w-4 ml-1' />
+          </Link>
         </div>
       </div>
 
@@ -388,11 +586,21 @@ export function DashboardPage() {
         <div className='card bg-[#e9f7f4] border border-gray-200 rounded-md p-5'>
           <div className='flex justify-between items-center mb-4'>
             <h3 className='font-medium'>Top Vendors</h3>
-            <Link
-              to='/vendors'
-              className='text-gray-500 text-sm border border-gray-300 px-2 py-1 rounded-md hover:bg-gray-100'>
-              See All
-            </Link>
+            <div className='relative'>
+              <select
+                value={topVendorsState}
+                onChange={(e) => setTopVendorsState(e.target.value)}
+                className='text-gray-500 text-sm border border-gray-300 px-2 py-1 pr-8 rounded-md hover:bg-gray-100 appearance-none cursor-pointer'>
+                {stateOptions.map((option) => (
+                  <option
+                    key={option.value}
+                    value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className='absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none' />
+            </div>
           </div>
           {topVendorsLoading ? (
             <div className='flex justify-center items-center min-h-[200px]'>
@@ -445,11 +653,21 @@ export function DashboardPage() {
         <div className='card bg-[#f7f7f7] border border-gray-200 rounded-md p-5'>
           <div className='flex justify-between items-center mb-4'>
             <h3 className='font-medium'>Recent Users</h3>
-            <Link
-              to='/users'
-              className='text-gray-500 text-sm border border-gray-300 px-2 py-1 rounded-md hover:bg-gray-100'>
-              See All
-            </Link>
+            <div className='relative'>
+              <select
+                value={recentUsersState}
+                onChange={(e) => setRecentUsersState(e.target.value)}
+                className='text-gray-500 text-sm border border-gray-300 px-2 py-1 pr-8 rounded-md hover:bg-gray-100 appearance-none cursor-pointer'>
+                {stateOptions.map((option) => (
+                  <option
+                    key={option.value}
+                    value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className='absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none' />
+            </div>
           </div>
           {recentUsersLoading ? (
             <div className='flex justify-center items-center min-h-[200px]'>
@@ -504,45 +722,71 @@ export function DashboardPage() {
         <div className='card bg-white border border-gray-200 rounded-md p-5'>
           <div className='flex justify-between items-center mb-4'>
             <h3 className='font-medium'>Reviews</h3>
-            <Link
-              to='/reviews'
-              className='text-gray-500 text-sm border border-gray-300 px-2 py-1 rounded-md hover:bg-gray-100'>
-              See All
-            </Link>
+            <div className='relative'>
+              <select
+                value={reviewsState}
+                onChange={(e) => setReviewsState(e.target.value)}
+                className='text-gray-500 text-sm border border-gray-300 px-2 py-1 pr-8 rounded-md hover:bg-gray-100 appearance-none cursor-pointer'>
+                {stateOptions.map((option) => (
+                  <option
+                    key={option.value}
+                    value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className='absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none' />
+            </div>
           </div>
-          <div className='space-y-4'>
-            {reviews.slice(0, 5).map((review, idx) => (
-              <div
-                key={idx}
-                className='flex items-center justify-between'>
-                <div className='flex items-center w-full'>
-                  <img
-                    src={review.img}
-                    alt={review.name}
-                    className='h-10 w-10 rounded-full bg-gray-200'
-                  />
-                  <div className='ml-3 flex-1'>
-                    <h4 className='font-medium'>{review.name}</h4>
-                    <div className='flex items-center mt-1'>
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-4 w-4 ${
-                            i < review.rating
-                              ? 'text-yellow-400 fill-yellow-400'
-                              : 'text-gray-300'
-                          }`}
-                        />
-                      ))}
+          {reviewsLoading ? (
+            <div className='flex justify-center items-center min-h-[200px]'>
+              <LoadingSpinner size='medium' />
+            </div>
+          ) : reviewsError ? (
+            <div className='bg-red-50 border border-red-200 rounded-lg p-4 text-center'>
+              <p className='text-red-600 text-sm'>{reviewsError}</p>
+            </div>
+          ) : reviews.length === 0 ? (
+            <EmptyState
+              title='No reviews found'
+              description='There are no reviews to display.'
+              icon='default'
+            />
+          ) : (
+            <div className='space-y-4'>
+              {reviews.slice(0, 5).map((review, idx) => (
+                <div
+                  key={idx}
+                  className='flex items-center justify-between'>
+                  <div className='flex items-center w-full'>
+                    <img
+                      src={review.img || '/placeholder.svg?height=40&width=40'}
+                      alt={review.name}
+                      className='h-10 w-10 rounded-full bg-gray-200'
+                    />
+                    <div className='ml-3 flex-1'>
+                      <h4 className='font-medium'>{review.name}</h4>
+                      <div className='flex items-center mt-1'>
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-4 w-4 ${
+                              i < review.rating
+                                ? 'text-yellow-400 fill-yellow-400'
+                                : 'text-gray-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className='text-xs text-gray-500 mt-1 line-clamp-2'>
+                        {review.content}
+                      </p>
                     </div>
-                    <p className='text-xs text-gray-500 mt-1 line-clamp-2'>
-                      {review.content}
-                    </p>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
           <Link
             to='/reviews'
             className='mt-4 flex items-center justify-center w-full text-gray-500 text-sm hover:text-primary hover:underline'>

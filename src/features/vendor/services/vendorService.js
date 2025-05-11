@@ -12,6 +12,17 @@ export const getAllVendors = async () => {
   );
 };
 
+// Function to get vendor count
+export const getVendorCount = async () => {
+  return apiRequest(
+    () =>
+      axiosInstance.get(
+        'https://keyroute.pythonanywhere.com/api/admin/vendor/count/'
+      ),
+    'Error occurred while fetching vendor count.'
+  );
+};
+
 // Function to get vendor details by ID
 export const getVendorById = async (vendorId) => {
   return apiRequest(

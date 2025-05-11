@@ -9,23 +9,25 @@ export const CategoryPage = () => {
   const [buses, setBuses] = useState([]);
   const [packages, setPackages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [busCurrentPage, setBusCurrentPage] = useState(1);
+  const [packageCurrentPage, setPackageCurrentPage] = useState(1);
+  const [busTotalPages, setBusTotalPages] = useState(1);
+  const [packageTotalPages, setPackageTotalPages] = useState(1);
 
   useEffect(() => {
     if (activeTab === 'buses') {
-      fetchBuses(currentPage);
+      fetchBuses(busCurrentPage);
     } else if (activeTab === 'package') {
-      fetchPackages();
+      fetchPackages(packageCurrentPage);
     }
-  }, [activeTab, currentPage]);
+  }, [activeTab, busCurrentPage, packageCurrentPage]);
 
   const fetchBuses = async (page) => {
     setIsLoading(true);
     try {
       const response = await getBuses(page);
       setBuses(response.data);
-      setTotalPages(response.totalPages);
+      setBusTotalPages(response.totalPages);
     } catch (error) {
       console.error('Error fetching buses:', error);
     } finally {
@@ -33,11 +35,12 @@ export const CategoryPage = () => {
     }
   };
 
-  const fetchPackages = async () => {
+  const fetchPackages = async (page) => {
     setIsLoading(true);
     try {
-      const response = await getPackages();
-      setPackages(response);
+      const response = await getPackages(page);
+      setPackages(response.data || []);
+      setPackageTotalPages(response.totalPages || 1);
     } catch (error) {
       console.error('Error fetching packages:', error);
     } finally {
@@ -45,8 +48,12 @@ export const CategoryPage = () => {
     }
   };
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
+  const handleBusPageChange = (page) => {
+    setBusCurrentPage(page);
+  };
+
+  const handlePackagePageChange = (page) => {
+    setPackageCurrentPage(page);
   };
 
   return (
@@ -68,9 +75,9 @@ export const CategoryPage = () => {
           <BusCardGrid
             buses={buses}
             isLoading={isLoading}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
+            currentPage={busCurrentPage}
+            totalPages={busTotalPages}
+            onPageChange={handleBusPageChange}
           />
         </TabsContent>
 
@@ -80,6 +87,9 @@ export const CategoryPage = () => {
           <PackageCardGrid
             packages={packages}
             isLoading={isLoading}
+            currentPage={packageCurrentPage}
+            totalPages={packageTotalPages}
+            onPageChange={handlePackagePageChange}
           />
         </TabsContent>
       </Tabs>

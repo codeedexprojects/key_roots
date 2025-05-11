@@ -115,6 +115,7 @@
   --color-success: #00d38d;
   --color-danger: #d30700;
   --color-background: #ffffff;
+  --color-primary-red: #c70000;
 }
 
 @layer base {

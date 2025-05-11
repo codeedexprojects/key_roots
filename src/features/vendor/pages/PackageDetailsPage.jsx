@@ -5,42 +5,86 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getPackageDetails } from '../services/vendorService';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
+// Sample package details data
+const samplePackageDetails = {
+  id: 11,
+  places: 'New Delhi, Agra, Jaipur',
+  days: 5,
+  nights: 4,
+  ac_available: true,
+  guide_included: true,
+  sub_category_name: 'Golden Triangle Tour',
+  description:
+    "Experience the rich history and culture of India's Golden Triangle. Visit iconic landmarks like the Taj Mahal, Red Fort, and Amber Palace.",
+  price: '₹25,000',
+  image: '/placeholder.svg?height=400&width=600',
+  itinerary: [
+    {
+      day: 1,
+      title: 'Arrival in Delhi',
+      description:
+        "Arrive in Delhi and transfer to your hotel. Evening visit to Qutub Minar and Humayun's Tomb.",
+      image: '/placeholder.svg?height=150&width=200',
+    },
+    {
+      day: 2,
+      title: 'Delhi City Tour',
+      description:
+        'Full day sightseeing in Delhi including Red Fort, Jama Masjid, India Gate, and Lotus Temple.',
+      image: '/placeholder.svg?height=150&width=200',
+    },
+    {
+      day: 3,
+      title: 'Delhi to Agra',
+      description:
+        'Drive to Agra. Visit Taj Mahal during sunset. Evening at leisure.',
+      image: '/placeholder.svg?height=150&width=200',
+    },
+    {
+      day: 4,
+      title: 'Agra to Jaipur',
+      description:
+        'Morning visit to Agra Fort. Drive to Jaipur via Fatehpur Sikri.',
+      image: '/placeholder.svg?height=150&width=200',
+    },
+    {
+      day: 5,
+      title: 'Jaipur and Departure',
+      description:
+        'Visit Amber Fort and City Palace. Transfer to airport for departure.',
+      image: '/placeholder.svg?height=150&width=200',
+    },
+  ],
+  inclusions: [
+    'Accommodation in 3-star hotels',
+    'Daily breakfast and dinner',
+    'Air-conditioned private vehicle',
+    'Professional tour guide',
+    'All entrance fees',
+    'Airport transfers',
+  ],
+  exclusions: [
+    'Flights',
+    'Personal expenses',
+    'Travel insurance',
+    'Lunch',
+    'Optional activities',
+  ],
+};
+
 export const PackageDetailsPage = () => {
   const { packageId, vendorId } = useParams();
-  const [packageDetails, setPackageDetails] = useState(null);
+  const [packageDetails, setPackageDetails] = useState(samplePackageDetails);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
 
-  useEffect(() => {
-    const fetchPackageData = async () => {
-      setIsLoading(true);
-      try {
-        const data = await getPackageDetails(vendorId, packageId);
-        if (data) {
-          setPackageDetails(data);
-        } else {
-          // If no data is returned, use sample data for demonstration
-          setPackageDetails(samplePackageDetails);
-        }
-      } catch (error) {
-        console.error('Error fetching package details:', error);
-        // Use sample data as fallback
-        setPackageDetails(samplePackageDetails);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPackageData();
-  }, [packageId, vendorId]);
-
-  if (isLoading) {
-    return (
-      <div className='flex justify-center items-center min-h-[500px]'>
-        <LoadingSpinner size='large' />
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className='flex justify-center items-center min-h-[500px]'>
+  //       <LoadingSpinner size='large' />
+  //     </div>
+  //   );
+  // }
 
   if (!packageDetails) {
     return (
@@ -55,72 +99,72 @@ export const PackageDetailsPage = () => {
     );
   }
 
-  // Sample package details data
-  const samplePackageDetails = {
-    id: packageId,
-    places: 'New Delhi, Agra, Jaipur',
-    days: 5,
-    nights: 4,
-    ac_available: true,
-    guide_included: true,
-    sub_category_name: 'Golden Triangle Tour',
-    description:
-      "Experience the rich history and culture of India's Golden Triangle. Visit iconic landmarks like the Taj Mahal, Red Fort, and Amber Palace.",
-    price: '₹25,000',
-    image: '/placeholder.svg?height=400&width=600',
-    itinerary: [
-      {
-        day: 1,
-        title: 'Arrival in Delhi',
-        description:
-          "Arrive in Delhi and transfer to your hotel. Evening visit to Qutub Minar and Humayun's Tomb.",
-        image: '/placeholder.svg?height=150&width=200',
-      },
-      {
-        day: 2,
-        title: 'Delhi City Tour',
-        description:
-          'Full day sightseeing in Delhi including Red Fort, Jama Masjid, India Gate, and Lotus Temple.',
-        image: '/placeholder.svg?height=150&width=200',
-      },
-      {
-        day: 3,
-        title: 'Delhi to Agra',
-        description:
-          'Drive to Agra. Visit Taj Mahal during sunset. Evening at leisure.',
-        image: '/placeholder.svg?height=150&width=200',
-      },
-      {
-        day: 4,
-        title: 'Agra to Jaipur',
-        description:
-          'Morning visit to Agra Fort. Drive to Jaipur via Fatehpur Sikri.',
-        image: '/placeholder.svg?height=150&width=200',
-      },
-      {
-        day: 5,
-        title: 'Jaipur and Departure',
-        description:
-          'Visit Amber Fort and City Palace. Transfer to airport for departure.',
-        image: '/placeholder.svg?height=150&width=200',
-      },
-    ],
-    inclusions: [
-      'Accommodation in 3-star hotels',
-      'Daily breakfast and dinner',
-      'Air-conditioned private vehicle',
-      'Professional tour guide',
-      'All entrance fees',
-      'Airport transfers',
-    ],
-    exclusions: [
-      'Flights',
-      'Personal expenses',
-      'Travel insurance',
-      'Lunch',
-      'Optional activities',
-    ],
-  };
+  // // Sample package details data
+  // const samplePackageDetails = {
+  //   id: packageId,
+  //   places: 'New Delhi, Agra, Jaipur',
+  //   days: 5,
+  //   nights: 4,
+  //   ac_available: true,
+  //   guide_included: true,
+  //   sub_category_name: 'Golden Triangle Tour',
+  //   description:
+  //     "Experience the rich history and culture of India's Golden Triangle. Visit iconic landmarks like the Taj Mahal, Red Fort, and Amber Palace.",
+  //   price: '₹25,000',
+  //   image: '/placeholder.svg?height=400&width=600',
+  //   itinerary: [
+  //     {
+  //       day: 1,
+  //       title: 'Arrival in Delhi',
+  //       description:
+  //         "Arrive in Delhi and transfer to your hotel. Evening visit to Qutub Minar and Humayun's Tomb.",
+  //       image: '/placeholder.svg?height=150&width=200',
+  //     },
+  //     {
+  //       day: 2,
+  //       title: 'Delhi City Tour',
+  //       description:
+  //         'Full day sightseeing in Delhi including Red Fort, Jama Masjid, India Gate, and Lotus Temple.',
+  //       image: '/placeholder.svg?height=150&width=200',
+  //     },
+  //     {
+  //       day: 3,
+  //       title: 'Delhi to Agra',
+  //       description:
+  //         'Drive to Agra. Visit Taj Mahal during sunset. Evening at leisure.',
+  //       image: '/placeholder.svg?height=150&width=200',
+  //     },
+  //     {
+  //       day: 4,
+  //       title: 'Agra to Jaipur',
+  //       description:
+  //         'Morning visit to Agra Fort. Drive to Jaipur via Fatehpur Sikri.',
+  //       image: '/placeholder.svg?height=150&width=200',
+  //     },
+  //     {
+  //       day: 5,
+  //       title: 'Jaipur and Departure',
+  //       description:
+  //         'Visit Amber Fort and City Palace. Transfer to airport for departure.',
+  //       image: '/placeholder.svg?height=150&width=200',
+  //     },
+  //   ],
+  //   inclusions: [
+  //     'Accommodation in 3-star hotels',
+  //     'Daily breakfast and dinner',
+  //     'Air-conditioned private vehicle',
+  //     'Professional tour guide',
+  //     'All entrance fees',
+  //     'Airport transfers',
+  //   ],
+  //   exclusions: [
+  //     'Flights',
+  //     'Personal expenses',
+  //     'Travel insurance',
+  //     'Lunch',
+  //     'Optional activities',
+  //   ],
+  // };
 
   return (
     <div className='flex-1 overflow-auto'>

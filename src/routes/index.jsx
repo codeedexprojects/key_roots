@@ -23,13 +23,24 @@ import { CategoryPage, BusDetailsPage } from '@/features/category/pages';
 import { RewardDetailsPage, RewardsListPage } from '@/features/rewards/pages';
 import { ReviewsListPage } from '@/features/reviews/pages';
 import { Navigate } from 'react-router';
+import { LoginPage } from '@/features/auth/pages/LoginPage';
+import { PrivateRoute } from '@/lib/PrivateRoute.jsx';
 
 const routes = [
   {
+    path: '/login',
+    element: <LoginPage />,
+  },
+  {
     path: '/',
-    element: <Layout />,
+    element: (
+      <PrivateRoute>
+        <Layout />
+      </PrivateRoute>
+    ),
     children: [
       { index: true, element: <DashboardPage /> },
+
       {
         path: 'users',
         children: [
@@ -76,6 +87,7 @@ const routes = [
         children: [
           { index: true, element: <CategoryPage /> },
           { path: 'buses/:busId', element: <BusDetailsPage /> },
+          { path: 'packages/:packageId', element: <PackageDetailsPage /> },
         ],
       },
       {

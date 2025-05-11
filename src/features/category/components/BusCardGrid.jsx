@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BusFront } from 'lucide-react';
+import { LoadingSpinner, EmptyState } from '@/components/common';
 
 const BusCardGrid = ({
   buses,
@@ -10,93 +11,8 @@ const BusCardGrid = ({
 }) => {
   const navigate = useNavigate();
 
-  // Sample data for demonstration
-  const sampleBuses = [
-    {
-      id: 1,
-      name: 'Komban Travels',
-      numberPlate: 'KL 58M 6018',
-      busType: 'Coach',
-      capacity: '45',
-      vehicleId: '45DDXXXXXXXXX18',
-      image: '/placeholder.svg?height=200&width=300',
-    },
-    {
-      id: 2,
-      name: 'Komban Travels',
-      numberPlate: 'KL 58M 6018',
-      busType: 'Coach',
-      capacity: '45',
-      vehicleId: '45DDXXXXXXXXX18',
-      image: '/placeholder.svg?height=200&width=300',
-    },
-    {
-      id: 3,
-      name: 'Komban Travels',
-      numberPlate: 'KL 58M 6018',
-      busType: 'Coach',
-      capacity: '45',
-      vehicleId: '45DDXXXXXXXXX18',
-      image: '/placeholder.svg?height=200&width=300',
-    },
-    {
-      id: 4,
-      name: 'Komban Travels',
-      numberPlate: 'KL 58M 6018',
-      busType: 'Coach',
-      capacity: '45',
-      vehicleId: '45DDXXXXXXXXX18',
-      image: '/placeholder.svg?height=200&width=300',
-    },
-    {
-      id: 5,
-      name: 'Komban Travels',
-      numberPlate: 'KL 58M 6018',
-      busType: 'Coach',
-      capacity: '45',
-      vehicleId: '45DDXXXXXXXXX18',
-      image: '/placeholder.svg?height=200&width=300',
-    },
-    {
-      id: 6,
-      name: 'Komban Travels',
-      numberPlate: 'KL 58M 6018',
-      busType: 'Coach',
-      capacity: '45',
-      vehicleId: '45DDXXXXXXXXX18',
-      image: '/placeholder.svg?height=200&width=300',
-    },
-    {
-      id: 7,
-      name: 'Komban Travels',
-      numberPlate: 'KL 58M 6018',
-      busType: 'Coach',
-      capacity: '45',
-      vehicleId: '45DDXXXXXXXXX18',
-      image: '/placeholder.svg?height=200&width=300',
-    },
-    {
-      id: 8,
-      name: 'Komban Travels',
-      numberPlate: 'KL 58M 6018',
-      busType: 'Coach',
-      capacity: '45',
-      vehicleId: '45DDXXXXXXXXX18',
-      image: '/placeholder.svg?height=200&width=300',
-    },
-    {
-      id: 9,
-      name: 'Komban Travels',
-      numberPlate: 'KL 58M 6018',
-      busType: 'Coach',
-      capacity: '45',
-      vehicleId: '45DDXXXXXXXXX18',
-      image: '/placeholder.svg?height=200&width=300',
-    },
-  ];
-
-  // Use sample data if no buses are provided
-  const displayBuses = buses.length > 0 ? buses : sampleBuses;
+  // Use provided buses or empty array
+  const displayBuses = buses || [];
 
   const handleBusClick = (busId) => {
     navigate(`/category/buses/${busId}`);
@@ -104,9 +20,19 @@ const BusCardGrid = ({
 
   if (isLoading) {
     return (
-      <div className='flex justify-center items-center h-64'>
-        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary'></div>
+      <div className='flex justify-center items-center min-h-[500px]'>
+        <LoadingSpinner size='large' />
       </div>
+    );
+  }
+
+  if (displayBuses.length === 0) {
+    return (
+      <EmptyState
+        title='No buses found'
+        description='There are no buses to display.'
+        icon='bus'
+      />
     );
   }
 
@@ -119,12 +45,18 @@ const BusCardGrid = ({
             className='bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow'
             onClick={() => handleBusClick(bus.id)}>
             <div className='flex'>
-              <div className='w-1/3'>
-                <img
-                  src={bus.image || '/placeholder.svg'}
-                  alt={bus.name}
-                  className='h-full w-full object-cover'
-                />
+              <div className='w-1/3 h-40 relative'>
+                {bus.image ? (
+                  <img
+                    src={bus.image || '/placeholder.svg'}
+                    alt={bus.name}
+                    className='h-full w-full object-cover'
+                  />
+                ) : (
+                  <div className='h-full w-full flex items-center justify-center bg-gray-100'>
+                    <BusFront className='h-12 w-12 text-gray-400' />
+                  </div>
+                )}
               </div>
               <div className='w-2/3 p-4'>
                 <h3 className='font-semibold text-gray-900'>{bus.name}</h3>
@@ -147,48 +79,50 @@ const BusCardGrid = ({
       </div>
 
       {/* Pagination */}
-      <div className='flex justify-center mt-8'>
-        <div className='flex space-x-1'>
-          <button
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
-              currentPage === 1
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'text-gray-700 hover:bg-gray-50'
-            }`}>
-            <span className='sr-only'>Previous</span>
-            <ChevronLeft className='h-5 w-5' />
-            <span className='ml-1'>PREV</span>
-          </button>
-
-          {[...Array(totalPages)].map((_, i) => (
+      {totalPages > 1 && (
+        <div className='flex justify-center mt-8'>
+          <div className='flex space-x-1'>
             <button
-              key={i}
-              onClick={() => onPageChange(i + 1)}
-              className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
-                currentPage === i + 1
-                  ? 'bg-red-600 text-white'
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                currentPage === 1
+                  ? 'text-gray-400 cursor-not-allowed'
                   : 'text-gray-700 hover:bg-gray-50'
-              } rounded-md`}>
-              {String(i + 1).padStart(2, '0')}
+              }`}>
+              <span className='sr-only'>Previous</span>
+              <ChevronLeft className='h-5 w-5' />
+              <span className='ml-1'>PREV</span>
             </button>
-          ))}
 
-          <button
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
-              currentPage === totalPages
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'text-gray-700 hover:bg-gray-50'
-            }`}>
-            <span className='mr-1'>NEXT</span>
-            <span className='sr-only'>Next</span>
-            <ChevronRight className='h-5 w-5' />
-          </button>
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i}
+                onClick={() => onPageChange(i + 1)}
+                className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
+                  currentPage === i + 1
+                    ? 'bg-red-600 text-white'
+                    : 'text-gray-700 hover:bg-gray-50'
+                } rounded-md`}>
+                {String(i + 1).padStart(2, '0')}
+              </button>
+            ))}
+
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                currentPage === totalPages
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}>
+              <span className='mr-1'>NEXT</span>
+              <span className='sr-only'>Next</span>
+              <ChevronRight className='h-5 w-5' />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

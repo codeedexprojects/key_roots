@@ -1,101 +1,39 @@
 import { Plus } from 'lucide-react';
+import { getImageUrl } from '@/lib/getImageUrl';
+import { LoadingSpinner, EmptyState } from '@/components/common';
 
 export const AdvertisementGrid = ({ items, isLoading, onEdit, onAddNew }) => {
-  // Sample data for demonstration
-  const sampleItems = [
-    {
-      id: 1,
-      banner: {
-        image: '/placeholder.svg?height=200&width=300',
-        title: 'Summer Special Offers',
-        description:
-          'Enjoy amazing discounts on all summer destinations. Book now for the best deals!',
-      },
-      deals: [
-        {
-          image: '/placeholder.svg?height=150&width=150',
-          title: 'Beach Getaway',
-          description: 'Relax on pristine beaches',
-          offer: '20% OFF',
-        },
-        {
-          image: '/placeholder.svg?height=150&width=150',
-          title: 'Mountain Retreat',
-          description: 'Escape to the mountains',
-          offer: '15% OFF',
-        },
-      ],
-      footers: [
-        {
-          image: '/placeholder.svg?height=150&width=150',
-          title: 'Premium Bus Service',
-          phone: '+91 9876543210',
-          description: 'Luxury travel experience',
-          price: '₹5000',
-          offerPrice: '₹4200',
-        },
-      ],
-    },
-    {
-      id: 2,
-      banner: {
-        image: '/placeholder.svg?height=200&width=300',
-        title: 'Monsoon Packages',
-        description:
-          'Experience the beauty of rain with our special monsoon packages. Limited time offers!',
-      },
-      deals: [
-        {
-          image: '/placeholder.svg?height=150&width=150',
-          title: 'Waterfall Tour',
-          description: 'Visit stunning waterfalls',
-          offer: '25% OFF',
-        },
-      ],
-      footers: [
-        {
-          image: '/placeholder.svg?height=150&width=150',
-          title: 'Deluxe Accommodation',
-          phone: '+91 9876543211',
-          description: 'Stay in comfort',
-          price: '₹3500',
-          offerPrice: '₹2800',
-        },
-      ],
-    },
-    {
-      id: 3,
-      banner: {
-        image: '/placeholder.svg?height=200&width=300',
-        title: 'Festival Special',
-        description:
-          'Celebrate festivals with our special travel packages. Book early for best rates!',
-      },
-      deals: [
-        {
-          image: '/placeholder.svg?height=150&width=150',
-          title: 'Cultural Tour',
-          description: 'Immerse in local culture',
-          offer: '10% OFF',
-        },
-        {
-          image: '/placeholder.svg?height=150&width=150',
-          title: 'Food Festival',
-          description: 'Taste local cuisines',
-          offer: '15% OFF',
-        },
-      ],
-      footers: [],
-    },
-  ];
-
-  // Use sample data if no items are provided
-  const displayItems = items.length > 0 ? items : sampleItems;
+  // Use provided items
+  const displayItems = items || [];
 
   if (isLoading) {
     return (
-      <div className='flex justify-center items-center h-64'>
-        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary'></div>
+      <div className='flex justify-center items-center min-h-[500px]'>
+        <LoadingSpinner size='large' />
+      </div>
+    );
+  }
+
+  if (displayItems.length === 0) {
+    return (
+      <div className='space-y-6'>
+        <div className='flex justify-between items-center'>
+          <h2 className='text-lg font-semibold'>Advertisements</h2>
+          <button
+            onClick={onAddNew}
+            className='inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'>
+            <Plus className='h-4 w-4 mr-2' />
+            Add New
+          </button>
+        </div>
+
+        <EmptyState
+          title='No advertisements found'
+          description='Create your first advertisement to get started.'
+          actionLabel='Add Advertisement'
+          onAction={onAddNew}
+          icon='default'
+        />
       </div>
     );
   }
@@ -120,7 +58,7 @@ export const AdvertisementGrid = ({ items, isLoading, onEdit, onAddNew }) => {
             onClick={() => onEdit(item)}>
             <div className='h-48 overflow-hidden'>
               <img
-                src={item.banner.image || '/placeholder.svg'}
+                src={getImageUrl(item.banner.image) || '/placeholder.svg'}
                 alt={item.banner.title}
                 className='w-full h-full object-cover'
               />
