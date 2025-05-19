@@ -22,6 +22,7 @@ export const VendorDetailsPage = () => {
       try {
         const response = await getVendorById(vendorId);
 
+        console.log(response);
         if (response && response.data) {
           const vendorData = response.data;
           const transformedVendor = {
@@ -36,7 +37,7 @@ export const VendorDetailsPage = () => {
             ongoingBuses: vendorData.ongoing_buses?.length || 0,
             image:
               vendorData.buses?.[0]?.travels_logo ||
-              '/placeholder.svg?height=96&width=96',
+              'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
             contactPerson: vendorData.full_name,
             phone: '+91 9876543210',
             email: vendorData.email_address,

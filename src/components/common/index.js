@@ -7,3 +7,5 @@ export { ScrollToTop } from './ScrollToTop';
 export { EmptyState } from './EmptyState';
 export { LoadingIndicator } from './LoadingIndicator';
 export { LoadingSpinner } from './LoadingSpinner';
+export { AppErrorBoundary } from './ErrorBoundary';
+export { AppErrorFallback } from './ErrorFallback';

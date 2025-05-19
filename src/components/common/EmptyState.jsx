@@ -1,4 +1,19 @@
-import { Package, PlusCircle, AlertCircle, Bus } from 'lucide-react';
+import {
+  Package,
+  PlusCircle,
+  AlertCircle,
+  Bus,
+  Home,
+  Users,
+  Store,
+  Star,
+  CalendarDays,
+  CreditCard,
+  Megaphone,
+  Grid,
+  Medal,
+  DollarSign,
+} from 'lucide-react';
 
 export const EmptyState = ({
   title,
@@ -7,17 +22,36 @@ export const EmptyState = ({
   onAction,
   icon = 'default',
 }) => {
-  // Choose icon based on the icon prop
   const renderIcon = () => {
     switch (icon) {
       case 'package':
-        return <Package className='h-12 w-12 text-gray-400' />;
+        return <Package className='h-5 w-5 text-gray-700' />;
       case 'bus':
-        return <Bus className='h-12 w-12 text-gray-400' />;
+        return <Bus className='h-5 w-5 text-gray-700' />;
+      case 'dashboard':
+        return <Home className='h-5 w-5 text-gray-700' />;
+      case 'users':
+        return <Users className='h-5 w-5 text-gray-700' />;
+      case 'vendor':
+        return <Store className='h-5 w-5 text-gray-700' />;
+      case 'reviews':
+        return <Star className='h-5 w-5 text-gray-700' />;
+      case 'booking':
+        return <CalendarDays className='h-5 w-5 text-gray-700' />;
+      case 'payments':
+        return <CreditCard className='h-5 w-5 text-gray-700' />;
+      case 'advertisement':
+        return <Megaphone className='h-5 w-5 text-gray-700' />;
+      case 'category':
+        return <Grid className='h-5 w-5 text-gray-700' />;
+      case 'reward':
+        return <Medal className='h-5 w-5 text-gray-700' />;
+      case 'payout':
+        return <DollarSign className='h-5 w-5 text-gray-700' />;
       case 'error':
-        return <AlertCircle className='h-12 w-12 text-red-400' />;
+        return <AlertCircle className='h-5 w-5 text-red-500' />;
       default:
-        return <PlusCircle className='h-12 w-12 text-gray-400' />;
+        return <PlusCircle className='h-5 w-5 text-gray-700' />;
     }
   };
 

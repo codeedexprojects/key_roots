@@ -34,6 +34,7 @@ export const AdvertisementPage = () => {
     setAdIsLoading(true);
     try {
       const response = await getAdvertisements();
+      console.log(response);
       if (response && !response.error) {
         // Transform the API response to match our component structure
         const transformedItems = [];
@@ -274,9 +275,49 @@ export const AdvertisementPage = () => {
     if (activeTab === 'advertisement') {
       fetchAdvertisements();
     } else if (activeTab === 'explore') {
-      fetchExploreItems();
+      const loadExploreItems = async () => {
+        setExploreIsLoading(true);
+        try {
+          const response = await getExploreItems();
+          console.log(response);
+          if (response && !response.error && response.data) {
+            const transformedItems = response.data.map((item) => ({
+              id: item.id,
+              title: item.title,
+              description: item.description,
+              seasonDescription: item.season_description,
+              image: item.image,
+              sights:
+                item.experiences?.map((exp) => ({
+                  id: exp.id || crypto.randomUUID(),
+                  description: exp.description,
+                  image: exp.image,
+                })) || [],
+            }));
+            setExploreItems(transformedItems);
+          } else {
+            setExploreItems([]);
+            addToast({
+              title: 'Error',
+              message: response?.message || 'Failed to load explore items',
+              type: 'error',
+            });
+          }
+        } catch (error) {
+          setExploreItems([]);
+          addToast({
+            title: 'Error',
+            message: 'Failed to load explore items. Please try again later.',
+            type: 'error',
+          });
+        } finally {
+          setExploreIsLoading(false);
+        }
+      };
+
+      loadExploreItems();
     }
-  }, [activeTab, fetchAdvertisements, fetchExploreItems]);
+  }, [activeTab]);
 
   const handleEditExploreItem = (item) => {
     setCurrentExploreItem(item);

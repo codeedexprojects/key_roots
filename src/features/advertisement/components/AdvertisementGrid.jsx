@@ -30,8 +30,6 @@ export const AdvertisementGrid = ({ items, isLoading, onEdit, onAddNew }) => {
         <EmptyState
           title='No advertisements found'
           description='Create your first advertisement to get started.'
-          actionLabel='Add Advertisement'
-          onAction={onAddNew}
           icon='default'
         />
       </div>

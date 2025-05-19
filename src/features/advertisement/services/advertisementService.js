@@ -1,13 +1,11 @@
 import { axiosInstance } from '@/lib/axiosInstance';
 import { apiRequest } from '@/lib/apiRequest';
+import axios from 'axios';
 
 // Function to get advertisements
 export const getAdvertisements = async () => {
   return apiRequest(
-    () =>
-      axiosInstance.get(
-        'https://keyroute.pythonanywhere.com/api/admin/sections/'
-      ),
+    () => axiosInstance.get('/sections/'),
     'Error occurred while fetching advertisements.'
   );
 };
@@ -53,24 +51,33 @@ export const saveAdvertisement = async (data) => {
 
   return apiRequest(
     () =>
-      axiosInstance.post(
-        'https://keyroute.pythonanywhere.com/api/admin/sections/',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      ),
+      axiosInstance.post('/sections/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }),
     'Error occurred while saving advertisement.'
   );
 };
 
-// Function to get explore items
+// // Function to get explore items
+// export const getExploreItems = async () => {
+//   return apiRequest(
+//     () => axiosInstance.get('/explore/list/'),
+//     'Error occurred while fetching explore items.'
+//   );
+// };
+
+//testing purpose as the api is broken
 export const getExploreItems = async () => {
   return apiRequest(
     () =>
-      axiosInstance.get('https://keyroute.pythonanywhere.com/explore/list/'),
+      axios.get('https://api.keyrouteexpedo.com/explore/list/', {
+        headers: {
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYwNTk0OTA1LCJpYXQiOjE3NDc2MzQ5MDUsImp0aSI6IjhlNGEwYjY1ZWI0YTQwMGY4MzcwNDIzODQxODllNmQxIiwidXNlcl9pZCI6MX0.i4Fgo2JSHkT49irVEJrRQ8FOTQ9E_2rs2WmKeU8PW-k',
+        },
+      }),
     'Error occurred while fetching explore items.'
   );
 };
@@ -110,15 +117,11 @@ export const saveExploreItem = async (data) => {
 
   return apiRequest(
     () =>
-      axiosInstance.post(
-        'https://keyroute.pythonanywhere.com/api/admin/explore/create/',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      ),
+      axiosInstance.post('/explore/create/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }),
     'Error occurred while creating explore item.'
   );
 };

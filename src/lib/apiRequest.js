@@ -7,7 +7,7 @@ export const apiRequest = async (
     return response?.data;
   } catch (error) {
     const errorMessage = error?.response?.data?.message || message;
-    console.error(error, errorMessage);
+    console.log(error);
 
     // Return the error so it can be handled by the caller
     return {

@@ -10,6 +10,7 @@ import { Link } from 'react-router';
 import { getAllVendors } from '../services/vendorService';
 import { LoadingSpinner, EmptyState } from '@/components/common';
 import { useToast } from '@/components/ui/toast-provider';
+import { getImageUrl } from '@/lib/getImageUrl';
 
 export const VendorsListPage = () => {
   const { addToast } = useToast();
@@ -42,6 +43,7 @@ export const VendorsListPage = () => {
       try {
         // Fetch vendors
         const response = await getAllVendors();
+        console.log(response);
         if (response && response.data) {
           const transformedVendors = response.data.map((vendor) => ({
             id: vendor.user_id,
@@ -335,13 +337,16 @@ export const VendorsListPage = () => {
                     <td className='px-4 py-4 text-sm text-gray-500 w-auto lg:w-16'>
                       {vendor.id}
                     </td>
+                    {console.log('vendor', vendor)}
                     <td className='px-4 py-4 w-auto lg:w-48 truncate'>
                       <div className='flex items-center'>
                         <img
                           className='h-10 w-10 rounded-md flex-shrink-0'
                           src={
-                            vendor.image ||
-                            '/placeholder.svg?height=40&width=40'
+                            vendor.image !==
+                            '/placeholder.svg?height=48&width=48'
+                              ? getImageUrl(vendor.image)
+                              : 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
                           }
                           alt={vendor.name}
                         />

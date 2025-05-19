@@ -25,6 +25,7 @@ import { ReviewsListPage } from '@/features/reviews/pages';
 import { Navigate } from 'react-router';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { PrivateRoute } from '@/lib/PrivateRoute.jsx';
+import { AppErrorFallback } from '@/components/common';
 
 const routes = [
   {
@@ -38,6 +39,7 @@ const routes = [
         <Layout />
       </PrivateRoute>
     ),
+    // errorElement: <AppErrorFallback />,
     children: [
       { index: true, element: <DashboardPage /> },
 

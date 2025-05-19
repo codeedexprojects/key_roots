@@ -1,3 +1,4 @@
+import { getImageUrl } from '@/lib/getImageUrl';
 import { MapPin, Mail, Phone, User, Hash } from 'lucide-react';
 
 export const VendorInfoCard = ({ vendor }) => {
@@ -7,7 +8,10 @@ export const VendorInfoCard = ({ vendor }) => {
         <div className='flex flex-col sm:flex-row items-center sm:items-start mb-6'>
           <div className='h-24 w-24 rounded-lg bg-gray-200 overflow-hidden flex-shrink-0 mb-4 sm:mb-0'>
             <img
-              src={vendor.image || '/placeholder.svg?height=96&width=96'}
+              src={
+                getImageUrl(vendor.image) ||
+                'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
+              }
               alt={vendor.name}
               className='h-full w-full object-cover'
             />

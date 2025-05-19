@@ -1,76 +1,44 @@
 import { axiosInstance } from '@/lib/axiosInstance';
 import { apiRequest } from '@/lib/apiRequest';
 
-// Function to get dashboard counts (vendors, users, bookings)
 export const getDashboardCounts = async () => {
   return apiRequest(
-    () =>
-      axiosInstance.get(
-        'https://keyroute.pythonanywhere.com/api/admin/dashbord-count'
-      ),
+    () => axiosInstance.get('/dashbord-count'),
     'Error occurred while fetching dashboard counts.'
   );
 };
 
-// Function to get top vendors
-export const getTopVendors = async (state = '') => {
+export const getTopVendors = async () => {
   return apiRequest(
-    () =>
-      axiosInstance.get(
-        `https://keyroute.pythonanywhere.com/api/admin/top-vendors/${
-          state ? `?state=${state}` : ''
-        }`
-      ),
+    () => axiosInstance.get(`/top-vendors/`),
     'Error occurred while fetching top vendors.'
   );
 };
 
-// Function to get recent users
-export const getRecentUsers = async (state = '') => {
+export const getRecentUsers = async () => {
   return apiRequest(
-    () =>
-      axiosInstance.get(
-        `https://keyroute.pythonanywhere.com/api/admin/recent-users/${
-          state ? `?state=${state}` : ''
-        }`
-      ),
+    () => axiosInstance.get(`/recent-users/`),
     'Error occurred while fetching recent users.'
   );
 };
 
-// Function to get recent approved bookings
-export const getRecentApprovedBookings = async (state = '') => {
+export const getRecentApprovedBookings = async () => {
   return apiRequest(
-    () =>
-      axiosInstance.get(
-        `https://keyroute.pythonanywhere.com/api/admin/recent-approved-booking${
-          state ? `?state=${state}` : ''
-        }`
-      ),
+    () => axiosInstance.get(`/recent-approved-booking`),
     'Error occurred while fetching recent approved bookings.'
   );
 };
 
-// Function to get recent reviews
-export const getRecentReviews = async (limit = 5, state = '') => {
+export const getRecentReviews = async (limit = 5) => {
   return apiRequest(
-    () =>
-      axiosInstance.get(
-        `https://keyroute.pythonanywhere.com/api/admin/reviews/recent/?limit=${limit}${
-          state ? `&state=${state}` : ''
-        }`
-      ),
+    () => axiosInstance.get(`/reviews/recent/`),
     'Error occurred while fetching recent reviews.'
   );
 };
 
-// Function to get revenue data
 export const getRevenueData = async () => {
   return apiRequest(
-    () =>
-      axiosInstance.get(
-        'https://keyroute.pythonanywhere.com/api/admin/dashboard/revenu'
-      ),
+    () => axiosInstance.get('/dashboard/revenu'),
     'Error occurred while fetching revenue data.'
   );
 };

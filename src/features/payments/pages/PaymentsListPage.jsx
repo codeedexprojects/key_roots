@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import {
   Search,
@@ -7,89 +7,62 @@ import {
   ChevronRight,
   Download,
 } from 'lucide-react';
+import { LoadingSpinner, EmptyState } from '@/components/common';
+import {
+  getAllPayments,
+  formatPaymentsForDisplay,
+} from '../services/paymentService';
+import { useToast } from '@/components/ui/toast-provider';
 
 export const PaymentsListPage = () => {
   const navigate = useNavigate();
+  const { addToast } = useToast();
+
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [filterBy, setFilterBy] = useState('all');
 
-  // Sample data for payments
-  const payments = [
-    {
-      id: 1,
-      vendorName: 'Shajahan travel',
-      trip: 'Varkala → Ernakulam',
-      totalAmount: '₹ 25000',
-      status: 'Pending',
-      income: '₹ 2500',
-    },
-    {
-      id: 2,
-      vendorName: 'Shajahan travel',
-      trip: 'Varkala → Ernakulam',
-      totalAmount: '₹ 25000',
-      status: 'Pending',
-      income: '₹ 2500',
-    },
-    {
-      id: 3,
-      vendorName: 'Shajahan travel',
-      trip: 'Varkala → Ernakulam',
-      totalAmount: '₹ 25000',
-      status: 'Completed',
-      income: '₹ 2500',
-    },
-    {
-      id: 4,
-      vendorName: 'Shajahan travel',
-      trip: 'Varkala → Ernakulam',
-      totalAmount: '₹ 25000',
-      status: 'Pending',
-      income: '₹ 2500',
-    },
-    {
-      id: 5,
-      vendorName: 'Shajahan travel',
-      trip: 'Varkala → Ernakulam',
-      totalAmount: '₹ 25000',
-      status: 'Pending',
-      income: '₹ 2500',
-    },
-    {
-      id: 6,
-      vendorName: 'Shajahan travel',
-      trip: 'Varkala → Ernakulam',
-      totalAmount: '₹ 25000',
-      status: 'Cancelled',
-      income: 'Amount Returned',
-    },
-    {
-      id: 7,
-      vendorName: 'Shajahan travel',
-      trip: 'Varkala → Ernakulam',
-      totalAmount: '₹ 25000',
-      status: 'Pending',
-      income: '₹ 2500',
-    },
-    {
-      id: 8,
-      vendorName: 'Shajahan travel',
-      trip: 'Varkala → Ernakulam',
-      totalAmount: '₹ 25000',
-      status: 'Pending',
-      income: '₹ 2500',
-    },
-    {
-      id: 9,
-      vendorName: 'Shajahan travel',
-      trip: 'Varkala → Ernakulam',
-      totalAmount: '₹ 25000',
-      status: 'Pending',
-      income: '₹ 2500',
-    },
-  ];
+  // State for API data
+  const [payments, setPayments] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch payments data
+  useEffect(() => {
+    const fetchPayments = async () => {
+      setIsLoading(true);
+      try {
+        const response = await getAllPayments();
+
+        if (!response.error) {
+          // Format the payments data for display
+          const formattedPayments = formatPaymentsForDisplay(response);
+          setPayments(formattedPayments);
+          setError(null);
+        } else {
+          setError(response.message || 'Failed to load payments');
+          addToast({
+            title: 'Error',
+            message: response.message || 'Failed to load payments',
+            type: 'error',
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching payments:', err);
+        setError('An unexpected error occurred');
+        addToast({
+          title: 'Error',
+          message: 'An unexpected error occurred while loading payments',
+          type: 'error',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPayments();
+  }, [addToast]);
 
   // Filter and sort payments
   const filteredPayments = payments
@@ -111,13 +84,14 @@ export const PaymentsListPage = () => {
       return true;
     })
     .sort((a, b) => {
-      // Apply sorting (in a real app, you'd use actual date objects)
+      // Apply sorting
       if (sortBy === 'newest') return b.id - a.id;
       if (sortBy === 'oldest') return a.id - b.id;
       if (sortBy === 'amount') {
-        const aAmount = a.totalAmount.replace('₹ ', '');
-        const bAmount = b.totalAmount.replace('₹ ', '');
-        return Number.parseInt(bAmount) - Number.parseInt(aAmount);
+        // Extract numeric values from formatted amounts
+        const aAmount = a.totalAmount.replace(/[₹,\s]/g, '');
+        const bAmount = b.totalAmount.replace(/[₹,\s]/g, '');
+        return parseFloat(bAmount) - parseFloat(aAmount);
       }
 
       return 0;
@@ -204,130 +178,158 @@ export const PaymentsListPage = () => {
 
       {/* Payments Table */}
       <div className='bg-white rounded-lg shadow-sm overflow-hidden mb-6'>
-        <div className='overflow-x-auto'>
-          <table className='min-w-full divide-y divide-gray-200'>
-            <thead>
-              <tr>
-                {[
-                  'Vendor Name',
-                  'Trip',
-                  'Total Amount',
-                  'Status',
-                  'Income',
-                ].map((header, i) => (
-                  <th
-                    key={`${header}-${i}`}
-                    className='px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider'>
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className='bg-white divide-y divide-gray-200'>
-              {currentPayments.map((payment) => (
-                <tr
-                  key={payment.id}
-                  className='hover:bg-gray-50 cursor-pointer'
-                  onClick={() => navigate(`/payments/${payment.id}`)}>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='flex items-center'>
-                      <img
-                        className='h-10 w-10 rounded-md'
-                        src='https://img.freepik.com/premium-vector/booking-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg'
-                        alt=''
-                      />
-                      <div className='ml-4'>
-                        <div className='text-sm font-medium text-gray-900'>
-                          {payment.vendorName}
+        {isLoading ? (
+          <div className='flex justify-center items-center min-h-[500px]'>
+            <LoadingSpinner size='large' />
+          </div>
+        ) : error ? (
+          <div className='bg-red-50 border border-red-200 rounded-lg p-6 text-center min-h-[300px] flex items-center justify-center'>
+            <p className='text-red-600'>{error}</p>
+          </div>
+        ) : filteredPayments.length === 0 ? (
+          <EmptyState
+            title='No payments found'
+            description='There are no payments matching your criteria.'
+            icon='default'
+          />
+        ) : (
+          <div className='overflow-x-auto'>
+            <table className='min-w-full divide-y divide-gray-200'>
+              <thead>
+                <tr>
+                  {[
+                    'Vendor Name',
+                    'Trip',
+                    'Total Amount',
+                    'Status',
+                    'Income',
+                    'Booking Type',
+                  ].map((header, i) => (
+                    <th
+                      key={`${header}-${i}`}
+                      className='px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider'>
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className='bg-white divide-y divide-gray-200'>
+                {currentPayments.map((payment) => (
+                  <tr
+                    key={payment.id}
+                    className='hover:bg-gray-50 cursor-pointer'
+                    onClick={() => navigate(`/payments/${payment.id}`)}>
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <div className='flex items-center'>
+                        <img
+                          className='h-10 w-10 rounded-md'
+                          src='https://img.freepik.com/premium-vector/booking-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg'
+                          alt=''
+                        />
+                        <div className='ml-4'>
+                          <div className='text-sm font-medium text-gray-900'>
+                            {payment.vendorName}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='text-sm text-gray-500'>{payment.trip}</div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='text-sm font-medium'>
-                      {payment.totalAmount}
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(
-                        payment.status
-                      )}`}>
-                      {payment.status}
-                    </span>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div
-                      className={`text-sm ${
-                        payment.status === 'Cancelled'
-                          ? 'text-red-500'
-                          : 'text-green-500'
-                      }`}>
-                      {payment.income}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <div className='text-sm text-gray-500'>
+                        {payment.trip}
+                      </div>
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <div className='text-sm font-medium'>
+                        {payment.totalAmount}
+                      </div>
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(
+                          payment.status
+                        )}`}>
+                        {payment.status}
+                      </span>
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <div
+                        className={`text-sm ${
+                          payment.status === 'Cancelled'
+                            ? 'text-red-500'
+                            : 'text-green-500'
+                        }`}>
+                        {payment.income}
+                      </div>
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <div className='text-sm text-gray-500'>
+                        {payment.bookingType}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-        {/* Pagination */}
-        <div className='px-6 py-4 bg-white border-t border-gray-200'>
-          <div className='flex items-center justify-between'>
-            <div className='text-sm text-gray-700'>
-              Showing{' '}
-              <span className='font-medium'>{indexOfFirstPayment + 1}</span> to{' '}
-              <span className='font-medium'>
-                {Math.min(indexOfLastPayment, filteredPayments.length)}
-              </span>{' '}
-              of <span className='font-medium'>{filteredPayments.length}</span>{' '}
-              payments
-            </div>
+        {/* Pagination - only show when we have data and not loading */}
+        {!isLoading && !error && filteredPayments.length > 0 && (
+          <div className='px-6 py-4 bg-white border-t border-gray-200'>
+            <div className='flex items-center justify-between'>
+              <div className='text-sm text-gray-700'>
+                Showing{' '}
+                <span className='font-medium'>{indexOfFirstPayment + 1}</span>{' '}
+                to{' '}
+                <span className='font-medium'>
+                  {Math.min(indexOfLastPayment, filteredPayments.length)}
+                </span>{' '}
+                of{' '}
+                <span className='font-medium'>{filteredPayments.length}</span>{' '}
+                payments
+              </div>
 
-            <div className='flex space-x-1'>
-              <button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
-                  currentPage === 1
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}>
-                <span className='sr-only'>Previous</span>
-                <ChevronLeft className='h-5 w-5' />
-              </button>
-
-              {[...Array(totalPages)].map((_, i) => (
+              <div className='flex space-x-1'>
                 <button
-                  key={i}
-                  onClick={() => paginate(i + 1)}
-                  className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
-                    currentPage === i + 1
-                      ? 'bg-primary text-white'
+                  onClick={() => paginate(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                    currentPage === 1
+                      ? 'text-gray-400 cursor-not-allowed'
                       : 'text-gray-700 hover:bg-gray-50'
-                  } rounded-md`}>
-                  {i + 1}
+                  }`}>
+                  <span className='sr-only'>Previous</span>
+                  <ChevronLeft className='h-5 w-5' />
                 </button>
-              ))}
 
-              <button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
-                  currentPage === totalPages
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}>
-                <span className='sr-only'>Next</span>
-                <ChevronRight className='h-5 w-5' />
-              </button>
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => paginate(i + 1)}
+                    className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
+                      currentPage === i + 1
+                        ? 'bg-primary text-white'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    } rounded-md`}>
+                    {i + 1}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => paginate(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                    currentPage === totalPages
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}>
+                  <span className='sr-only'>Next</span>
+                  <ChevronRight className='h-5 w-5' />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ export const loginAdmin = async (credentials) => {
   return apiRequest(
     () =>
       axios.post(
-        'https://keyroute.pythonanywhere.com/api/admin/login/',
+        'https://api.keyrouteexpedo.com/api/admin/login/',
         credentials
       ),
     'Login failed. Please check your email and password.'

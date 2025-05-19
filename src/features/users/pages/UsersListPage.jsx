@@ -79,9 +79,9 @@ export const UsersListPage = () => {
   if (searchTerm.trim() !== '') {
     processedUsers = processedUsers.filter(
       (user) =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.mobile.includes(searchTerm)
+        user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.mobile?.includes(searchTerm)
     );
   }
 
@@ -264,9 +264,6 @@ export const UsersListPage = () => {
                   <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-32'>
                     Status
                   </th>
-                  <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-16'>
-                    Action
-                  </th>
                 </tr>
               </thead>
 
@@ -319,9 +316,6 @@ export const UsersListPage = () => {
                         }`}>
                         {user.is_active ? 'ACTIVE' : 'INACTIVE'}
                       </span>
-                    </td>
-                    <td className='px-4 py-4 text-right text-sm font-medium w-auto lg:w-16'>
-                      <MoreHorizontal className='h-5 w-5 text-gray-400 hover:text-gray-500' />
                     </td>
                   </tr>
                 ))}

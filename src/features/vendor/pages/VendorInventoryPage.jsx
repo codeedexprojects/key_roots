@@ -9,6 +9,7 @@ import {
   getVendorPackages,
 } from '../services/vendorService';
 import { LoadingSpinner } from '@/components/common';
+import { getImageUrl } from '@/lib/getImageUrl';
 
 export const VendorInventoryPage = () => {
   const { vendorId } = useParams();
@@ -27,9 +28,8 @@ export const VendorInventoryPage = () => {
     const fetchVendorDetails = async () => {
       setLoading(true);
       try {
-        // Fetch vendor details
         const vendorResponse = await getVendorById(vendorId);
-
+        console.log(vendorResponse);
         if (vendorResponse?.error) {
           console.error(
             'Error fetching vendor details:',
@@ -58,17 +58,14 @@ export const VendorInventoryPage = () => {
           const busesResponse = await getVendorBuses(vendorId);
 
           if (busesResponse && !busesResponse.error && busesResponse.data) {
-            // Transform buses data
             const transformedBuses = busesResponse.data.map((bus) => ({
               id: bus.id,
               title: bus.bus_name,
-              type:
-                bus.features?.length > 0 ? bus.features.join(', ') : 'Standard',
+              type: bus.features?.map((f) => f.name).join(', ') || 'Standard',
               capacity: bus.capacity,
               vehicleRC: bus.vehicle_rc_number,
               status: 'Available',
-              image:
-                bus.travels_logo || '/placeholder.svg?height=192&width=384',
+              image: getImageUrl(bus.travels_logo),
               description: bus.vehicle_description,
               basePrice: bus.base_price,
               pricePerKm: bus.price_per_km,
@@ -79,7 +76,6 @@ export const VendorInventoryPage = () => {
             setBuses([]);
           }
 
-          // Fetch packages
           const packagesResponse = await getVendorPackages(vendorId);
 
           if (
@@ -87,18 +83,16 @@ export const VendorInventoryPage = () => {
             !packagesResponse.error &&
             packagesResponse.data
           ) {
-            // Transform packages data
             const transformedPackages = packagesResponse.data.map((pkg) => ({
               id: pkg.id,
-              destination: pkg.places || 'Package Tour',
-              route: pkg.places || 'Tour Package',
+              destination: pkg.places,
+              route: pkg.places,
               availableDates: `${pkg.days} days, ${pkg.nights} nights`,
               status: pkg.ac_available ? 'Open' : 'Closed',
-              image:
-                pkg.header_image || '/placeholder.svg?height=192&width=384',
+              image: getImageUrl(pkg.header_image),
               acAvailable: pkg.ac_available,
               guideIncluded: pkg.guide_included,
-              subCategoryName: pkg.sub_category_name,
+              subCategoryName: pkg.sub_category?.name || '',
               days: pkg.days,
               nights: pkg.nights,
             }));

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, useParams } from 'react-router';
 import { LoadingSpinner, EmptyState } from '@/components/common';
 import { getUserById } from '../services/userService';
@@ -13,10 +13,26 @@ export const UserDetailsPage = () => {
   // State for API data
   const [user, setUser] = useState(null);
   const [bookings, setBookings] = useState([]);
-  console.log(user);
+
+  // Filter and sort states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortOrder, setSortOrder] = useState('desc'); // 'desc' for newest, 'asc' for oldest
+  const [selectedState, setSelectedState] = useState('');
+  const [availableStates, setAvailableStates] = useState([]);
+
+  // Pagination states
+  const [currentPageBookings, setCurrentPageBookings] = useState(1);
+  const [currentPageRewards, setCurrentPageRewards] = useState(1);
+  const itemsPerPage = 5;
+
   // Loading and error states
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPageBookings(1);
+  }, [searchTerm, selectedState, sortOrder]);
 
   // Fetch user data
   useEffect(() => {
@@ -26,7 +42,7 @@ export const UserDetailsPage = () => {
       setIsLoading(true);
       try {
         const response = await getUserById(userId);
-
+        console.log(response);
         if (response && !response.error) {
           // Transform user data
           const userData = {
@@ -46,15 +62,24 @@ export const UserDetailsPage = () => {
           // Set bookings data
           if (response.bookings && Array.isArray(response.bookings)) {
             const transformedBookings = response.bookings.map((booking) => ({
-              date: booking.date || 'N/A',
-              item: booking.package_name || 'Package',
+              id: booking.id || '000000',
               orderId: `#${booking.id || '000000'}`,
-              total: booking.amount ? `₹${booking.amount}` : '₹0',
-              status: booking.status || 'Pending',
+              start_date: booking.start_date || 'N/A',
+              booking_status: booking.booking_status || 'Pending',
+              trip_status: booking.trip_status || 'Unknown',
+              total: booking.total_amount ? `₹${booking.total_amount}` : '₹0',
+              state: booking.state || '',
             }));
             setBookings(transformedBookings);
+
+            // Extract unique states from bookings
+            const states = Array.from(
+              new Set(response.bookings.map((b) => b.state))
+            ).filter(Boolean);
+            setAvailableStates(states);
           } else {
             setBookings([]);
+            setAvailableStates([]);
           }
         } else {
           setError(response?.message || 'Failed to load user details');
@@ -79,90 +104,6 @@ export const UserDetailsPage = () => {
 
     fetchUserDetails();
   }, [userId, addToast]);
-
-  // Sample rewards data (we'll keep this for now as a fallback)
-
-  // Sample rewards data
-  const rewards = [
-    {
-      date: '12 Dec 2023',
-      option: 'First time Booking',
-      referId: '#302011',
-      reward: '$300.00',
-      status: 'Withdraw',
-    },
-    {
-      date: '12 Dec 2023',
-      option: 'Invite Friend',
-      referId: '#302011',
-      reward: '$121.00',
-      status: 'Completed',
-    },
-    {
-      date: '12 Dec 2023',
-      option: 'Booking',
-      referId: '#302011',
-      reward: '$121.00',
-      status: 'Pending',
-    },
-    {
-      date: '12 Dec 2023',
-      option: 'Booking',
-      referId: '#302011',
-      reward: '$121.00',
-      status: 'Completed',
-    },
-    {
-      date: '12 Dec 2023',
-      option: 'Booking',
-      referId: '#302011',
-      reward: '$121.00',
-      status: 'Completed',
-    },
-    {
-      date: '12 Dec 2023',
-      option: 'Booking',
-      referId: '#302011',
-      reward: '$121.00',
-      status: 'Completed',
-    },
-    {
-      date: '12 Dec 2023',
-      option: 'Booking',
-      referId: '#302011',
-      reward: '$121.00',
-      status: 'Pending',
-    },
-    {
-      date: '12 Dec 2023',
-      option: 'Booking',
-      referId: '#302011',
-      reward: '$121.00',
-      status: 'Pending',
-    },
-    {
-      date: '12 Dec 2023',
-      option: 'Booking',
-      referId: '#302011',
-      reward: '$121.00',
-      status: 'Pending',
-    },
-  ];
-
-  const getStatusColor = (status) => {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return 'text-green-500';
-      case 'pending':
-        return 'text-yellow-500';
-      case 'cancelled':
-        return 'text-red-500';
-      case 'withdraw':
-        return 'text-orange-500';
-      default:
-        return 'text-gray-500';
-    }
-  };
 
   return (
     <div className='min-h-screen'>
@@ -227,9 +168,6 @@ export const UserDetailsPage = () => {
           <div className='lg:col-span-2 space-y-6'>
             <div className='flex justify-end gap-2'>
               <button className='px-4 py-2 border border-red-500 text-red-500 rounded-md hover:bg-red-50'>
-                Action
-              </button>
-              <button className='px-4 py-2 border border-red-500 text-red-500 rounded-md hover:bg-red-50'>
                 Export PDF
               </button>
             </div>
@@ -282,17 +220,37 @@ export const UserDetailsPage = () => {
                   <input
                     type='text'
                     placeholder='Search...'
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className='pl-8 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none text-sm w-full md:w-64 relative'
                   />
                   <div className='flex gap-2'>
-                    {['Sort by: Newest', 'Filter by: State'].map((text) => (
-                      <button
-                        key={text}
-                        className='flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm'>
-                        <span>{text}</span>
-                        <span>🔽</span>
-                      </button>
-                    ))}
+                    <select
+                      value={sortOrder}
+                      onChange={(e) => setSortOrder(e.target.value)}
+                      className='px-3 py-2 border border-gray-300 rounded-md bg-white text-sm appearance-none cursor-pointer'>
+                      <option value='desc'>Newest</option>
+                      <option value='asc'>Oldest</option>
+                    </select>
+
+                    <select
+                      value={selectedState}
+                      onChange={(e) => setSelectedState(e.target.value)}
+                      disabled={availableStates.length === 0}
+                      className={`px-3 py-2 border border-gray-300 rounded-md bg-white text-sm appearance-none cursor-pointer ${
+                        availableStates.length === 0
+                          ? 'opacity-50 cursor-not-allowed'
+                          : ''
+                      }`}>
+                      <option value=''>All States</option>
+                      {availableStates.map((state) => (
+                        <option
+                          key={state}
+                          value={state}>
+                          {state.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -310,11 +268,11 @@ export const UserDetailsPage = () => {
                         <thead>
                           <tr>
                             {[
-                              'Date',
-                              'Item',
+                              'Start Date',
                               'Order ID',
-                              'Total',
-                              'Status',
+                              'Booking Status',
+                              'Trip Status',
+                              'Amount',
                             ].map((header) => (
                               <th
                                 key={header}
@@ -325,33 +283,289 @@ export const UserDetailsPage = () => {
                           </tr>
                         </thead>
                         <tbody className='bg-white divide-y divide-gray-200'>
-                          {bookings.map((row, i) => (
-                            <tr
-                              key={i}
-                              className='hover:bg-gray-50'>
-                              {Object.values(row).map((cell, j) => (
-                                <td
-                                  key={j}
-                                  className={`px-4 py-4 whitespace-nowrap text-sm ${
-                                    j === 4
-                                      ? getStatusColor(cell)
-                                      : 'text-gray-500'
-                                  }`}>
-                                  {cell}
+                          {(() => {
+                            const filteredBookings = bookings
+                              .filter(
+                                (b) =>
+                                  (!selectedState ||
+                                    b.state === selectedState) &&
+                                  (!searchTerm ||
+                                    b.package_name
+                                      ?.toLowerCase()
+                                      .includes(searchTerm.toLowerCase()) ||
+                                    b.booking_status
+                                      ?.toLowerCase()
+                                      .includes(searchTerm.toLowerCase()) ||
+                                    b.trip_status
+                                      ?.toLowerCase()
+                                      .includes(searchTerm.toLowerCase()) ||
+                                    String(b.id).includes(searchTerm))
+                              )
+                              .sort((a, b) => {
+                                const dateA = new Date(a.start_date);
+                                const dateB = new Date(b.start_date);
+                                return sortOrder === 'desc'
+                                  ? dateB - dateA
+                                  : dateA - dateB;
+                              });
+
+                            const paginatedBookings = filteredBookings.slice(
+                              (currentPageBookings - 1) * itemsPerPage,
+                              currentPageBookings * itemsPerPage
+                            );
+
+                            if (filteredBookings.length === 0) {
+                              return (
+                                <tr>
+                                  <td
+                                    colSpan='5'
+                                    className='px-4 py-8 text-center text-gray-500'>
+                                    No results found for the current filters.
+                                  </td>
+                                </tr>
+                              );
+                            }
+
+                            return paginatedBookings.map((row, i) => (
+                              <tr
+                                key={i}
+                                className='hover:bg-gray-50'>
+                                <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-500'>
+                                  {row.start_date}
                                 </td>
-                              ))}
-                            </tr>
-                          ))}
+                                <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-500'>
+                                  #{row.id}
+                                </td>
+                                <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-500'>
+                                  {row.booking_status}
+                                </td>
+                                <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-500'>
+                                  {row.trip_status}
+                                </td>
+                                <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-500'>
+                                  {row.total}
+                                </td>
+                              </tr>
+                            ));
+                          })()}
                         </tbody>
                       </table>
+
+                      {/* Pagination Controls for Bookings */}
+                      {(() => {
+                        const filteredBookings = bookings.filter(
+                          (b) =>
+                            (!selectedState || b.state === selectedState) &&
+                            (!searchTerm ||
+                              b.package_name
+                                ?.toLowerCase()
+                                .includes(searchTerm.toLowerCase()) ||
+                              b.booking_status
+                                ?.toLowerCase()
+                                .includes(searchTerm.toLowerCase()) ||
+                              b.trip_status
+                                ?.toLowerCase()
+                                .includes(searchTerm.toLowerCase()) ||
+                              String(b.id).includes(searchTerm))
+                        );
+
+                        const totalPagesBookings = Math.ceil(
+                          filteredBookings.length / itemsPerPage
+                        );
+
+                        return totalPagesBookings > 1 ? (
+                          <div className='mt-4 flex justify-center'>
+                            <div className='flex space-x-1'>
+                              <button
+                                onClick={() =>
+                                  setCurrentPageBookings((prev) =>
+                                    Math.max(prev - 1, 1)
+                                  )
+                                }
+                                disabled={currentPageBookings === 1}
+                                className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                                  currentPageBookings === 1
+                                    ? 'text-gray-400 cursor-not-allowed'
+                                    : 'text-gray-700 hover:bg-gray-50'
+                                }`}>
+                                <span className='sr-only'>Previous</span>
+                                <ChevronLeft className='h-5 w-5' />
+                              </button>
+
+                              {[...Array(totalPagesBookings)].map((_, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => setCurrentPageBookings(i + 1)}
+                                  className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
+                                    currentPageBookings === i + 1
+                                      ? 'bg-primary text-white'
+                                      : 'text-gray-700 hover:bg-gray-50'
+                                  } rounded-md`}>
+                                  {i + 1}
+                                </button>
+                              ))}
+
+                              <button
+                                onClick={() =>
+                                  setCurrentPageBookings((prev) =>
+                                    Math.min(prev + 1, totalPagesBookings)
+                                  )
+                                }
+                                disabled={
+                                  currentPageBookings === totalPagesBookings
+                                }
+                                className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                                  currentPageBookings === totalPagesBookings
+                                    ? 'text-gray-400 cursor-not-allowed'
+                                    : 'text-gray-700 hover:bg-gray-50'
+                                }`}>
+                                <span className='sr-only'>Next</span>
+                                <ChevronRight className='h-5 w-5' />
+                              </button>
+                            </div>
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
                   )
                 ) : (
-                  <EmptyState
-                    title='No rewards found'
-                    description='This user has no rewards yet.'
-                    icon='default'
-                  />
+                  (() => {
+                    // Mock rewards data for demonstration
+                    const rewards = user.rewards || [];
+
+                    if (rewards.length === 0) {
+                      return (
+                        <EmptyState
+                          title='No rewards found'
+                          description='This user has no rewards yet.'
+                          icon='default'
+                        />
+                      );
+                    }
+
+                    const totalPagesRewards = Math.ceil(
+                      rewards.length / itemsPerPage
+                    );
+
+                    const paginatedRewards = rewards.slice(
+                      (currentPageRewards - 1) * itemsPerPage,
+                      currentPageRewards * itemsPerPage
+                    );
+
+                    return (
+                      <div>
+                        <div className='overflow-x-auto'>
+                          <table className='min-w-full divide-y divide-gray-200'>
+                            <thead>
+                              <tr>
+                                {[
+                                  'Reward ID',
+                                  'Type',
+                                  'Points',
+                                  'Date',
+                                  'Status',
+                                ].map((header) => (
+                                  <th
+                                    key={header}
+                                    className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                                    {header}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody className='bg-white divide-y divide-gray-200'>
+                              {paginatedRewards.length === 0 ? (
+                                <tr>
+                                  <td
+                                    colSpan='5'
+                                    className='px-4 py-8 text-center text-gray-500'>
+                                    No rewards found.
+                                  </td>
+                                </tr>
+                              ) : (
+                                paginatedRewards.map((reward, i) => (
+                                  <tr
+                                    key={i}
+                                    className='hover:bg-gray-50'>
+                                    <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-500'>
+                                      #{reward.id || i + 1}
+                                    </td>
+                                    <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-500'>
+                                      {reward.type || 'Loyalty Points'}
+                                    </td>
+                                    <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-500'>
+                                      {reward.points || '100'}
+                                    </td>
+                                    <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-500'>
+                                      {reward.date ||
+                                        new Date().toLocaleDateString()}
+                                    </td>
+                                    <td className='px-4 py-4 whitespace-nowrap text-sm text-green-500'>
+                                      {reward.status || 'Active'}
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Pagination Controls for Rewards */}
+                        {totalPagesRewards > 1 && (
+                          <div className='mt-4 flex justify-center'>
+                            <div className='flex space-x-1'>
+                              <button
+                                onClick={() =>
+                                  setCurrentPageRewards((prev) =>
+                                    Math.max(prev - 1, 1)
+                                  )
+                                }
+                                disabled={currentPageRewards === 1}
+                                className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                                  currentPageRewards === 1
+                                    ? 'text-gray-400 cursor-not-allowed'
+                                    : 'text-gray-700 hover:bg-gray-50'
+                                }`}>
+                                <span className='sr-only'>Previous</span>
+                                <ChevronLeft className='h-5 w-5' />
+                              </button>
+
+                              {[...Array(totalPagesRewards)].map((_, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => setCurrentPageRewards(i + 1)}
+                                  className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
+                                    currentPageRewards === i + 1
+                                      ? 'bg-primary text-white'
+                                      : 'text-gray-700 hover:bg-gray-50'
+                                  } rounded-md`}>
+                                  {i + 1}
+                                </button>
+                              ))}
+
+                              <button
+                                onClick={() =>
+                                  setCurrentPageRewards((prev) =>
+                                    Math.min(prev + 1, totalPagesRewards)
+                                  )
+                                }
+                                disabled={
+                                  currentPageRewards === totalPagesRewards
+                                }
+                                className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                                  currentPageRewards === totalPagesRewards
+                                    ? 'text-gray-400 cursor-not-allowed'
+                                    : 'text-gray-700 hover:bg-gray-50'
+                                }`}>
+                                <span className='sr-only'>Next</span>
+                                <ChevronRight className='h-5 w-5' />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()
                 )}
               </div>
             </div>

@@ -1,3 +1,4 @@
+import { getImageUrl } from '@/lib/getImageUrl';
 import { Users, FileText } from 'lucide-react';
 import { Link } from 'react-router';
 
@@ -12,7 +13,10 @@ export const BusCard = ({ bus, vendorId }) => {
       className='block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden'>
       <div className='h-48 bg-gray-200 overflow-hidden'>
         <img
-          src={bus.image || '/placeholder.svg?height=192&width=384'}
+          src={
+            getImageUrl(bus.image) ||
+            'https://upload.wikimedia.org/wikipedia/commons/3/32/Icon-mode-bus-default.svg'
+          }
           alt={bus.title}
           className='h-full w-full object-cover'
         />

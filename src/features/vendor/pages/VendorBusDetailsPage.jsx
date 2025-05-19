@@ -4,6 +4,7 @@ import { ArrowLeft, Users, FileText, Check, X } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getBusDetails } from '../services/vendorService';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { getImageUrl } from '@/lib/getImageUrl';
 
 export const VendorBusDetailsPage = () => {
   const { busId, vendorId } = useParams();
@@ -17,17 +18,39 @@ export const VendorBusDetailsPage = () => {
       try {
         const data = await getBusDetails(vendorId, busId);
 
-        console.log(data);
         if (data) {
-          setBusDetails(data);
-        } else {
-          // If no data is returned, use sample data for demonstration
-          setBusDetails(sampleBusDetails);
+          const documents = [
+            {
+              name: 'RC Certificate',
+              path: data.rc_certificate,
+              status: 'Verified',
+            },
+            {
+              name: 'License',
+              path: data.license,
+              status: 'Verified',
+            },
+            {
+              name: 'Contract Carriage Permit',
+              path: data.contract_carriage_permit,
+              status: 'Verified',
+            },
+            {
+              name: 'Passenger Insurance',
+              path: data.passenger_insurance,
+              status: 'Verified',
+            },
+            {
+              name: 'Vehicle Insurance',
+              path: data.vehicle_insurance,
+              status: 'Verified',
+            },
+          ];
+
+          setBusDetails({ ...data, documents });
         }
       } catch (error) {
         console.error('Error fetching bus details:', error);
-        // Use sample data as fallback
-        setBusDetails(sampleBusDetails);
       } finally {
         setIsLoading(false);
       }
@@ -57,71 +80,6 @@ export const VendorBusDetailsPage = () => {
     );
   }
 
-  // Sample bus details data
-  const sampleBusDetails = {
-    id: busId,
-    bus_name: 'Sunshine Travels Deluxe',
-    bus_number: 'KL10AB1234',
-    capacity: 40,
-    vehicle_description:
-      'Comfortable long-distance sleeper bus with ample luggage space.',
-    vehicle_rc_number: 'RC4567893210',
-    travels_logo: '/placeholder.svg?height=400&width=600',
-    base_price: '₹200.00',
-    price_per_km: '₹100.00',
-    amenities: [
-      { id: 1, name: 'Air Conditioning', available: true },
-      { id: 2, name: 'WiFi', available: true },
-      { id: 3, name: 'USB Charging', available: true },
-      { id: 4, name: 'Reclining Seats', available: true },
-      { id: 5, name: 'Blankets', available: true },
-      { id: 6, name: 'Snacks', available: false },
-      { id: 7, name: 'TV', available: false },
-      { id: 8, name: 'Toilet', available: true },
-    ],
-    documents: [
-      {
-        name: 'RC Certificate',
-        status: 'Verified',
-        path: '/placeholder.svg?height=150&width=200',
-        expiry: '2025-12-31',
-      },
-      {
-        name: 'License',
-        status: 'Verified',
-        path: '/placeholder.svg?height=150&width=200',
-        expiry: '2026-05-15',
-      },
-      {
-        name: 'Contract Carriage Permit',
-        status: 'Verified',
-        path: '/placeholder.svg?height=150&width=200',
-        expiry: '2025-08-22',
-      },
-      {
-        name: 'Passenger Insurance',
-        status: 'Verified',
-        path: '/placeholder.svg?height=150&width=200',
-        expiry: '2025-10-10',
-      },
-      {
-        name: 'Vehicle Insurance',
-        status: 'Verified',
-        path: '/placeholder.svg?height=150&width=200',
-        expiry: '2025-11-05',
-      },
-    ],
-    features: [
-      'Sleeper Bus',
-      'Push-back Seats',
-      'Reading Lights',
-      'Bottle Holders',
-      'Emergency Exit',
-      'First Aid Kit',
-      'Fire Extinguisher',
-    ],
-  };
-
   return (
     <div className='flex-1 overflow-auto'>
       {/* Back Button */}
@@ -139,7 +97,10 @@ export const VendorBusDetailsPage = () => {
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
             <div>
               <img
-                src={busDetails.travels_logo || '/placeholder.svg'}
+                src={
+                  getImageUrl(busDetails.travels_logo) ||
+                  'https://upload.wikimedia.org/wikipedia/commons/3/32/Icon-mode-bus-default.svg'
+                }
                 alt={busDetails.bus_name}
                 className='w-full h-64 object-cover rounded-lg'
               />
@@ -211,12 +172,12 @@ export const VendorBusDetailsPage = () => {
               <div>
                 <h3 className='text-lg font-semibold mb-3'>Bus Features</h3>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                  {busDetails.features.map((feature, index) => (
+                  {busDetails.features.map((feature) => (
                     <div
-                      key={index}
+                      key={feature.id}
                       className='flex items-center'>
                       <Check className='h-4 w-4 text-green-500 mr-2' />
-                      <span className='text-gray-700'>{feature}</span>
+                      <span className='text-gray-700'>{feature.name}</span>
                     </div>
                   ))}
                 </div>
@@ -229,26 +190,18 @@ export const VendorBusDetailsPage = () => {
               <div>
                 <h3 className='text-lg font-semibold mb-3'>Bus Amenities</h3>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                  {busDetails?.amenities &&
-                    busDetails.amenities.map((amenity) => (
-                      <div
-                        key={amenity.id}
-                        className='flex items-center'>
-                        {amenity.available ? (
-                          <Check className='h-4 w-4 text-green-500 mr-2' />
-                        ) : (
-                          <X className='h-4 w-4 text-red-500 mr-2' />
-                        )}
-                        <span
-                          className={`${
-                            amenity.available
-                              ? 'text-gray-700'
-                              : 'text-gray-400'
-                          }`}>
-                          {amenity.name}
-                        </span>
-                      </div>
-                    ))}
+                  {busDetails.amenities.map((amenity) => (
+                    <div
+                      key={amenity.id}
+                      className='flex items-center'>
+                      <img
+                        src={getImageUrl(amenity.icon)}
+                        alt={amenity.name}
+                        className='w-5 h-5 mr-2 object-contain'
+                      />
+                      <span className='text-gray-700'>{amenity.name}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </TabsContent>
@@ -266,7 +219,7 @@ export const VendorBusDetailsPage = () => {
                         className='flex items-start border-b pb-4'>
                         <div className='w-16 h-16 rounded-md overflow-hidden flex-shrink-0 mr-4'>
                           <img
-                            src={doc.path}
+                            src={getImageUrl(doc.path)}
                             alt={doc.name}
                             className='w-full h-full object-cover'
                           />
@@ -282,9 +235,6 @@ export const VendorBusDetailsPage = () => {
                               }`}>
                               {doc.status}
                             </div>
-                            <span className='text-sm text-gray-500 ml-2'>
-                              Expires: {doc.expiry}
-                            </span>
                           </div>
                         </div>
                       </div>

@@ -43,14 +43,10 @@ export function DashboardPage() {
   const [recentApprovedState, setRecentApprovedState] = useState('');
   const [reviewsState, setReviewsState] = useState('');
 
-  // State options
-  const stateOptions = [
-    { value: '', label: 'All States' },
-    { value: 'kerala', label: 'Kerala' },
-    { value: 'tamil_nadu', label: 'Tamil Nadu' },
-    { value: 'karnataka', label: 'Karnataka' },
-    { value: 'andhra_pradesh', label: 'Andhra Pradesh' },
-  ];
+  const [recentApprovedStates, setRecentApprovedStates] = useState([]);
+  const [recentUsersStates, setRecentUsersStates] = useState([]);
+  const [topVendorStates, setTopVendorStates] = useState([]);
+  const [reviewsStates, setReviewsStates] = useState([]);
 
   // Loading states
   const [dashboardCountsLoading, setDashboardCountsLoading] = useState(true);
@@ -74,7 +70,7 @@ export function DashboardPage() {
       setDashboardCountsLoading(true);
       try {
         const response = await getDashboardCounts();
-        console.log('Dashboard counts response:', response);
+
         if (response && !response.error) {
           setDashboardCounts({
             total_vendors: response.total_vendors,
@@ -106,15 +102,21 @@ export function DashboardPage() {
       setTopVendorsLoading(true);
       try {
         const response = await getTopVendors(topVendorsState);
-        console.log('Top vendors response:', response);
+
         if (response && !response.error) {
           const transformedVendors = response.map((vendor) => ({
             name: vendor.name,
             location: vendor.place,
             bookings: vendor.total_booking_count || 0,
             img: '/placeholder.svg?height=40&width=40',
+            state: vendor.state,
           }));
           setTopVendors(transformedVendors);
+
+          const states = Array.from(
+            new Set(response.map((vendor) => vendor.place))
+          ).filter(Boolean);
+          setTopVendorStates(['', ...states]);
         } else {
           setTopVendorsError(response?.message || 'Failed to load top vendors');
         }
@@ -136,7 +138,7 @@ export function DashboardPage() {
     const fetchRecentUsers = async () => {
       setRecentUsersLoading(true);
       try {
-        const response = await getRecentUsers(recentUsersState);
+        const response = await getRecentUsers();
         console.log('Recent users response:', response);
         if (response && !response.error) {
           const transformedUsers = response.map((user) => ({
@@ -145,8 +147,14 @@ export function DashboardPage() {
             email: user.email,
             joined: new Date(user.created_at).toLocaleDateString(),
             img: '/placeholder.svg?height=40&width=40',
+            state: user.state,
           }));
           setRecentUsers(transformedUsers);
+
+          const states = Array.from(
+            new Set(response.map((user) => user.state))
+          ).filter(Boolean);
+          setRecentUsersStates(['', ...states]);
         } else {
           setRecentUsersError(
             response?.message || 'Failed to load recent users'
@@ -174,6 +182,11 @@ export function DashboardPage() {
         console.log('Recent approved bookings response:', response);
         if (response && !response.error) {
           setRecentApproved(response);
+
+          const states = Array.from(
+            new Set(response.map((b) => b.state))
+          ).filter(Boolean);
+          setRecentApprovedStates(['', ...states]);
         } else {
           setRecentApprovedError(
             response?.message || 'Failed to load recent approved bookings'
@@ -201,7 +214,7 @@ export function DashboardPage() {
         console.log('Revenue data response:', response);
         if (response && !response.error) {
           setRevenueData(response);
-
+          console.log(response);
           // Set the most recent month as the default selected month
           if (response.monthly_revenue && response.monthly_revenue.length > 0) {
             setSelectedMonth(
@@ -298,6 +311,12 @@ export function DashboardPage() {
         console.log('Reviews response:', response);
         if (response && !response.error) {
           setReviews(response);
+
+          // Extract unique states from the response
+          const states = Array.from(
+            new Set(response.map((review) => review.state))
+          ).filter(Boolean);
+          setReviewsStates(['', ...states]);
         } else {
           setReviewsError(response?.message || 'Failed to load reviews');
         }
@@ -311,6 +330,23 @@ export function DashboardPage() {
 
     fetchReviews();
   }, [reviewsState]);
+
+  // Filter data based on selected state
+  const filteredRecentApproved = recentApprovedState
+    ? recentApproved.filter((b) => b.state === recentApprovedState)
+    : recentApproved;
+
+  const filteredTopVendors = topVendorsState
+    ? topVendors.filter((v) => v.location === topVendorsState)
+    : topVendors;
+
+  const filteredRecentUsers = recentUsersState
+    ? recentUsers.filter((u) => u.state === recentUsersState)
+    : recentUsers;
+
+  const filteredReviews = reviewsState
+    ? reviews.filter((r) => r.state === reviewsState)
+    : reviews;
 
   return (
     <div className='space-y-6'>
@@ -425,7 +461,7 @@ export function DashboardPage() {
               <EmptyState
                 title='No revenue data'
                 description='There is no revenue data to display.'
-                icon='default'
+                icon='payout'
               />
             </div>
           ) : (
@@ -508,7 +544,7 @@ export function DashboardPage() {
           )}
         </div>
 
-        <div className='bg-white border border-gray-200 rounded-md p-5 overflow-y-auto max-h-110 no-scrollbar'>
+        <div className='bg-white border border-gray-200 rounded-md p-5 flex flex-col max-h-[440px]'>
           <div className='flex justify-between items-center mb-4'>
             <h3 className='font-medium'>Recent approved</h3>
             <div className='relative'>
@@ -516,34 +552,38 @@ export function DashboardPage() {
                 value={recentApprovedState}
                 onChange={(e) => setRecentApprovedState(e.target.value)}
                 className='text-gray-500 text-sm border border-gray-300 px-2 py-1 pr-8 rounded-md hover:bg-gray-100 appearance-none cursor-pointer'>
-                {stateOptions.map((option) => (
+                {recentApprovedStates.map((state) => (
                   <option
-                    key={option.value}
-                    value={option.value}>
-                    {option.label}
+                    key={state}
+                    value={state}>
+                    {state
+                      ? state.replace('_', ' ').toUpperCase()
+                      : 'All States'}
                   </option>
                 ))}
               </select>
               <ChevronDown className='absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none' />
             </div>
           </div>
-          {recentApprovedLoading ? (
-            <div className='flex justify-center items-center min-h-[200px]'>
-              <LoadingSpinner size='medium' />
-            </div>
-          ) : recentApprovedError ? (
-            <div className='bg-red-50 border border-red-200 rounded-lg p-4 text-center'>
-              <p className='text-red-600 text-sm'>{recentApprovedError}</p>
-            </div>
-          ) : recentApproved.length === 0 ? (
-            <EmptyState
-              title='No approved bookings'
-              description='There are no recent approved bookings to display.'
-              icon='default'
-            />
-          ) : (
-            <div className='divide-y divide-gray-200'>
-              {recentApproved.slice(0, 5).map((booking) => (
+
+          {/* Scrollable content */}
+          <div className='overflow-y-auto no-scrollbar divide-y divide-gray-200 flex-1'>
+            {recentApprovedLoading ? (
+              <div className='flex justify-center items-center min-h-[200px]'>
+                <LoadingSpinner size='medium' />
+              </div>
+            ) : recentApprovedError ? (
+              <div className='bg-red-50 border border-red-200 rounded-lg p-4 text-center'>
+                <p className='text-red-600 text-sm'>{recentApprovedError}</p>
+              </div>
+            ) : filteredRecentApproved.length === 0 ? (
+              <EmptyState
+                title='No approved bookings'
+                description='There are no recent approved bookings to display.'
+                icon='default'
+              />
+            ) : (
+              filteredRecentApproved.slice(0, 5).map((booking) => (
                 <div
                   key={booking.id}
                   className='py-3 text-sm'>
@@ -569,12 +609,14 @@ export function DashboardPage() {
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
+
+          {/* Sticky footer */}
           <Link
             to='/bookings'
-            className='mt-4 flex items-center justify-center w-full text-gray-500 text-sm hover:text-primary hover:underline'>
+            className='mt-4 flex items-center justify-center text-gray-500 text-sm hover:text-primary hover:underline'>
             <span>SEE ALL BOOKINGS</span>
             <ArrowRight className='h-4 w-4 ml-1' />
           </Link>
@@ -591,11 +633,13 @@ export function DashboardPage() {
                 value={topVendorsState}
                 onChange={(e) => setTopVendorsState(e.target.value)}
                 className='text-gray-500 text-sm border border-gray-300 px-2 py-1 pr-8 rounded-md hover:bg-gray-100 appearance-none cursor-pointer'>
-                {stateOptions.map((option) => (
+                {topVendorStates.map((state) => (
                   <option
-                    key={option.value}
-                    value={option.value}>
-                    {option.label}
+                    key={state}
+                    value={state}>
+                    {state
+                      ? state.replace('_', ' ').toUpperCase()
+                      : 'All States'}
                   </option>
                 ))}
               </select>
@@ -618,7 +662,7 @@ export function DashboardPage() {
             />
           ) : (
             <div className='space-y-4'>
-              {topVendors.slice(0, 5).map((vendor, idx) => (
+              {filteredTopVendors.slice(0, 5).map((vendor, idx) => (
                 <div
                   key={idx}
                   className='flex items-center justify-between'>
@@ -658,11 +702,13 @@ export function DashboardPage() {
                 value={recentUsersState}
                 onChange={(e) => setRecentUsersState(e.target.value)}
                 className='text-gray-500 text-sm border border-gray-300 px-2 py-1 pr-8 rounded-md hover:bg-gray-100 appearance-none cursor-pointer'>
-                {stateOptions.map((option) => (
+                {recentUsersStates.map((state) => (
                   <option
-                    key={option.value}
-                    value={option.value}>
-                    {option.label}
+                    key={state}
+                    value={state}>
+                    {state
+                      ? state.replace('_', ' ').toUpperCase()
+                      : 'All States'}
                   </option>
                 ))}
               </select>
@@ -685,7 +731,7 @@ export function DashboardPage() {
             />
           ) : (
             <div className='space-y-4'>
-              {recentUsers.slice(0, 5).map((user, idx) => (
+              {filteredRecentUsers.slice(0, 5).map((user, idx) => (
                 <div
                   key={user.id || idx}
                   className='flex items-center justify-between'>
@@ -727,11 +773,13 @@ export function DashboardPage() {
                 value={reviewsState}
                 onChange={(e) => setReviewsState(e.target.value)}
                 className='text-gray-500 text-sm border border-gray-300 px-2 py-1 pr-8 rounded-md hover:bg-gray-100 appearance-none cursor-pointer'>
-                {stateOptions.map((option) => (
+                {reviewsStates.map((state) => (
                   <option
-                    key={option.value}
-                    value={option.value}>
-                    {option.label}
+                    key={state}
+                    value={state}>
+                    {state
+                      ? state.replace('_', ' ').toUpperCase()
+                      : 'All States'}
                   </option>
                 ))}
               </select>
@@ -754,7 +802,7 @@ export function DashboardPage() {
             />
           ) : (
             <div className='space-y-4'>
-              {reviews.slice(0, 5).map((review, idx) => (
+              {filteredReviews.slice(0, 5).map((review, idx) => (
                 <div
                   key={idx}
                   className='flex items-center justify-between'>

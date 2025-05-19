@@ -8,5 +8,5 @@ export const getImageUrl = (path) => {
     return path;
   }
   const base = import.meta.env.VITE_IMAGE_BASE_URL;
-  return `${base}/${path}`;
+  return `${base}${path}`;
 };

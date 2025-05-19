@@ -4,87 +4,44 @@ import { ArrowLeft, Calendar, MapPin, Check, X } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getPackageDetails } from '../services/vendorService';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-
-// Sample package details data
-const samplePackageDetails = {
-  id: 11,
-  places: 'New Delhi, Agra, Jaipur',
-  days: 5,
-  nights: 4,
-  ac_available: true,
-  guide_included: true,
-  sub_category_name: 'Golden Triangle Tour',
-  description:
-    "Experience the rich history and culture of India's Golden Triangle. Visit iconic landmarks like the Taj Mahal, Red Fort, and Amber Palace.",
-  price: '₹25,000',
-  image: '/placeholder.svg?height=400&width=600',
-  itinerary: [
-    {
-      day: 1,
-      title: 'Arrival in Delhi',
-      description:
-        "Arrive in Delhi and transfer to your hotel. Evening visit to Qutub Minar and Humayun's Tomb.",
-      image: '/placeholder.svg?height=150&width=200',
-    },
-    {
-      day: 2,
-      title: 'Delhi City Tour',
-      description:
-        'Full day sightseeing in Delhi including Red Fort, Jama Masjid, India Gate, and Lotus Temple.',
-      image: '/placeholder.svg?height=150&width=200',
-    },
-    {
-      day: 3,
-      title: 'Delhi to Agra',
-      description:
-        'Drive to Agra. Visit Taj Mahal during sunset. Evening at leisure.',
-      image: '/placeholder.svg?height=150&width=200',
-    },
-    {
-      day: 4,
-      title: 'Agra to Jaipur',
-      description:
-        'Morning visit to Agra Fort. Drive to Jaipur via Fatehpur Sikri.',
-      image: '/placeholder.svg?height=150&width=200',
-    },
-    {
-      day: 5,
-      title: 'Jaipur and Departure',
-      description:
-        'Visit Amber Fort and City Palace. Transfer to airport for departure.',
-      image: '/placeholder.svg?height=150&width=200',
-    },
-  ],
-  inclusions: [
-    'Accommodation in 3-star hotels',
-    'Daily breakfast and dinner',
-    'Air-conditioned private vehicle',
-    'Professional tour guide',
-    'All entrance fees',
-    'Airport transfers',
-  ],
-  exclusions: [
-    'Flights',
-    'Personal expenses',
-    'Travel insurance',
-    'Lunch',
-    'Optional activities',
-  ],
-};
+import { getImageUrl } from '@/lib/getImageUrl';
 
 export const PackageDetailsPage = () => {
   const { packageId, vendorId } = useParams();
-  const [packageDetails, setPackageDetails] = useState(samplePackageDetails);
+  const [packageDetails, setPackageDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
 
-  // if (isLoading) {
-  //   return (
-  //     <div className='flex justify-center items-center min-h-[500px]'>
-  //       <LoadingSpinner size='large' />
-  //     </div>
-  //   );
-  // }
+  // Fetch package details
+  useEffect(() => {
+    const fetchPackageDetails = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getPackageDetails(vendorId, packageId);
+        console.log('Package details data:', data);
+
+        if (data) {
+          setPackageDetails(data);
+        }
+      } catch (error) {
+        console.error('Error fetching package details:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (vendorId && packageId) {
+      fetchPackageDetails();
+    }
+  }, [vendorId, packageId]);
+
+  if (isLoading) {
+    return (
+      <div className='flex justify-center items-center min-h-[500px]'>
+        <LoadingSpinner size='large' />
+      </div>
+    );
+  }
 
   if (!packageDetails) {
     return (
@@ -98,73 +55,6 @@ export const PackageDetailsPage = () => {
       </div>
     );
   }
-
-  // // Sample package details data
-  // const samplePackageDetails = {
-  //   id: packageId,
-  //   places: 'New Delhi, Agra, Jaipur',
-  //   days: 5,
-  //   nights: 4,
-  //   ac_available: true,
-  //   guide_included: true,
-  //   sub_category_name: 'Golden Triangle Tour',
-  //   description:
-  //     "Experience the rich history and culture of India's Golden Triangle. Visit iconic landmarks like the Taj Mahal, Red Fort, and Amber Palace.",
-  //   price: '₹25,000',
-  //   image: '/placeholder.svg?height=400&width=600',
-  //   itinerary: [
-  //     {
-  //       day: 1,
-  //       title: 'Arrival in Delhi',
-  //       description:
-  //         "Arrive in Delhi and transfer to your hotel. Evening visit to Qutub Minar and Humayun's Tomb.",
-  //       image: '/placeholder.svg?height=150&width=200',
-  //     },
-  //     {
-  //       day: 2,
-  //       title: 'Delhi City Tour',
-  //       description:
-  //         'Full day sightseeing in Delhi including Red Fort, Jama Masjid, India Gate, and Lotus Temple.',
-  //       image: '/placeholder.svg?height=150&width=200',
-  //     },
-  //     {
-  //       day: 3,
-  //       title: 'Delhi to Agra',
-  //       description:
-  //         'Drive to Agra. Visit Taj Mahal during sunset. Evening at leisure.',
-  //       image: '/placeholder.svg?height=150&width=200',
-  //     },
-  //     {
-  //       day: 4,
-  //       title: 'Agra to Jaipur',
-  //       description:
-  //         'Morning visit to Agra Fort. Drive to Jaipur via Fatehpur Sikri.',
-  //       image: '/placeholder.svg?height=150&width=200',
-  //     },
-  //     {
-  //       day: 5,
-  //       title: 'Jaipur and Departure',
-  //       description:
-  //         'Visit Amber Fort and City Palace. Transfer to airport for departure.',
-  //       image: '/placeholder.svg?height=150&width=200',
-  //     },
-  //   ],
-  //   inclusions: [
-  //     'Accommodation in 3-star hotels',
-  //     'Daily breakfast and dinner',
-  //     'Air-conditioned private vehicle',
-  //     'Professional tour guide',
-  //     'All entrance fees',
-  //     'Airport transfers',
-  //   ],
-  //   exclusions: [
-  //     'Flights',
-  //     'Personal expenses',
-  //     'Travel insurance',
-  //     'Lunch',
-  //     'Optional activities',
-  //   ],
-  // };
 
   return (
     <div className='flex-1 overflow-auto'>
@@ -183,7 +73,9 @@ export const PackageDetailsPage = () => {
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
             <div>
               <img
-                src={packageDetails.image || '/placeholder.svg'}
+                src={
+                  getImageUrl(packageDetails.header_image) || '/placeholder.svg'
+                }
                 alt={packageDetails.places}
                 className='w-full h-64 object-cover rounded-lg'
               />
@@ -248,7 +140,7 @@ export const PackageDetailsPage = () => {
                 <div>
                   <p className='text-sm text-gray-500'>Price</p>
                   <p className='text-xl font-semibold text-blue-600'>
-                    {packageDetails.price}{' '}
+                    ₹{packageDetails.price_per_person}{' '}
                     <span className='text-sm font-normal text-gray-500'>
                       per person
                     </span>
@@ -275,10 +167,24 @@ export const PackageDetailsPage = () => {
               value='details'
               className='space-y-6'>
               <div>
-                <h3 className='text-lg font-semibold mb-3'>
-                  Package Description
-                </h3>
-                <p className='text-gray-700'>{packageDetails.description}</p>
+                <h3 className='text-lg font-semibold mb-3'>Package Details</h3>
+                <div className='space-y-2'>
+                  <p className='text-gray-700'>
+                    <span className='font-medium'>Travels Name:</span>{' '}
+                    {packageDetails.travels_name}
+                  </p>
+                  <p className='text-gray-700'>
+                    <span className='font-medium'>Location:</span>{' '}
+                    {packageDetails.travels_location}
+                  </p>
+                  {packageDetails.average_rating && (
+                    <p className='text-gray-700'>
+                      <span className='font-medium'>Rating:</span>{' '}
+                      {packageDetails.average_rating}/5 (
+                      {packageDetails.total_reviews} reviews)
+                    </p>
+                  )}
+                </div>
               </div>
             </TabsContent>
 
@@ -287,33 +193,9 @@ export const PackageDetailsPage = () => {
               className='space-y-6'>
               <div>
                 <h3 className='text-lg font-semibold mb-3'>Itinerary</h3>
-                <div className='space-y-6'>
-                  {packageDetails.itinerary &&
-                    packageDetails.itinerary.map((day) => (
-                      <div
-                        key={day.day}
-                        className='flex items-start border-b pb-4'>
-                        <div className='bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center font-semibold mr-3 flex-shrink-0'>
-                          {day.day}
-                        </div>
-                        <div className='flex-1'>
-                          <h4 className='font-semibold'>{day.title}</h4>
-                          <p className='text-sm text-gray-600 mt-1'>
-                            {day.description}
-                          </p>
-                        </div>
-                        {day.image && (
-                          <div className='ml-4 w-24 h-16 rounded-md overflow-hidden flex-shrink-0'>
-                            <img
-                              src={day.image}
-                              alt={day.title}
-                              className='w-full h-full object-cover'
-                            />
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                </div>
+                <p className='text-gray-500 italic'>
+                  Itinerary details not available.
+                </p>
               </div>
             </TabsContent>
 
@@ -326,34 +208,18 @@ export const PackageDetailsPage = () => {
                     <Check className='h-5 w-5 text-green-500 mr-2' />
                     Inclusions
                   </h3>
-                  <ul className='space-y-2'>
-                    {packageDetails.inclusions &&
-                      packageDetails.inclusions.map((item, index) => (
-                        <li
-                          key={index}
-                          className='flex items-start'>
-                          <Check className='h-4 w-4 text-green-500 mr-2 mt-0.5' />
-                          <span className='text-gray-700'>{item}</span>
-                        </li>
-                      ))}
-                  </ul>
+                  <p className='text-gray-500 italic'>
+                    Inclusion details not available.
+                  </p>
                 </div>
                 <div>
                   <h3 className='text-lg font-semibold mb-3 flex items-center'>
                     <X className='h-5 w-5 text-red-500 mr-2' />
                     Exclusions
                   </h3>
-                  <ul className='space-y-2'>
-                    {packageDetails.exclusions &&
-                      packageDetails.exclusions.map((item, index) => (
-                        <li
-                          key={index}
-                          className='flex items-start'>
-                          <X className='h-4 w-4 text-red-500 mr-2 mt-0.5' />
-                          <span className='text-gray-700'>{item}</span>
-                        </li>
-                      ))}
-                  </ul>
+                  <p className='text-gray-500 italic'>
+                    Exclusion details not available.
+                  </p>
                 </div>
               </div>
             </TabsContent>

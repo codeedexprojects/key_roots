@@ -4,10 +4,7 @@ import { apiRequest } from '@/lib/apiRequest';
 // Function to get all vendors
 export const getAllVendors = async () => {
   return apiRequest(
-    () =>
-      axiosInstance.get(
-        'https://keyroute.pythonanywhere.com/api/admin/vendors/list/'
-      ),
+    () => axiosInstance.get('/vendors/list/'),
     'Error occurred while fetching vendors.'
   );
 };
@@ -15,10 +12,7 @@ export const getAllVendors = async () => {
 // Function to get vendor count
 export const getVendorCount = async () => {
   return apiRequest(
-    () =>
-      axiosInstance.get(
-        'https://keyroute.pythonanywhere.com/api/admin/vendor/count/'
-      ),
+    () => axiosInstance.get('/vendor/count/'),
     'Error occurred while fetching vendor count.'
   );
 };
@@ -26,10 +20,7 @@ export const getVendorCount = async () => {
 // Function to get vendor details by ID
 export const getVendorById = async (vendorId) => {
   return apiRequest(
-    () =>
-      axiosInstance.get(
-        `https://keyroute.pythonanywhere.com/api/admin/vendors/${vendorId}/`
-      ),
+    () => axiosInstance.get(`/vendors/${vendorId}/`),
     `Error occurred while fetching vendor with ID ${vendorId}.`
   );
 };
@@ -37,10 +28,7 @@ export const getVendorById = async (vendorId) => {
 // Function to get buses for a specific vendor
 export const getVendorBuses = async (vendorId) => {
   return apiRequest(
-    () =>
-      axiosInstance.get(
-        `https://keyroute.pythonanywhere.com/api/admin/vendors/${vendorId}/buses/`
-      ),
+    () => axiosInstance.get(`/vendors/${vendorId}/buses/`),
     `Error occurred while fetching buses for vendor with ID ${vendorId}.`
   );
 };
@@ -48,10 +36,7 @@ export const getVendorBuses = async (vendorId) => {
 // Function to get packages for a specific vendor
 export const getVendorPackages = async (vendorId) => {
   return apiRequest(
-    () =>
-      axiosInstance.get(
-        `https://keyroute.pythonanywhere.com/api/admin/vendor/${vendorId}/packages/`
-      ),
+    () => axiosInstance.get(`/vendor/${vendorId}/packages/`),
     `Error occurred while fetching packages for vendor with ID ${vendorId}.`
   );
 };
@@ -69,6 +54,8 @@ export const getBusDetails = async (vendorId, busId) => {
 export const getPackageDetails = async (vendorId, packageId) => {
   const response = await getVendorPackages(vendorId);
   if (response && response.data) {
+    console.log(response);
+
     return response.data.find((pkg) => pkg.id === Number(packageId));
   }
   return null;
@@ -77,11 +64,7 @@ export const getPackageDetails = async (vendorId, packageId) => {
 // Function to create a new vendor
 export const createVendor = async (vendorData) => {
   return apiRequest(
-    () =>
-      axiosInstance.post(
-        'https://keyroute.pythonanywhere.com/api/admin/create-vendor/',
-        vendorData
-      ),
+    () => axiosInstance.post('/create-vendor/', vendorData),
     'Error occurred while creating vendor.'
   );
 };

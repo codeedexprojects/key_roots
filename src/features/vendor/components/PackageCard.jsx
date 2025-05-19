@@ -1,3 +1,4 @@
+import { getImageUrl } from '@/lib/getImageUrl';
 import { MapPin, Calendar, Hash } from 'lucide-react';
 import { Link } from 'react-router';
 
@@ -12,7 +13,10 @@ export const PackageCard = ({ pkg, vendorId }) => {
       className='block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden'>
       <div className='h-48 bg-gray-200 overflow-hidden'>
         <img
-          src={pkg.image || '/placeholder.svg?height=192&width=384'}
+          src={
+            getImageUrl(pkg.image) ||
+            'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
+          }
           alt={pkg.destination}
           className='h-full w-full object-cover'
         />

@@ -4,8 +4,7 @@ import { apiRequest } from '@/lib/apiRequest';
 // Function to get all users
 export const getAllUsers = async () => {
   return apiRequest(
-    () =>
-      axiosInstance.get('https://keyroute.pythonanywhere.com/api/admin/users/'),
+    () => axiosInstance.get('/users/'),
     'Error occurred while getting the users.'
   );
 };
@@ -13,10 +12,7 @@ export const getAllUsers = async () => {
 // Function to get user details by ID
 export const getUserById = async (userId) => {
   return apiRequest(
-    () =>
-      axiosInstance.get(
-        `https://keyroute.pythonanywhere.com/api/admin/user/${userId}/`
-      ),
+    () => axiosInstance.get(`/user/${userId}/`),
     `Error occurred while getting user with ID ${userId}.`
   );
 };
@@ -24,11 +20,7 @@ export const getUserById = async (userId) => {
 // Function to create a new user
 export const createUser = async (userData) => {
   return apiRequest(
-    () =>
-      axiosInstance.post(
-        'https://keyroute.pythonanywhere.com/api/admin/create-user/',
-        userData
-      ),
+    () => axiosInstance.post('/create-user/', userData),
     'Error occurred while creating user.'
   );
 };

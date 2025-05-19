@@ -88,10 +88,23 @@ export const UserCreatePage = () => {
       const response = await createUser(formData);
 
       if (response?.error) {
+        let errorMsg =
+          response.message || 'Something went wrong. Please try again.';
+
+        if (response.details && typeof response.details === 'object') {
+          const fieldMessages = Object.entries(response.details)
+            .map(
+              ([field, msgs]) =>
+                `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`
+            )
+            .join(' | ');
+
+          if (fieldMessages) errorMsg = fieldMessages;
+        }
+
         addToast({
           title: 'Error Creating User',
-          message:
-            response?.message || 'Something went wrong. Please try again.',
+          message: errorMsg,
           type: 'error',
         });
       } else {
@@ -224,7 +237,7 @@ export const UserCreatePage = () => {
                       : 'border border-gray-300 bg-white'
                   } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}>
                   <option value='vendor'>Vendor</option>
-                  <option value='customer'>Customer</option>
+                  <option value='user'>User</option>
                   <option value='admin'>Admin</option>
                 </select>
                 {errors.role && (

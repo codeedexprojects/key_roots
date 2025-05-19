@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
 import {
   Search,
@@ -7,114 +7,62 @@ import {
   ChevronRight,
   MoreHorizontal,
 } from 'lucide-react';
+import { LoadingSpinner, EmptyState } from '@/components/common';
+import {
+  getAllBookings,
+  formatBookingsForDisplay,
+} from '../services/bookingService';
+import { useToast } from '@/components/ui/toast-provider';
 
 export const BookingListPage = () => {
   const navigate = useNavigate();
+  const { addToast } = useToast();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [filterBy, setFilterBy] = useState('all');
 
-  // Sample data for bookings
-  const bookings = [
-    {
-      id: 1,
-      name: 'Jenna Willis',
-      date: 'July 1, 2023',
-      category: 'Bus',
-      trip: 'Varkala → Ernakulam',
-      cost: '$500',
-    },
-    {
-      id: 2,
-      name: 'Jenna Willis',
-      date: 'July 1, 2023',
-      category: 'Package',
-      trip: 'Varkala → Ernakulam',
-      cost: '$500',
-    },
-    {
-      id: 3,
-      name: 'Jenna Willis',
-      date: 'July 1, 2023',
-      category: 'Bus',
-      trip: 'Varkala → Ernakulam',
-      cost: '$500',
-    },
-    {
-      id: 4,
-      name: 'Jenna Willis',
-      date: 'July 1, 2023',
-      category: 'Bus',
-      trip: 'Varkala → Ernakulam',
-      cost: '$500',
-    },
-    {
-      id: 5,
-      name: 'Jenna Willis',
-      date: 'July 1, 2023',
-      category: 'Package',
-      trip: 'Varkala → Ernakulam',
-      cost: '$500',
-    },
-    {
-      id: 6,
-      name: 'Jenna Willis',
-      date: 'July 1, 2023',
-      category: 'Bus',
-      trip: 'Varkala → Ernakulam',
-      cost: '$500',
-    },
-    {
-      id: 7,
-      name: 'Jenna Willis',
-      date: 'July 1, 2023',
-      category: 'Package',
-      trip: 'Varkala → Ernakulam',
-      cost: '$500',
-    },
-    {
-      id: 8,
-      name: 'Jenna Willis',
-      date: 'July 1, 2023',
-      category: 'Bus',
-      trip: 'Varkala → Ernakulam',
-      cost: '$500',
-    },
-    {
-      id: 9,
-      name: 'Jenna Willis',
-      date: 'July 1, 2023',
-      category: 'Package',
-      trip: 'Varkala → Ernakulam',
-      cost: '$500',
-    },
-    {
-      id: 10,
-      name: 'Jenna Willis',
-      date: 'July 1, 2023',
-      category: 'Bus',
-      trip: 'Varkala → Ernakulam',
-      cost: '$500',
-    },
-    {
-      id: 11,
-      name: 'Jenna Willis',
-      date: 'July 1, 2023',
-      category: 'Package',
-      trip: 'Varkala → Ernakulam',
-      cost: '$500',
-    },
-    {
-      id: 12,
-      name: 'Jenna Willis',
-      date: 'July 1, 2023',
-      category: 'Bus',
-      trip: 'Varkala → Ernakulam',
-      cost: '$500',
-    },
-  ];
+  // State for API data
+  const [bookings, setBookings] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch bookings data
+  useEffect(() => {
+    const fetchBookings = async () => {
+      setIsLoading(true);
+      try {
+        const response = await getAllBookings();
+
+        if (!response.error) {
+          // Format the bookings data for display
+          const formattedBookings = formatBookingsForDisplay(response);
+          setBookings(formattedBookings);
+          setError(null);
+        } else {
+          setError(response.message || 'Failed to load bookings');
+          addToast({
+            title: 'Error',
+            message: response.message || 'Failed to load bookings',
+            type: 'error',
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching bookings:', err);
+        setError('An unexpected error occurred');
+        addToast({
+          title: 'Error',
+          message: 'An unexpected error occurred while loading bookings',
+          type: 'error',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, [addToast]);
 
   // Filter and sort bookings
   const filteredBookings = bookings
@@ -135,10 +83,21 @@ export const BookingListPage = () => {
       return true;
     })
     .sort((a, b) => {
-      // Apply sorting (in a real app, you'd use actual date objects)
-      if (sortBy === 'newest') return b.id - a.id;
-      if (sortBy === 'oldest') return a.id - b.id;
-
+      // Apply sorting based on date or ID
+      if (sortBy === 'newest') {
+        // If we have dates, use them for sorting
+        if (a.date && b.date) {
+          return new Date(b.date) - new Date(a.date);
+        }
+        // Fallback to ID sorting
+        return b.id - a.id;
+      }
+      if (sortBy === 'oldest') {
+        if (a.date && b.date) {
+          return new Date(a.date) - new Date(b.date);
+        }
+        return a.id - b.id;
+      }
       return 0;
     });
 
@@ -155,6 +114,21 @@ export const BookingListPage = () => {
   const paginate = (pageNumber) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
+    }
+  };
+
+  // Helper function to get status badge class
+  const getStatusBadgeClass = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled':
+      case 'canceled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -203,12 +177,26 @@ export const BookingListPage = () => {
 
       {/* Bookings Table */}
       <div className='bg-white rounded-lg shadow-sm overflow-hidden mb-6'>
-        <div className='overflow-x-auto'>
-          {currentBookings.length > 0 ? (
+        {isLoading ? (
+          <div className='flex justify-center items-center min-h-[500px]'>
+            <LoadingSpinner size='large' />
+          </div>
+        ) : error ? (
+          <div className='bg-red-50 border border-red-200 rounded-lg p-6 text-center min-h-[300px] flex items-center justify-center'>
+            <p className='text-red-600'>{error}</p>
+          </div>
+        ) : filteredBookings.length === 0 ? (
+          <EmptyState
+            title='No bookings found'
+            description='There are no bookings matching your criteria.'
+            icon='default'
+          />
+        ) : (
+          <div className='overflow-x-auto'>
             <table className='min-w-full divide-y divide-gray-200'>
               <thead>
                 <tr>
-                  {['Name', 'Date', 'Category', 'Trip', 'Cost', 'Action'].map(
+                  {['Name', 'Date', 'Category', 'Trip', 'Cost', 'Status'].map(
                     (header, i) => (
                       <th
                         key={i}
@@ -253,24 +241,24 @@ export const BookingListPage = () => {
                         {booking.cost}
                       </span>
                     </td>
-                    <td className='px-4 py-4 text-right text-sm font-medium'>
-                      <MoreHorizontal className='h-5 w-5 text-gray-400 hover:text-gray-500' />
+                    <td className='px-4 py-4'>
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(
+                          booking.status
+                        )}`}>
+                        {booking.status?.charAt(0).toUpperCase() +
+                          booking.status?.slice(1) || 'Pending'}
+                      </span>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          ) : (
-            <div className='bg-white rounded-lg shadow-sm p-8 text-center mb-6'>
-              <p className='text-gray-500'>
-                No Bookings found matching your criteria.
-              </p>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Pagination */}
-        {currentBookings.length > 0 && (
+        {/* Pagination - only show when we have data and not loading */}
+        {!isLoading && !error && filteredBookings.length > 0 && (
           <div className='px-6 py-4 bg-white border-t border-gray-200'>
             <div className='flex items-center justify-between'>
               <div className='text-sm text-gray-700'>
