@@ -3,11 +3,10 @@ import { useNavigate, Link } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common';
 import { createUser } from '../services/userService';
-import { useToast } from '@/components/ui/toast-provider';
+import { toast } from 'sonner';
 
 export const UserCreatePage = () => {
   const navigate = useNavigate();
-  const { addToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     mobile: '',
@@ -74,11 +73,7 @@ export const UserCreatePage = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      addToast({
-        title: 'Form Validation Error',
-        message: 'Please check the form for errors and try again.',
-        type: 'error',
-      });
+      toast.error('Please check the form for errors and try again.');
       return;
     }
 
@@ -102,26 +97,13 @@ export const UserCreatePage = () => {
           if (fieldMessages) errorMsg = fieldMessages;
         }
 
-        addToast({
-          title: 'Error Creating User',
-          message: errorMsg,
-          type: 'error',
-        });
+        toast.error(errorMsg);
       } else {
-        addToast({
-          title: 'User Created',
-          message: 'The user has been created successfully.',
-          type: 'success',
-        });
-
+        toast.success('The user has been created successfully.');
         navigate('/users');
       }
     } catch (error) {
-      addToast({
-        title: 'Error Creating User',
-        message: error?.message || 'Something went wrong. Please try again.',
-        type: 'error',
-      });
+      toast.error(error?.message || 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

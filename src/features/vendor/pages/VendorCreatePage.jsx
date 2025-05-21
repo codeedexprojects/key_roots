@@ -3,11 +3,10 @@ import { useNavigate, Link } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common';
 import { createVendor } from '../services/vendorService';
-import { useToast } from '@/components/ui/toast-provider';
+import { toast } from 'sonner';
 
 export const VendorCreatePage = () => {
   const navigate = useNavigate();
-  const { addToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     mobile: '',
@@ -78,11 +77,7 @@ export const VendorCreatePage = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      addToast({
-        title: 'Form Validation Error',
-        message: 'Please check the form for errors and try again.',
-        type: 'error',
-      });
+      toast.error('Please check the form for errors and try again.');
       return;
     }
 
@@ -92,27 +87,15 @@ export const VendorCreatePage = () => {
       const response = await createVendor(formData);
 
       if (response?.error) {
-        addToast({
-          title: 'Error Creating Vendor',
-          message:
-            response?.message || 'Something went wrong. Please try again.',
-          type: 'error',
-        });
+        toast.error(
+          response?.message || 'Something went wrong. Please try again.'
+        );
       } else {
-        addToast({
-          title: 'Vendor Created',
-          message: 'The vendor has been created successfully.',
-          type: 'success',
-        });
-
+        toast.success('The vendor has been created successfully.');
         navigate('/vendors');
       }
     } catch (error) {
-      addToast({
-        title: 'Error Creating Vendor',
-        message: error?.message || 'Something went wrong. Please try again.',
-        type: 'error',
-      });
+      toast.error(error?.message || 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

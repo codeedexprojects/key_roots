@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Upload, ArrowLeft } from 'lucide-react';
+import { getImageUrl } from '@/lib/getImageUrl';
 
 export const AdvertisementForm = ({ item, onSave, onCancel, isLoading }) => {
   const [formData, setFormData] = useState({
@@ -220,7 +221,10 @@ export const AdvertisementForm = ({ item, onSave, onCancel, isLoading }) => {
               onClick={() => document.getElementById('banner-image').click()}>
               {formData.banner.imagePreview ? (
                 <img
-                  src={formData.banner.imagePreview || '/placeholder.svg'}
+                  src={
+                    getImageUrl(formData.banner.imagePreview) ||
+                    '/placeholder.svg'
+                  }
                   alt='Banner preview'
                   className='max-h-full object-contain'
                 />

@@ -3,11 +3,10 @@ import { useParams, Link } from 'react-router';
 import { ArrowLeft, Printer } from 'lucide-react';
 import { LoadingSpinner, EmptyState } from '@/components/common';
 import { getPaymentById } from '../services/paymentService';
-import { useToast } from '@/components/ui/toast-provider';
+import { toast } from 'sonner';
 
 export const PaymentDetailsPage = () => {
   const { paymentId } = useParams();
-  const { addToast } = useToast();
 
   // State for API data
   const [payment, setPayment] = useState(null);
@@ -38,20 +37,14 @@ export const PaymentDetailsPage = () => {
           setError(null);
         } else {
           setError(response.message || 'Failed to load payment details');
-          addToast({
-            title: 'Error',
-            message: response.message || 'Failed to load payment details',
-            type: 'error',
-          });
+          toast.error(response.message || 'Failed to load payment details');
         }
       } catch (err) {
         console.error('Error fetching payment details:', err);
         setError('An unexpected error occurred');
-        addToast({
-          title: 'Error',
-          message: 'An unexpected error occurred while loading payment details',
-          type: 'error',
-        });
+        toast.error(
+          'An unexpected error occurred while loading payment details'
+        );
       } finally {
         setIsLoading(false);
       }
@@ -60,7 +53,7 @@ export const PaymentDetailsPage = () => {
     if (paymentId) {
       fetchPaymentDetails();
     }
-  }, [paymentId, addToast]);
+  }, [paymentId]);
 
   // Format payment data for display
   const formatPaymentData = (data) => {
@@ -221,20 +214,14 @@ export const PaymentDetailsPage = () => {
           setError(null);
         } else {
           setError(response.message || 'Failed to load payment details');
-          addToast({
-            title: 'Error',
-            message: response.message || 'Failed to load payment details',
-            type: 'error',
-          });
+          toast.error(response.message || 'Failed to load payment details');
         }
       } catch (err) {
         console.error('Error fetching payment details:', err);
         setError('An unexpected error occurred');
-        addToast({
-          title: 'Error',
-          message: 'An unexpected error occurred while loading payment details',
-          type: 'error',
-        });
+        toast.error(
+          'An unexpected error occurred while loading payment details'
+        );
       } finally {
         setIsLoading(false);
       }
@@ -243,7 +230,7 @@ export const PaymentDetailsPage = () => {
     if (paymentId) {
       fetchPaymentDetails();
     }
-  }, [paymentId, addToast, formatPaymentDataCallback]);
+  }, [paymentId, formatPaymentDataCallback]);
 
   return (
     <div className='flex-1'>

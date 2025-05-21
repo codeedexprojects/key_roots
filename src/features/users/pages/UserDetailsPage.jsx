@@ -3,12 +3,11 @@ import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, useParams } from 'react-router';
 import { LoadingSpinner, EmptyState } from '@/components/common';
 import { getUserById } from '../services/userService';
-import { useToast } from '@/components/ui/toast-provider';
+import { toast } from 'sonner';
 
 export const UserDetailsPage = () => {
   const { userId } = useParams();
   const [activeTab, setActiveTab] = useState('bookings');
-  const { addToast } = useToast();
 
   // State for API data
   const [user, setUser] = useState(null);
@@ -83,27 +82,19 @@ export const UserDetailsPage = () => {
           }
         } else {
           setError(response?.message || 'Failed to load user details');
-          addToast({
-            title: 'Error',
-            message: response?.message || 'Failed to load user details',
-            type: 'error',
-          });
+          toast.error(response?.message || 'Failed to load user details');
         }
       } catch (error) {
         console.error('Error fetching user details:', error);
         setError('Failed to load user details. Please try again later.');
-        addToast({
-          title: 'Error',
-          message: 'Failed to load user details. Please try again later.',
-          type: 'error',
-        });
+        toast.error('Failed to load user details. Please try again later.');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUserDetails();
-  }, [userId, addToast]);
+  }, [userId]);
 
   return (
     <div className='min-h-screen'>

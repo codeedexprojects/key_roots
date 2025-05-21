@@ -3,11 +3,10 @@ import { useParams, Link } from 'react-router';
 import { ArrowLeft, Printer } from 'lucide-react';
 import { LoadingSpinner, EmptyState } from '@/components/common';
 import { getBookingById } from '../services/bookingService';
-import { useToast } from '@/components/ui/toast-provider';
+import { toast } from 'sonner';
 
 export const BookingDetailsPage = () => {
   const { bookingId } = useParams();
-  const { addToast } = useToast();
 
   // State for API data
   const [booking, setBooking] = useState(null);
@@ -26,20 +25,14 @@ export const BookingDetailsPage = () => {
           setError(null);
         } else {
           setError(response.message || 'Failed to load booking details');
-          addToast({
-            title: 'Error',
-            message: response.message || 'Failed to load booking details',
-            type: 'error',
-          });
+          toast.error(response.message || 'Failed to load booking details');
         }
       } catch (err) {
         console.error('Error fetching booking details:', err);
         setError('An unexpected error occurred');
-        addToast({
-          title: 'Error',
-          message: 'An unexpected error occurred while loading booking details',
-          type: 'error',
-        });
+        toast.error(
+          'An unexpected error occurred while loading booking details'
+        );
       } finally {
         setIsLoading(false);
       }
@@ -48,7 +41,7 @@ export const BookingDetailsPage = () => {
     if (bookingId) {
       fetchBookingDetails();
     }
-  }, [bookingId, addToast]);
+  }, [bookingId]);
 
   // Format booking data for display
   const formatBookingData = () => {

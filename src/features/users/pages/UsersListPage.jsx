@@ -5,7 +5,7 @@ import {
   ChevronRight,
   MoreHorizontal,
 } from 'lucide-react';
-import { useToast } from '@/components/ui/toast-provider';
+import { toast } from 'sonner';
 import { getAllUsers } from '../services/userService';
 import { useNavigate, Link } from 'react-router';
 import { useState, useEffect } from 'react';
@@ -15,7 +15,6 @@ export const UsersListPage = () => {
   const navigate = useNavigate();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const { addToast } = useToast();
 
   const [sortBy, setSortBy] = useState('name');
   const [filterState, setFilterState] = useState('all');
@@ -52,27 +51,19 @@ export const UsersListPage = () => {
           });
         } else {
           setError(response?.message || 'Failed to load users');
-          addToast({
-            title: 'Error',
-            message: response?.message || 'Failed to load users',
-            type: 'error',
-          });
+          toast.error(response?.message || 'Failed to load users');
         }
       } catch (error) {
         console.error('Error fetching users:', error);
         setError('Failed to load users. Please try again later.');
-        addToast({
-          title: 'Error',
-          message: 'Failed to load users. Please try again later.',
-          type: 'error',
-        });
+        toast.error('Failed to load users. Please try again later.');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUsers();
-  }, [addToast]);
+  }, []);
 
   let processedUsers = [...users];
 

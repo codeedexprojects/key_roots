@@ -138,7 +138,7 @@ export function DashboardPage() {
     const fetchRecentUsers = async () => {
       setRecentUsersLoading(true);
       try {
-        const response = await getRecentUsers();
+        const response = await getRecentUsers(recentUsersState);
         console.log('Recent users response:', response);
         if (response && !response.error) {
           const transformedUsers = response.map((user) => ({

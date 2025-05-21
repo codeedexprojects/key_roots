@@ -12,11 +12,10 @@ import {
   getAllBookings,
   formatBookingsForDisplay,
 } from '../services/bookingService';
-import { useToast } from '@/components/ui/toast-provider';
+import { toast } from 'sonner';
 
 export const BookingListPage = () => {
   const navigate = useNavigate();
-  const { addToast } = useToast();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,27 +41,21 @@ export const BookingListPage = () => {
           setError(null);
         } else {
           setError(response.message || 'Failed to load bookings');
-          addToast({
-            title: 'Error',
-            message: response.message || 'Failed to load bookings',
-            type: 'error',
-          });
+          toast.error(response.message || 'Failed to load bookings');
         }
       } catch (err) {
         console.error('Error fetching bookings:', err);
         setError('An unexpected error occurred');
-        addToast({
-          title: 'Error',
-          message: 'An unexpected error occurred while loading bookings',
-          type: 'error',
-        });
+        toast.error('An unexpected error occurred while loading bookings');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchBookings();
-  }, [addToast]);
+    // This effect should only run once on mount
+    // formatBookingsForDisplay is imported and doesn't change
+  }, []);
 
   // Filter and sort bookings
   const filteredBookings = bookings
@@ -196,15 +189,21 @@ export const BookingListPage = () => {
             <table className='min-w-full divide-y divide-gray-200'>
               <thead>
                 <tr>
-                  {['Name', 'Date', 'Category', 'Trip', 'Cost', 'Status'].map(
-                    (header, i) => (
-                      <th
-                        key={i}
-                        className={`px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider`}>
-                        {header}
-                      </th>
-                    )
-                  )}
+                  {[
+                    'Name',
+                    'Date',
+                    'Category',
+                    'Trip',
+                    'Cost',
+                    'Status',
+                    'Action',
+                  ].map((header, i) => (
+                    <th
+                      key={i}
+                      className={`px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider`}>
+                      {header}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className='bg-white divide-y divide-gray-200'>
@@ -249,6 +248,9 @@ export const BookingListPage = () => {
                         {booking.status?.charAt(0).toUpperCase() +
                           booking.status?.slice(1) || 'Pending'}
                       </span>
+                    </td>
+                    <td className='px-4 py-4 text-right text-sm font-medium'>
+                      <MoreHorizontal className='h-5 w-5 text-gray-400 hover:text-gray-500' />
                     </td>
                   </tr>
                 ))}

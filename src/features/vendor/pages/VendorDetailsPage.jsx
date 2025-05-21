@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router';
 import { ArrowLeft, DollarSign, Calendar, ChevronRight } from 'lucide-react';
 import { VendorInfoCard } from '../components/VendorInfoCard';
@@ -7,6 +7,7 @@ import { PackageCard } from '../components/PackageCard';
 import { getVendorById } from '../services/vendorService';
 import { EmptyState } from '@/components/common/EmptyState';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { MarkedCalender } from '../components/MarkedCalender';
 
 export const VendorDetailsPage = () => {
   const { vendorId } = useParams();
@@ -15,6 +16,11 @@ export const VendorDetailsPage = () => {
   const [buses, setBuses] = useState([]);
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [markedDates, setMarkedDates] = useState(['2025-02-04', '2025-02-05']);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [showCalendar, setShowCalendar] = useState(false);
+  const calendarRef = useRef(null);
 
   useEffect(() => {
     const fetchVendorDetails = async () => {
@@ -94,6 +100,22 @@ export const VendorDetailsPage = () => {
     fetchVendorDetails();
   }, [vendorId]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target)) {
+        setShowCalendar(false);
+      }
+    };
+
+    if (showCalendar) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCalendar]);
+
   if (loading) {
     return (
       <div className='flex justify-center items-center min-h-[500px]'>
@@ -121,6 +143,31 @@ export const VendorDetailsPage = () => {
     <>
       <div className='mb-6 flex flex-row justify-between items-center'>
         <h1 className='text-2xl font-semibold'>Vendor Details</h1>
+
+        <div className='w-fit my-6'>
+          <button
+            onClick={() => setShowCalendar(true)}
+            className='px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/80 transition'>
+            Marked Dates
+          </button>
+
+          {showCalendar && (
+            <div
+              className='fixed inset-0 z-50 flex items-center justify-center bg-black/30'
+              onClick={() => setShowCalendar(false)} // click outside closes
+            >
+              <div
+                onClick={(e) => e.stopPropagation()} // prevent close on inside click
+                className='w-full max-w-xl'>
+                <MarkedCalender
+                  markedDates={markedDates}
+                  currentMonth={currentMonth}
+                  onMonthChange={setCurrentMonth}
+                />
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Back Button */}
         <Link

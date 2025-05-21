@@ -7,13 +7,14 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { Link } from 'react-router';
+import { useNavigate } from 'react-router';
 import { getAllVendors } from '../services/vendorService';
 import { LoadingSpinner, EmptyState } from '@/components/common';
-import { useToast } from '@/components/ui/toast-provider';
+import { toast } from 'sonner';
 import { getImageUrl } from '@/lib/getImageUrl';
 
 export const VendorsListPage = () => {
-  const { addToast } = useToast();
+  const navigate = useNavigate();
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -84,27 +85,19 @@ export const VendorsListPage = () => {
           });
         } else {
           setError('Failed to load vendors');
-          addToast({
-            title: 'Error',
-            message: 'Failed to load vendors',
-            type: 'error',
-          });
+          toast.error('Failed to load vendors');
         }
       } catch (err) {
         console.error('Error fetching vendors:', err);
         setError('Failed to load vendors. Please try again later.');
-        addToast({
-          title: 'Error',
-          message: 'Failed to load vendors. Please try again later.',
-          type: 'error',
-        });
+        toast.error('Failed to load vendors. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchVendors();
-  }, [addToast]);
+  }, []);
 
   // Process vendors with filtering and sorting
   let processedVendors = [...vendors];
@@ -331,13 +324,10 @@ export const VendorsListPage = () => {
                   <tr
                     key={vendor.id}
                     className='hover:bg-gray-50 cursor-pointer'
-                    onClick={() =>
-                      (window.location.href = `/vendors/${vendor.id}`)
-                    }>
+                    onClick={() => navigate(`/vendors/${vendor.id}`)}>
                     <td className='px-4 py-4 text-sm text-gray-500 w-auto lg:w-16'>
                       {vendor.id}
                     </td>
-                    {console.log('vendor', vendor)}
                     <td className='px-4 py-4 w-auto lg:w-48 truncate'>
                       <div className='flex items-center'>
                         <img

@@ -12,11 +12,10 @@ import {
   getAllPayments,
   formatPaymentsForDisplay,
 } from '../services/paymentService';
-import { useToast } from '@/components/ui/toast-provider';
+import { toast } from 'sonner';
 
 export const PaymentsListPage = () => {
   const navigate = useNavigate();
-  const { addToast } = useToast();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,27 +41,19 @@ export const PaymentsListPage = () => {
           setError(null);
         } else {
           setError(response.message || 'Failed to load payments');
-          addToast({
-            title: 'Error',
-            message: response.message || 'Failed to load payments',
-            type: 'error',
-          });
+          toast.error(response.message || 'Failed to load payments');
         }
       } catch (err) {
         console.error('Error fetching payments:', err);
         setError('An unexpected error occurred');
-        addToast({
-          title: 'Error',
-          message: 'An unexpected error occurred while loading payments',
-          type: 'error',
-        });
+        toast.error('An unexpected error occurred while loading payments');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchPayments();
-  }, [addToast]);
+  }, []);
 
   // Filter and sort payments
   const filteredPayments = payments

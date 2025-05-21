@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AdvertisementGrid } from '../components/AdvertisementGrid';
 import { AdvertisementForm } from '../components/AdvertisementForm';
 import { ExploreGrid } from '../components/ExploreGrid';
 import { ExploreForm } from '../components/ExploreForm';
 import { LoadingSpinner, EmptyState } from '@/components/common';
-import { useToast } from '@/components/ui/toast-provider';
+import { toast } from 'sonner';
 import {
   getAdvertisements,
   saveAdvertisement,
@@ -15,7 +15,6 @@ import {
 
 export const AdvertisementPage = () => {
   const [activeTab, setActiveTab] = useState('advertisement');
-  const { addToast } = useToast();
 
   // Advertisement state
   const [advertisements, setAdvertisements] = useState([]);
@@ -29,125 +28,18 @@ export const AdvertisementPage = () => {
   const [currentExploreItem, setCurrentExploreItem] = useState(null);
   const [exploreIsLoading, setExploreIsLoading] = useState(false);
 
-  // Advertisement methods
-  const fetchAdvertisements = useCallback(async () => {
-    setAdIsLoading(true);
-    try {
-      const response = await getAdvertisements();
-      console.log(response);
-      if (response && !response.error) {
-        // Transform the API response to match our component structure
-        const transformedItems = [];
-
-        // Process advertisements
-        if (response.advertisements && response.advertisements.length > 0) {
-          response.advertisements.forEach((ad, index) => {
-            transformedItems.push({
-              id: index + 1,
-              banner: {
-                image: ad.image,
-                title: ad.title || `Advertisement ${index + 1}`,
-                description: ad.description || '',
-              },
-              deals: [],
-              footers: [],
-            });
-          });
-        }
-
-        // Add limited deals to the first advertisement or create a new one
-        if (response.limited_deals && response.limited_deals.length > 0) {
-          if (transformedItems.length === 0) {
-            transformedItems.push({
-              id: 1,
-              banner: {
-                image: '',
-                title: 'Advertisement',
-                description: '',
-              },
-              deals: [],
-              footers: [],
-            });
-          }
-
-          transformedItems[0].deals = response.limited_deals.map(
-            (deal, index) => ({
-              id: index + 1,
-              image:
-                deal.images && deal.images.length > 0 ? deal.images[0] : '',
-              title: deal.title || '',
-              description: deal.description || '',
-              offer: deal.offer || '',
-            })
-          );
-        }
-
-        // Add footer sections to the first advertisement or create a new one
-        if (response.footer_sections && response.footer_sections.length > 0) {
-          if (transformedItems.length === 0) {
-            transformedItems.push({
-              id: 1,
-              banner: {
-                image: '',
-                title: 'Advertisement',
-                description: '',
-              },
-              deals: [],
-              footers: [],
-            });
-          }
-
-          transformedItems[0].footers = response.footer_sections.map(
-            (footer, index) => ({
-              id: index + 1,
-              image: footer.image || '',
-              title: footer.title || '',
-              phone: footer.phone || '',
-              description: footer.description || '',
-              price: footer.price || '',
-              offerPrice: footer.offer_price || '',
-            })
-          );
-        }
-
-        setAdvertisements(transformedItems);
-      } else {
-        console.error(
-          'Error in API response:',
-          response?.message || 'Unknown error'
-        );
-        addToast({
-          title: 'Error',
-          message: response?.message || 'Failed to load advertisements',
-          type: 'error',
-        });
-        setAdvertisements([]);
-      }
-    } catch (error) {
-      console.error('Error fetching advertisements:', error);
-      addToast({
-        title: 'Error',
-        message: 'Failed to load advertisements. Please try again later.',
-        type: 'error',
-      });
-      setAdvertisements([]);
-    } finally {
-      setAdIsLoading(false);
-    }
-  }, [addToast]);
-
   const handleSaveAdvertisement = async (data) => {
     setAdIsLoading(true);
     try {
       const response = await saveAdvertisement(data);
 
       if (response && !response.error) {
-        addToast({
-          title: 'Success',
-          message: 'Advertisement saved successfully!',
-          type: 'success',
-        });
-        fetchAdvertisements();
+        toast.success('Advertisement saved successfully!');
+
+        // Reload data by setting the activeTab to trigger the useEffect
+        // This avoids duplicating the data fetching logic
+        setActiveTab('advertisement');
+
         setAdEditMode(false);
         setCurrentAdvertisement(null);
       } else {
@@ -155,19 +47,11 @@ export const AdvertisementPage = () => {
           'Error in API response:',
           response?.message || 'Unknown error'
         );
-        addToast({
-          title: 'Error',
-          message: response?.message || 'Failed to save advertisement',
-          type: 'error',
-        });
+        toast.error(response?.message || 'Failed to save advertisement');
       }
     } catch (error) {
       console.error('Error saving advertisement:', error);
-      addToast({
-        title: 'Error',
-        message: 'Failed to save advertisement. Please try again later.',
-        type: 'error',
-      });
+      toast.error('Failed to save advertisement. Please try again later.');
     } finally {
       setAdIsLoading(false);
     }
@@ -188,64 +72,18 @@ export const AdvertisementPage = () => {
     setCurrentAdvertisement(null);
   };
 
-  // Explore methods
-  const fetchExploreItems = useCallback(async () => {
-    setExploreIsLoading(true);
-    try {
-      const response = await getExploreItems();
-      if (response && !response.error && response.data) {
-        const transformedItems = response.data.map((item) => ({
-          id: item.id,
-          title: item.title,
-          description: item.description,
-          seasonDescription: item.season_description,
-          image: item.image,
-          sights: item.experiences
-            ? item.experiences.map((exp) => ({
-                id: exp.id || Math.random().toString(36).substring(2, 9),
-                description: exp.description,
-                image: exp.image,
-              }))
-            : [],
-        }));
-        setExploreItems(transformedItems);
-      } else {
-        console.error(
-          'Error in API response:',
-          response?.message || 'Unknown error'
-        );
-        addToast({
-          title: 'Error',
-          message: response?.message || 'Failed to load explore items',
-          type: 'error',
-        });
-        setExploreItems([]);
-      }
-    } catch (error) {
-      console.error('Error fetching explore items:', error);
-      addToast({
-        title: 'Error',
-        message: 'Failed to load explore items. Please try again later.',
-        type: 'error',
-      });
-      setExploreItems([]);
-    } finally {
-      setExploreIsLoading(false);
-    }
-  }, [addToast]);
-
   const handleSaveExploreItem = async (data) => {
     setExploreIsLoading(true);
     try {
       const response = await saveExploreItem(data);
 
       if (response && !response.error) {
-        addToast({
-          title: 'Success',
-          message: 'Explore item saved successfully!',
-          type: 'success',
-        });
-        fetchExploreItems();
+        toast.success('Explore item saved successfully!');
+
+        // Reload data by setting the activeTab to trigger the useEffect
+        // This avoids duplicating the data fetching logic
+        setActiveTab('explore');
+
         setExploreEditMode(false);
         setCurrentExploreItem(null);
       } else {
@@ -253,33 +91,122 @@ export const AdvertisementPage = () => {
           'Error in API response:',
           response?.message || 'Unknown error'
         );
-        addToast({
-          title: 'Error',
-          message: response?.message || 'Failed to save explore item',
-          type: 'error',
-        });
+        toast.error(response?.message || 'Failed to save explore item');
       }
     } catch (error) {
       console.error('Error saving explore item:', error);
-      addToast({
-        title: 'Error',
-        message: 'Failed to save explore item. Please try again later.',
-        type: 'error',
-      });
+      toast.error('Failed to save explore item. Please try again later.');
     } finally {
       setExploreIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (activeTab === 'advertisement') {
-      fetchAdvertisements();
-    } else if (activeTab === 'explore') {
-      const loadExploreItems = async () => {
+    // Move the fetch logic directly inside the useEffect
+    const loadData = async () => {
+      if (activeTab === 'advertisement') {
+        setAdIsLoading(true);
+        try {
+          const response = await getAdvertisements();
+          console.log(response);
+          if (response && !response.error) {
+            // Transform the API response to match our component structure
+            const transformedItems = [];
+
+            // Process advertisements
+            if (response.advertisements && response.advertisements.length > 0) {
+              response.advertisements.forEach((ad, index) => {
+                transformedItems.push({
+                  id: index + 1,
+                  banner: {
+                    image: ad.image,
+                    title: ad.title || `Advertisement ${index + 1}`,
+                    description: ad.description || '',
+                  },
+                  deals: [],
+                  footers: [],
+                });
+              });
+            }
+
+            // Add limited deals to the first advertisement or create a new one
+            if (response.limited_deals && response.limited_deals.length > 0) {
+              if (transformedItems.length === 0) {
+                transformedItems.push({
+                  id: 1,
+                  banner: {
+                    image: '',
+                    title: 'Advertisement',
+                    description: '',
+                  },
+                  deals: [],
+                  footers: [],
+                });
+              }
+
+              transformedItems[0].deals = response.limited_deals.map(
+                (deal, index) => ({
+                  id: index + 1,
+                  image:
+                    deal.images && deal.images.length > 0 ? deal.images[0] : '',
+                  title: deal.title || '',
+                  description: deal.description || '',
+                  offer: deal.offer || '',
+                })
+              );
+            }
+
+            // Add footer sections to the first advertisement or create a new one
+            if (
+              response.footer_sections &&
+              response.footer_sections.length > 0
+            ) {
+              if (transformedItems.length === 0) {
+                transformedItems.push({
+                  id: 1,
+                  banner: {
+                    image: '',
+                    title: 'Advertisement',
+                    description: '',
+                  },
+                  deals: [],
+                  footers: [],
+                });
+              }
+
+              transformedItems[0].footers = response.footer_sections.map(
+                (footer, index) => ({
+                  id: index + 1,
+                  image: footer.image || '',
+                  title: footer.title || '',
+                  phone: footer.phone || '',
+                  description: footer.description || '',
+                  price: footer.price || '',
+                  offerPrice: footer.offer_price || '',
+                })
+              );
+            }
+
+            setAdvertisements(transformedItems);
+          } else {
+            console.error(
+              'Error in API response:',
+              response?.message || 'Unknown error'
+            );
+            toast.error(response?.message || 'Failed to load advertisements');
+            setAdvertisements([]);
+          }
+        } catch (error) {
+          console.error('Error fetching advertisements:', error);
+          toast.error('Failed to load advertisements. Please try again later.');
+          setAdvertisements([]);
+        } finally {
+          setAdIsLoading(false);
+        }
+      } else if (activeTab === 'explore') {
         setExploreIsLoading(true);
         try {
           const response = await getExploreItems();
-          console.log(response);
           if (response && !response.error && response.data) {
             const transformedItems = response.data.map((item) => ({
               id: item.id,
@@ -287,36 +214,37 @@ export const AdvertisementPage = () => {
               description: item.description,
               seasonDescription: item.season_description,
               image: item.image,
-              sights:
-                item.experiences?.map((exp) => ({
-                  id: exp.id || crypto.randomUUID(),
-                  description: exp.description,
-                  image: exp.image,
-                })) || [],
+              sights: item.experiences
+                ? item.experiences.map((exp) => ({
+                    id: exp.id || Math.random().toString(36).substring(2, 9),
+                    description: exp.description,
+                    image: exp.image,
+                  }))
+                : [],
             }));
             setExploreItems(transformedItems);
           } else {
+            console.error(
+              'Error in API response:',
+              response?.message || 'Unknown error'
+            );
+            toast.error(response?.message || 'Failed to load explore items');
             setExploreItems([]);
-            addToast({
-              title: 'Error',
-              message: response?.message || 'Failed to load explore items',
-              type: 'error',
-            });
           }
         } catch (error) {
+          console.error('Error fetching explore items:', error);
+          toast.error('Failed to load explore items. Please try again later.');
           setExploreItems([]);
-          addToast({
-            title: 'Error',
-            message: 'Failed to load explore items. Please try again later.',
-            type: 'error',
-          });
         } finally {
           setExploreIsLoading(false);
         }
-      };
+      }
+    };
 
-      loadExploreItems();
-    }
+    loadData();
+    // Dependencies:
+    // - activeTab: We need to reload data when the tab changes
+    // - getAdvertisements and getExploreItems are imported functions that don't change
   }, [activeTab]);
 
   const handleEditExploreItem = (item) => {
