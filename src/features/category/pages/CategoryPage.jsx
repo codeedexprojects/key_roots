@@ -1,98 +1,47 @@
-import { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import BusCardGrid from '../components/BusCardGrid';
-import PackageCardGrid from '../components/PackageCardGrid';
-import { getBuses, getPackages } from '../services/categoryService.js';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router';
+import BusesTab from './BusesTab';
+import PackagesTab from './PackagesTab';
 
-export const CategoryPage = () => {
-  const [activeTab, setActiveTab] = useState('buses');
-  const [buses, setBuses] = useState([]);
-  const [packages, setPackages] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [busCurrentPage, setBusCurrentPage] = useState(1);
-  const [packageCurrentPage, setPackageCurrentPage] = useState(1);
-  const [busTotalPages, setBusTotalPages] = useState(1);
-  const [packageTotalPages, setPackageTotalPages] = useState(1);
+const CategoryPage = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(
+    location.pathname.includes('/packages') ? 'packages' : 'buses'
+  );
 
-  useEffect(() => {
-    if (activeTab === 'buses') {
-      fetchBuses(busCurrentPage);
-    } else if (activeTab === 'package') {
-      fetchPackages(packageCurrentPage);
-    }
-  }, [activeTab, busCurrentPage, packageCurrentPage]);
-
-  const fetchBuses = async (page) => {
-    setIsLoading(true);
-    try {
-      const response = await getBuses(page);
-      setBuses(response.data);
-      setBusTotalPages(response.totalPages);
-    } catch (error) {
-      console.error('Error fetching buses:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchPackages = async (page) => {
-    setIsLoading(true);
-    try {
-      const response = await getPackages(page);
-      setPackages(response.data || []);
-      setPackageTotalPages(response.totalPages || 1);
-    } catch (error) {
-      console.error('Error fetching packages:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleBusPageChange = (page) => {
-    setBusCurrentPage(page);
-  };
-
-  const handlePackagePageChange = (page) => {
-    setPackageCurrentPage(page);
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    navigate(`/category/${tab}`);
   };
 
   return (
-    <div className='flex-1 overflow-auto'>
-      <h1 className='text-2xl font-semibold mb-6'>Category</h1>
-
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className='w-full'>
-        <TabsList className='mb-6'>
-          <TabsTrigger value='buses'>Buses</TabsTrigger>
-          <TabsTrigger value='package'>Package</TabsTrigger>
-        </TabsList>
-
-        <TabsContent
-          value='buses'
-          className='space-y-6'>
-          <BusCardGrid
-            buses={buses}
-            isLoading={isLoading}
-            currentPage={busCurrentPage}
-            totalPages={busTotalPages}
-            onPageChange={handleBusPageChange}
-          />
-        </TabsContent>
-
-        <TabsContent
-          value='package'
-          className='space-y-6'>
-          <PackageCardGrid
-            packages={packages}
-            isLoading={isLoading}
-            currentPage={packageCurrentPage}
-            totalPages={packageTotalPages}
-            onPageChange={handlePackagePageChange}
-          />
-        </TabsContent>
-      </Tabs>
+    <div className='w-full h-full bg-gray-50'>
+      <div className='flex bg-white border-b border-gray-200'>
+        <div
+          className={`px-8 py-4 cursor-pointer font-medium transition-all ${
+            activeTab === 'buses'
+              ? 'border-b-2 border-red-700 text-red-700'
+              : 'border-b-2 border-transparent'
+          }`}
+          onClick={() => handleTabChange('buses')}>
+          Buses
+        </div>
+        <div
+          className={`px-8 py-4 cursor-pointer font-medium transition-all ${
+            activeTab === 'packages'
+              ? 'border-b-2 border-red-700 text-red-700'
+              : 'border-b-2 border-transparent'
+          }`}
+          onClick={() => handleTabChange('packages')}>
+          Package
+        </div>
+      </div>
+      <div className='p-5'>
+        {activeTab === 'buses' ? <BusesTab /> : <PackagesTab />}
+      </div>
     </div>
   );
 };
+
+export default CategoryPage;

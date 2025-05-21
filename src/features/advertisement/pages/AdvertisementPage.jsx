@@ -4,7 +4,6 @@ import { AdvertisementGrid } from '../components/AdvertisementGrid';
 import { AdvertisementForm } from '../components/AdvertisementForm';
 import { ExploreGrid } from '../components/ExploreGrid';
 import { ExploreForm } from '../components/ExploreForm';
-import { LoadingSpinner, EmptyState } from '@/components/common';
 import { toast } from 'sonner';
 import {
   getAdvertisements,

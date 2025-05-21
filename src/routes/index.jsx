@@ -19,7 +19,7 @@ import {
   PaymentsListPage,
 } from '@/features/payments/pages';
 import { AdvertisementPage } from '@/features/advertisement/pages/AdvertisementPage';
-import { CategoryPage, BusDetailsPage } from '@/features/category/pages';
+import CategoryPage from '@/features/category/pages/CategoryPage';
 import { RewardDetailsPage, RewardsListPage } from '@/features/rewards/pages';
 import { ReviewsListPage } from '@/features/reviews/pages';
 import { Navigate } from 'react-router';
@@ -86,9 +86,23 @@ const routes = [
       {
         path: 'category',
         children: [
-          { index: true, element: <CategoryPage /> },
-          { path: 'buses/:busId', element: <BusDetailsPage /> },
-          { path: 'packages/:packageId', element: <PackageDetailsPage /> },
+          {
+            index: true,
+            element: (
+              <Navigate
+                to='buses'
+                replace
+              />
+            ),
+          },
+          {
+            path: 'buses',
+            element: <CategoryPage />,
+          },
+          {
+            path: 'packages',
+            element: <CategoryPage />,
+          },
         ],
       },
       {
