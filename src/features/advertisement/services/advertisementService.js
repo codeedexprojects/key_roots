@@ -1,6 +1,5 @@
 import { axiosInstance } from '@/lib/axiosInstance';
 import { apiRequest } from '@/lib/apiRequest';
-import axios from 'axios';
 
 export const getAdvertisements = async () => {
   return apiRequest(
@@ -11,13 +10,7 @@ export const getAdvertisements = async () => {
 
 export const getExploreItems = async () => {
   return apiRequest(
-    () =>
-      axios.get('https://api.keyrouteexpedo.com/explore/list/', {
-        headers: {
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYwNTk0OTA1LCJpYXQiOjE3NDc2MzQ5MDUsImp0aSI6IjhlNGEwYjY1ZWI0YTQwMGY4MzcwNDIzODQxODllNmQxIiwidXNlcl9pZCI6MX0.i4Fgo2JSHkT49irVEJrRQ8FOTQ9E_2rs2WmKeU8PW-k',
-        },
-      }),
+    () => axiosInstance.get('/explore/list/'),
     'Error occurred while fetching explore items.'
   );
 };
