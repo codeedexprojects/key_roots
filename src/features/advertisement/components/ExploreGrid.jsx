@@ -4,6 +4,7 @@ import { LoadingSpinner, EmptyState } from '@/components/common';
 
 export const ExploreGrid = ({ items, isLoading, onEdit, onAddNew }) => {
   const displayItems = items || [];
+  console.log("exp",displayItems);
 
   if (isLoading) {
     return (
@@ -57,7 +58,8 @@ export const ExploreGrid = ({ items, isLoading, onEdit, onAddNew }) => {
             onClick={() => onEdit(item)}>
             <div className='h-48 overflow-hidden'>
               <img
-                src={getImageUrl(item.image) || '/placeholder.svg'}
+               src={getImageUrl(item?.images?.[0]?.image) || '/placeholder.svg'}
+
                 alt={item.title}
                 className='w-full h-full object-cover'
               />
