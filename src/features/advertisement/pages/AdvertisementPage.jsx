@@ -5,13 +5,16 @@ import { AdvertisementForm } from '../components/AdvertisementForm';
 import { ExploreGrid } from '../components/ExploreGrid';
 import { ExploreForm } from '../components/ExploreForm';
 import { LoadingSpinner, EmptyState } from '@/components/common';
+import { Trash2, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   getAdvertisements,
   saveAdvertisement,
   getExploreItems,
   saveExploreItem,
+  deleteExploreItem,
 } from '../services/advertisementService';
+// Using modal dialog approach instead of AlertDialog
 
 export const AdvertisementPage = () => {
   const [activeTab, setActiveTab] = useState('advertisement');
@@ -27,6 +30,11 @@ export const AdvertisementPage = () => {
   const [exploreEditMode, setExploreEditMode] = useState(false);
   const [currentExploreItem, setCurrentExploreItem] = useState(null);
   const [exploreIsLoading, setExploreIsLoading] = useState(false);
+  
+  // Delete confirmation state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSaveAdvertisement = async (data) => {
     setAdIsLoading(true);
@@ -99,6 +107,60 @@ export const AdvertisementPage = () => {
     } finally {
       setExploreIsLoading(false);
     }
+  };
+
+  // Handle delete confirmation dialog
+  const handleDeleteConfirmation = (item) => {
+    setItemToDelete(item);
+    setDeleteDialogOpen(true);
+  };
+
+  // Handle the actual delete operation
+  const handleDeleteExploreItem = async () => {
+    if (!itemToDelete || !itemToDelete.id) {
+      toast.error('No item selected for deletion');
+      setDeleteDialogOpen(false);
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const response = await deleteExploreItem(itemToDelete.id);
+
+      if (response && !response.error) {
+        toast.success('Explore item deleted successfully!');
+        
+        // Update the local state by filtering out the deleted item
+        setExploreItems(prevItems => 
+          prevItems.filter(item => item.id !== itemToDelete.id)
+        );
+
+        // If we're currently editing this item, navigate back to the grid
+        if (exploreEditMode && currentExploreItem && currentExploreItem.id === itemToDelete.id) {
+          setExploreEditMode(false);
+          setCurrentExploreItem(null);
+        }
+      } else {
+        console.error(
+          'Error in API response:',
+          response?.message || 'Unknown error'
+        );
+        toast.error(response?.message || 'Failed to delete explore item');
+      }
+    } catch (error) {
+      console.error('Error deleting explore item:', error);
+      toast.error('Failed to delete explore item. Please try again later.');
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+    }
+  };
+
+  // Cancel delete operation
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setItemToDelete(null);
   };
 
   useEffect(() => {
@@ -207,21 +269,36 @@ export const AdvertisementPage = () => {
         setExploreIsLoading(true);
         try {
           const response = await getExploreItems();
+          console.log("explore", response);
+          
           if (response && !response.error && response.data) {
             const transformedItems = response.data.map((item) => ({
               id: item.id,
               title: item.title,
               description: item.description,
-              seasonDescription: item.season_description,
-              image: item.image,
+              // Handle seasons data - get the first season's header as seasonDescription
+              seasonDescription: item.seasons && item.seasons.length > 0 ? item.seasons[0].header : undefined,
+              // Get the first image from the images array if it exists
+              image: item.images && item.images.length > 0 ? item.images[0].image : undefined,
+              // Store the full images array for reference if needed
+              images: item.images || [],
+              // Store seasons data
+              seasons: item.seasons || [],
+              // Transform experiences into sights
               sights: item.experiences
                 ? item.experiences.map((exp) => ({
-                    id: exp.id || Math.random().toString(36).substring(2, 9),
+                    id: Math.random().toString(36).substring(2, 9), // Generate random ID since experiences don't have IDs
                     description: exp.description,
-                    image: exp.image,
+                    header: exp.header,
+                    subHeader: exp.sub_header,
+                    // Get the first image if it exists
+                    image: exp.images && exp.images.length > 0 ? exp.images[0].image : undefined,
+                    // Store all images for the experience
+                    images: exp.images || [],
                   }))
                 : [],
             }));
+            
             setExploreItems(transformedItems);
           } else {
             console.error(
@@ -304,17 +381,74 @@ export const AdvertisementPage = () => {
               isLoading={exploreIsLoading}
               onEdit={handleEditExploreItem}
               onAddNew={handleAddNewExploreItem}
+              onDelete={handleDeleteConfirmation}
             />
           ) : (
             <ExploreForm
               item={currentExploreItem}
               onSave={handleSaveExploreItem}
               onCancel={handleCancelExploreEdit}
+              onDelete={handleDeleteConfirmation}
               isLoading={exploreIsLoading}
             />
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Delete Confirmation Dialog */}
+      {deleteDialogOpen && (
+  <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full transform animate-in zoom-in-95 duration-200">
+      {/* Header */}
+      <div className="flex items-center gap-4 p-6 pb-4">
+        <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+          <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Delete Item</h3>
+          <p className="text-sm text-gray-500 mt-1">This action cannot be undone</p>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="px-6 pb-4">
+        <p className="text-gray-600 leading-relaxed">
+          Are you sure you want to permanently delete this item? All associated data will be lost and cannot be recovered.
+        </p>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center justify-end gap-3 p-6 pt-4 bg-gray-50 rounded-b-xl">
+        <button
+          onClick={handleCancelDelete}
+          disabled={isDeleting}
+          className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleDeleteExploreItem}
+          disabled={isDeleting}
+          className="px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 min-w-20"
+        >
+          {isDeleting ? (
+            <div className="flex items-center justify-center gap-2">
+              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              <span>Deleting...</span>
+            </div>
+          ) : (
+            'Delete'
+          )}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };
