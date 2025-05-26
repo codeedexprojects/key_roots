@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ExplorePage } from './ExplorePage';
 import { AdHeaderList } from '../components/AdHeaderList';
 import { LimitedDealsList } from '../components/LimitedDealsList';
 import { ReferEarnList } from '../components/ReferEarnList';
 import { FooterSectionList } from '../components/FooterSectionList';
-import { ExplorePage } from './ExplorePage';
 
-export const AdvertisementPage = () => {
+export const AdvertisementExplorePage = () => {
   const [activeTab, setActiveTab] = useState('advertisement');
 
   return (
@@ -24,8 +24,11 @@ export const AdvertisementPage = () => {
 
         <TabsContent
           value='advertisement'
-          className='space-y-10'>
-
+          className='space-y-6'>
+          <AdHeaderList />
+          <LimitedDealsList />
+          <ReferEarnList />
+          <FooterSectionList />
         </TabsContent>
 
         <TabsContent

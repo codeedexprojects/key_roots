@@ -1,9 +1,14 @@
-import { Plus } from 'lucide-react';
 import { getImageUrl } from '@/lib/getImageUrl';
+import { Plus } from 'lucide-react';
 import { LoadingSpinner, EmptyState } from '@/components/common';
 
-export const AdvertisementGrid = ({ items, isLoading, onEdit, onAddNew }) => {
-  // Use provided items
+export const AdvertisementGrid = ({
+  items,
+  isLoading,
+  onEdit,
+  onView,
+  onAddNew,
+}) => {
   const displayItems = items || [];
 
   if (isLoading) {
@@ -30,6 +35,8 @@ export const AdvertisementGrid = ({ items, isLoading, onEdit, onAddNew }) => {
         <EmptyState
           title='No advertisements found'
           description='Create your first advertisement to get started.'
+          actionLabel='Add Advertisement'
+          onAction={onAddNew}
           icon='default'
         />
       </div>
@@ -52,50 +59,33 @@ export const AdvertisementGrid = ({ items, isLoading, onEdit, onAddNew }) => {
         {displayItems.map((item) => (
           <div
             key={item.id}
-            className='bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow'
-            onClick={() => onEdit(item)}>
+            className='bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow'>
             <div className='h-48 overflow-hidden'>
               <img
-                src={getImageUrl(item.banner.image) || '/placeholder.svg'}
-                alt={item.banner.title}
+                src={getImageUrl(item.banner?.image) || '/placeholder.svg'}
+                alt={item.banner?.title || 'Advertisement'}
                 className='w-full h-full object-cover'
               />
             </div>
             <div className='p-4'>
               <h3 className='font-semibold text-gray-900 mb-2'>
-                {item.banner.title}
+                {item.banner?.title || 'Untitled Advertisement'}
               </h3>
-              <p className='text-sm text-gray-600 line-clamp-2'>
-                {item.banner.description}
+              <p className='text-sm text-gray-600 line-clamp-2 mb-4'>
+                {item.banner?.description || 'No description available'}
               </p>
-
-              {item.deals.length > 0 && (
-                <div className='mt-3'>
-                  <p className='text-xs font-medium text-gray-500 uppercase mb-1'>
-                    Deals
-                  </p>
-                  <div className='flex flex-wrap gap-2'>
-                    {item.deals.map((deal, index) => (
-                      <span
-                        key={index}
-                        className='inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800'>
-                        {deal.title}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {item.footers.length > 0 && (
-                <div className='mt-2'>
-                  <p className='text-xs font-medium text-gray-500 uppercase mb-1'>
-                    Footer Items
-                  </p>
-                  <p className='text-xs text-gray-600'>
-                    {item.footers.length} item(s)
-                  </p>
-                </div>
-              )}
+              <div className='flex space-x-2'>
+                <button
+                  onClick={() => onView(item)}
+                  className='flex-1 px-3 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'>
+                  View
+                </button>
+                <button
+                  onClick={() => onEdit(item)}
+                  className='flex-1 px-3 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'>
+                  Edit
+                </button>
+              </div>
             </div>
           </div>
         ))}

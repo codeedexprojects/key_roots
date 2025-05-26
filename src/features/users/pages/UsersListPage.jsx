@@ -3,10 +3,11 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
-  MoreHorizontal,
+  Shield,
+  ShieldOff,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { getAllUsers } from '../services/userService';
+import { getAllUsers, toggleUserStatus } from '../services/userService';
 import { useNavigate, Link } from 'react-router';
 import { useState, useEffect } from 'react';
 import { LoadingSpinner, EmptyState } from '@/components/common';
@@ -32,38 +33,70 @@ export const UsersListPage = () => {
   // Loading and error states
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [togglingUserId, setTogglingUserId] = useState(null);
 
   // Fetch users data
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setIsLoading(true);
-      try {
-        const response = await getAllUsers();
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getAllUsers();
 
-        if (response && !response.error) {
-          setUsers(response.users || []);
+      if (response && !response.error) {
+        setUsers(response.users || []);
 
-          setUserStats({
-            total_users: response.total_users || 0,
-            booked_users_count: response.booked_users_count || 0,
-            active_users_count: response.active_users_count || 0,
-            inactive_users_count: response.inactive_users_count || 0,
-          });
-        } else {
-          setError(response?.message || 'Failed to load users');
-          toast.error(response?.message || 'Failed to load users');
-        }
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        setError('Failed to load users. Please try again later.');
-        toast.error('Failed to load users. Please try again later.');
-      } finally {
-        setIsLoading(false);
+        setUserStats({
+          total_users: response.total_users || 0,
+          booked_users_count: response.booked_users_count || 0,
+          active_users_count: response.active_users_count || 0,
+          inactive_users_count: response.inactive_users_count || 0,
+        });
+      } else {
+        setError(response?.message || 'Failed to load users');
+        toast.error(response?.message || 'Failed to load users');
       }
-    };
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setError('Failed to load users. Please try again later.');
+      toast.error('Failed to load users. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchUsers();
   }, []);
+
+  // Toggle user status function
+  const handleToggleUserStatus = async (userId, currentStatus, event) => {
+    // Prevent row click navigation
+    event.stopPropagation();
+
+    setTogglingUserId(userId);
+    try {
+      const response = await toggleUserStatus(userId);
+
+      if (response && !response.error) {
+        // Show success message
+        toast.success(
+          response.message ||
+            `User has been ${
+              response.is_active ? 'unblocked' : 'blocked'
+            } successfully.`
+        );
+
+        // Refetch users list to update the data
+        await fetchUsers();
+      } else {
+        toast.error(response?.message || 'Failed to update user status');
+      }
+    } catch (error) {
+      console.error('Error toggling user status:', error);
+      toast.error('Failed to update user status. Please try again.');
+    } finally {
+      setTogglingUserId(null);
+    }
+  };
 
   let processedUsers = [...users];
 
@@ -255,11 +288,14 @@ export const UsersListPage = () => {
                   <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-32'>
                     Status
                   </th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-32'>
+                    Actions
+                  </th>
                 </tr>
               </thead>
 
               <tbody className='bg-white divide-y divide-gray-200'>
-                {processedUsers.map((user) => (
+                {currentUsers.map((user) => (
                   <tr
                     key={user.id}
                     className='hover:bg-gray-50 cursor-pointer'
@@ -308,6 +344,31 @@ export const UsersListPage = () => {
                         {user.is_active ? 'ACTIVE' : 'INACTIVE'}
                       </span>
                     </td>
+                    <td className='px-4 py-4 w-auto lg:w-32'>
+                      <button
+                        onClick={(e) =>
+                          handleToggleUserStatus(user.id, user.is_active, e)
+                        }
+                        disabled={togglingUserId === user.id}
+                        className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-md border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                          user.is_active
+                            ? 'border-red-500 text-red-500 hover:bg-red-50'
+                            : 'border-green-500 text-green-500 hover:bg-green-50'
+                        }`}>
+                        {togglingUserId === user.id ? (
+                          <LoadingSpinner size='small' />
+                        ) : (
+                          <>
+                            {user.is_active ? (
+                              <ShieldOff className='h-3 w-3 mr-1' />
+                            ) : (
+                              <Shield className='h-3 w-3 mr-1' />
+                            )}
+                            {user.is_active ? 'Block' : 'Unblock'}
+                          </>
+                        )}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -319,7 +380,8 @@ export const UsersListPage = () => {
           <div className='flex justify-between items-center border-t border-gray-200 px-4 py-3 mt-4'>
             <p className='text-sm text-gray-700'>
               Showing {indexOfFirstUser + 1}–
-              {Math.min(indexOfLastUser, users.length)} of {users.length} users
+              {Math.min(indexOfLastUser, processedUsers.length)} of{' '}
+              {processedUsers.length} users
             </p>
 
             <div className='flex items-center space-x-2'>

@@ -17,11 +17,11 @@ export const PackageDetailsPage = () => {
     const fetchPackageDetails = async () => {
       setIsLoading(true);
       try {
-        const data = await getPackageDetails(vendorId, packageId);
-        console.log('Package details data:', data);
+        const response = await getPackageDetails(packageId);
+        console.log(response);
 
-        if (data) {
-          setPackageDetails(data);
+        if (response && response.data) {
+          setPackageDetails(response.data);
         }
       } catch (error) {
         console.error('Error fetching package details:', error);
@@ -30,10 +30,10 @@ export const PackageDetailsPage = () => {
       }
     };
 
-    if (vendorId && packageId) {
+    if (packageId) {
       fetchPackageDetails();
     }
-  }, [vendorId, packageId]);
+  }, [packageId]);
 
   if (isLoading) {
     return (
@@ -85,7 +85,7 @@ export const PackageDetailsPage = () => {
                 {packageDetails.places}
               </h1>
               <p className='text-gray-600 mb-4'>
-                {packageDetails.sub_category_name}
+                {packageDetails.sub_category?.name}
               </p>
 
               <div className='space-y-4'>
@@ -93,9 +93,7 @@ export const PackageDetailsPage = () => {
                   <p className='text-sm text-gray-500'>Duration</p>
                   <div className='flex items-center'>
                     <Calendar className='h-4 w-4 mr-2 text-gray-500' />
-                    <p className='font-medium'>
-                      {packageDetails.days} days, {packageDetails.nights} nights
-                    </p>
+                    <p className='font-medium'>{packageDetails.days} days</p>
                   </div>
                 </div>
 
@@ -107,44 +105,53 @@ export const PackageDetailsPage = () => {
                   </div>
                 </div>
 
-                <div className='flex space-x-6'>
+                <div>
+                  <p className='text-sm text-gray-500'>Travels Name</p>
+                  <p className='font-medium'>
+                    {Array.isArray(packageDetails.travels_name)
+                      ? packageDetails.travels_name.join(', ')
+                      : packageDetails.travels_name}
+                  </p>
+                </div>
+
+                <div className='grid grid-cols-2 gap-4'>
                   <div>
                     <p className='text-sm text-gray-500'>AC Available</p>
-                    <div className='flex items-center'>
-                      {packageDetails.ac_available ? (
-                        <Check className='h-4 w-4 mr-2 text-green-500' />
-                      ) : (
-                        <X className='h-4 w-4 mr-2 text-red-500' />
-                      )}
-                      <p className='font-medium'>
-                        {packageDetails.ac_available ? 'Yes' : 'No'}
-                      </p>
-                    </div>
+                    <span
+                      className={`inline-block px-2 py-1 text-xs font-medium rounded ${
+                        packageDetails.ac_available
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                      {packageDetails.ac_available ? 'Yes' : 'No'}
+                    </span>
                   </div>
-
                   <div>
                     <p className='text-sm text-gray-500'>Guide Included</p>
-                    <div className='flex items-center'>
-                      {packageDetails.guide_included ? (
-                        <Check className='h-4 w-4 mr-2 text-green-500' />
-                      ) : (
-                        <X className='h-4 w-4 mr-2 text-red-500' />
-                      )}
-                      <p className='font-medium'>
-                        {packageDetails.guide_included ? 'Yes' : 'No'}
-                      </p>
-                    </div>
+                    <span
+                      className={`inline-block px-2 py-1 text-xs font-medium rounded ${
+                        packageDetails.guide_included
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                      {packageDetails.guide_included ? 'Yes' : 'No'}
+                    </span>
                   </div>
                 </div>
 
-                <div>
-                  <p className='text-sm text-gray-500'>Price</p>
-                  <p className='text-xl font-semibold text-blue-600'>
-                    ₹{packageDetails.price_per_person}{' '}
-                    <span className='text-sm font-normal text-gray-500'>
-                      per person
-                    </span>
-                  </p>
+                <div className='grid grid-cols-2 gap-4'>
+                  <div>
+                    <p className='text-sm text-gray-500'>Price per Person</p>
+                    <p className='text-xl font-semibold text-blue-600'>
+                      ₹{packageDetails.price_per_person}
+                    </p>
+                  </div>
+                  <div>
+                    <p className='text-sm text-gray-500'>Extra Charge per KM</p>
+                    <p className='text-lg font-semibold text-blue-600'>
+                      ₹{packageDetails.extra_charge_per_km}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -170,20 +177,39 @@ export const PackageDetailsPage = () => {
                 <h3 className='text-lg font-semibold mb-3'>Package Details</h3>
                 <div className='space-y-2'>
                   <p className='text-gray-700'>
-                    <span className='font-medium'>Travels Name:</span>{' '}
-                    {packageDetails.travels_name}
+                    <span className='font-medium'>Category:</span>{' '}
+                    {packageDetails.sub_category?.name}
                   </p>
                   <p className='text-gray-700'>
-                    <span className='font-medium'>Location:</span>{' '}
-                    {packageDetails.travels_location}
+                    <span className='font-medium'>Travels Name:</span>{' '}
+                    {Array.isArray(packageDetails.travels_name)
+                      ? packageDetails.travels_name.join(', ')
+                      : packageDetails.travels_name}
                   </p>
-                  {packageDetails.average_rating && (
-                    <p className='text-gray-700'>
-                      <span className='font-medium'>Rating:</span>{' '}
-                      {packageDetails.average_rating}/5 (
-                      {packageDetails.total_reviews} reviews)
-                    </p>
-                  )}
+                  <p className='text-gray-700'>
+                    <span className='font-medium'>Places:</span>{' '}
+                    {packageDetails.places}
+                  </p>
+                  <p className='text-gray-700'>
+                    <span className='font-medium'>Duration:</span>{' '}
+                    {packageDetails.days} days
+                  </p>
+                  <p className='text-gray-700'>
+                    <span className='font-medium'>AC Available:</span>{' '}
+                    {packageDetails.ac_available ? 'Yes' : 'No'}
+                  </p>
+                  <p className='text-gray-700'>
+                    <span className='font-medium'>Guide Included:</span>{' '}
+                    {packageDetails.guide_included ? 'Yes' : 'No'}
+                  </p>
+                  <p className='text-gray-700'>
+                    <span className='font-medium'>Created:</span>{' '}
+                    {new Date(packageDetails.created_at).toLocaleDateString()}
+                  </p>
+                  <p className='text-gray-700'>
+                    <span className='font-medium'>Updated:</span>{' '}
+                    {new Date(packageDetails.updated_at).toLocaleDateString()}
+                  </p>
                 </div>
               </div>
             </TabsContent>
@@ -193,9 +219,145 @@ export const PackageDetailsPage = () => {
               className='space-y-6'>
               <div>
                 <h3 className='text-lg font-semibold mb-3'>Itinerary</h3>
-                <p className='text-gray-500 italic'>
-                  Itinerary details not available.
-                </p>
+                {packageDetails.day_plans &&
+                packageDetails.day_plans.length > 0 ? (
+                  <div className='space-y-6'>
+                    {packageDetails.day_plans.map((dayPlan) => (
+                      <div
+                        key={dayPlan.id}
+                        className='border rounded-lg p-4'>
+                        <h4 className='text-lg font-semibold mb-3'>
+                          Day {dayPlan.day_number}
+                        </h4>
+                        <p className='text-gray-700 mb-4'>
+                          {dayPlan.description}
+                        </p>
+
+                        {/* Places */}
+                        {dayPlan.places && dayPlan.places.length > 0 && (
+                          <div className='mb-4'>
+                            <h5 className='font-medium mb-2'>
+                              Places to Visit:
+                            </h5>
+                            <div className='space-y-2'>
+                              {dayPlan.places.map((place) => (
+                                <div
+                                  key={place.id}
+                                  className='bg-gray-50 p-3 rounded'>
+                                  <h6 className='font-medium'>{place.name}</h6>
+                                  <p className='text-sm text-gray-600'>
+                                    {place.description}
+                                  </p>
+                                  {place.images && place.images.length > 0 && (
+                                    <div className='flex space-x-2 mt-2'>
+                                      {place.images.slice(0, 3).map((img) => (
+                                        <img
+                                          key={img.id}
+                                          src={getImageUrl(img.image)}
+                                          alt='Place'
+                                          className='w-16 h-16 object-cover rounded'
+                                        />
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Stay */}
+                        {dayPlan.stay && (
+                          <div className='mb-4'>
+                            <h5 className='font-medium mb-2'>Accommodation:</h5>
+                            <div className='bg-gray-50 p-3 rounded'>
+                              <h6 className='font-medium'>
+                                {dayPlan.stay.hotel_name}
+                              </h6>
+                              <p className='text-sm text-gray-600'>
+                                {dayPlan.stay.description}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Meals */}
+                        {dayPlan.meals && dayPlan.meals.length > 0 && (
+                          <div className='mb-4'>
+                            <h5 className='font-medium mb-2'>Meals:</h5>
+                            <div className='space-y-2'>
+                              {dayPlan.meals.map((meal) => (
+                                <div
+                                  key={meal.id}
+                                  className='bg-gray-50 p-3 rounded'>
+                                  <h6 className='font-medium capitalize'>
+                                    {meal.type}
+                                  </h6>
+                                  <p className='text-sm text-gray-600'>
+                                    {meal.description}
+                                  </p>
+                                  {meal.images && meal.images.length > 0 && (
+                                    <div className='flex space-x-2 mt-2'>
+                                      {meal.images.slice(0, 3).map((img) => (
+                                        <img
+                                          key={img.id}
+                                          src={getImageUrl(img.image)}
+                                          alt='Meal'
+                                          className='w-16 h-16 object-cover rounded'
+                                        />
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Activities */}
+                        {dayPlan.activities &&
+                          dayPlan.activities.length > 0 && (
+                            <div className='mb-4'>
+                              <h5 className='font-medium mb-2'>Activities:</h5>
+                              <div className='space-y-2'>
+                                {dayPlan.activities.map((activity) => (
+                                  <div
+                                    key={activity.id}
+                                    className='bg-gray-50 p-3 rounded'>
+                                    <h6 className='font-medium'>
+                                      {activity.name}
+                                    </h6>
+                                    <p className='text-sm text-gray-600'>
+                                      {activity.description}
+                                    </p>
+                                    {activity.images &&
+                                      activity.images.length > 0 && (
+                                        <div className='flex space-x-2 mt-2'>
+                                          {activity.images
+                                            .slice(0, 3)
+                                            .map((img) => (
+                                              <img
+                                                key={img.id}
+                                                src={getImageUrl(img.image)}
+                                                alt='Activity'
+                                                className='w-16 h-16 object-cover rounded'
+                                              />
+                                            ))}
+                                        </div>
+                                      )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className='text-gray-500 italic'>
+                    No itinerary details available.
+                  </p>
+                )}
               </div>
             </TabsContent>
 

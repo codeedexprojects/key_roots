@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router';
-import { ArrowLeft, Users, FileText, Check, X } from 'lucide-react';
+import { ArrowLeft, Users, FileText, Check } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getBusDetails } from '../services/vendorService';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -16,9 +16,10 @@ export const VendorBusDetailsPage = () => {
     const fetchBusData = async () => {
       setIsLoading(true);
       try {
-        const data = await getBusDetails(vendorId, busId);
+        const response = await getBusDetails(busId);
 
-        if (data) {
+        if (response) {
+          const data = response;
           const documents = [
             {
               name: 'RC Certificate',
@@ -57,7 +58,7 @@ export const VendorBusDetailsPage = () => {
     };
 
     fetchBusData();
-  }, [busId, vendorId]);
+  }, [busId]);
 
   if (isLoading) {
     return (
@@ -98,6 +99,7 @@ export const VendorBusDetailsPage = () => {
             <div>
               <img
                 src={
+                  getImageUrl(busDetails.images?.[0]?.bus_view_image) ||
                   getImageUrl(busDetails.travels_logo) ||
                   'https://upload.wikimedia.org/wikipedia/commons/3/32/Icon-mode-bus-default.svg'
                 }
@@ -137,20 +139,59 @@ export const VendorBusDetailsPage = () => {
                   </div>
                 </div>
 
+                <div>
+                  <p className='text-sm text-gray-500'>Bus Type</p>
+                  <p className='font-medium'>{busDetails.bus_type}</p>
+                </div>
+
+                <div>
+                  <p className='text-sm text-gray-500'>Location</p>
+                  <p className='font-medium'>{busDetails.location}</p>
+                </div>
+
+                <div>
+                  <p className='text-sm text-gray-500'>Status</p>
+                  <span
+                    className={`inline-block px-2 py-1 text-xs font-medium rounded ${
+                      busDetails.status === 'available'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                    {busDetails.status}
+                  </span>
+                </div>
+
+                <div>
+                  <p className='text-sm text-gray-500'>Rating</p>
+                  <p className='font-medium'>
+                    {busDetails.average_rating}/5 ({busDetails.total_reviews}{' '}
+                    reviews)
+                  </p>
+                </div>
+
                 <div className='grid grid-cols-2 gap-4'>
                   <div>
                     <p className='text-sm text-gray-500'>Base Price</p>
                     <p className='text-lg font-semibold text-blue-600'>
-                      {busDetails.base_price}
+                      ₹{busDetails.base_price}
                     </p>
                   </div>
                   <div>
                     <p className='text-sm text-gray-500'>Price per KM</p>
                     <p className='text-lg font-semibold text-blue-600'>
-                      {busDetails.price_per_km}
+                      ₹{busDetails.price_per_km}
                     </p>
                   </div>
                 </div>
+
+                {busDetails.minimum_fare && (
+                  <div>
+                    <p className='text-sm text-gray-500'>Minimum Fare</p>
+                    <p className='text-lg font-semibold text-blue-600'>
+                      ₹{busDetails.minimum_fare}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

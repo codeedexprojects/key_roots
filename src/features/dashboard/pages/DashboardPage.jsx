@@ -214,8 +214,6 @@ export function DashboardPage() {
         console.log('Revenue data response:', response);
         if (response && !response.error) {
           setRevenueData(response);
-          console.log(response);
-          // Set the most recent month as the default selected month
           if (response.monthly_revenue && response.monthly_revenue.length > 0) {
             setSelectedMonth(
               response.monthly_revenue[response.monthly_revenue.length - 1]
@@ -243,22 +241,16 @@ export function DashboardPage() {
     }
 
     const revenueByMonth = {};
-
     revenueData.all_bookings.forEach((booking) => {
       // Only consider accepted + non-cancelled
-      if (
-        booking.booking_status === 'accepted' &&
-        booking.payment_status !== 'cancelled'
-      ) {
-        const date = new Date(booking.created_at);
-        const monthKey = `${date.getFullYear()}-${String(
-          date.getMonth() + 1
-        ).padStart(2, '0')}`;
-        if (!revenueByMonth[monthKey]) {
-          revenueByMonth[monthKey] = 0;
-        }
-        revenueByMonth[monthKey] += booking.total_amount;
+      const date = new Date(booking.created_at);
+      const monthKey = `${date.getFullYear()}-${String(
+        date.getMonth() + 1
+      ).padStart(2, '0')}`;
+      if (!revenueByMonth[monthKey]) {
+        revenueByMonth[monthKey] = 0;
       }
+      revenueByMonth[monthKey] += booking.total_amount;
     });
 
     const monthNames = [
@@ -615,7 +607,7 @@ export function DashboardPage() {
 
           {/* Sticky footer */}
           <Link
-            to='/bookings'
+            to='/booking'
             className='mt-4 flex items-center justify-center text-gray-500 text-sm hover:text-primary hover:underline'>
             <span>SEE ALL BOOKINGS</span>
             <ArrowRight className='h-4 w-4 ml-1' />

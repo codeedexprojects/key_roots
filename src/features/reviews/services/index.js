@@ -1,0 +1,1 @@
+export { getAllReviews } from './reviewService';

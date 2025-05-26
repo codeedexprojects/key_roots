@@ -18,13 +18,14 @@ import {
   PaymentDetailsPage,
   PaymentsListPage,
 } from '@/features/payments/pages';
-import { AdvertisementPage } from '@/features/advertisement/pages/AdvertisementPage';
+import { AdvertisementExplorePage } from '@/features/advertisement/pages';
 import CategoryPage from '@/features/category/pages/CategoryPage';
 import { RewardDetailsPage, RewardsListPage } from '@/features/rewards/pages';
 import { ReviewsListPage } from '@/features/reviews/pages';
 import { Navigate } from 'react-router';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { PrivateRoute } from '@/lib/PrivateRoute.jsx';
+import { PayoutPage } from '@/features/payout/pages/Payout';
 
 const routes = [
   {
@@ -81,7 +82,7 @@ const routes = [
       },
       {
         path: 'advertisements',
-        children: [{ index: true, element: <AdvertisementPage /> }],
+        children: [{ index: true, element: <AdvertisementExplorePage /> }],
       },
       {
         path: 'category',
@@ -115,6 +116,10 @@ const routes = [
       {
         path: 'reviews',
         children: [{ index: true, element: <ReviewsListPage /> }],
+      },
+      {
+        path: 'payouts',
+        children: [{ index: true, element: <PayoutPage /> }],
       },
       {
         path: '*',

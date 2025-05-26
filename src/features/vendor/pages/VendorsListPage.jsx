@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import {
   Plus,
   Search,
-  ChevronLeft,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
+  MoreHorizontal,
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { useNavigate } from 'react-router';
@@ -149,7 +150,7 @@ export const VendorsListPage = () => {
   return (
     <div className='flex flex-col min-h-screen'>
       <div className='flex justify-between items-center mb-6'>
-        <h1 className='text-2xl font-semibold'>Vendors</h1>
+        <h1 className='text-2xl font-semibold'>All Vendors</h1>
         <Link
           to='/vendors/create'
           className='inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'>
@@ -226,61 +227,59 @@ export const VendorsListPage = () => {
         </div>
       )}
 
-      <div className='bg-white rounded-md shadow-sm p-4'>
-        <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4'>
-          <h2 className='text-lg font-semibold'>Vendor List</h2>
-          <div className='flex flex-col md:flex-row gap-2 w-full md:w-auto'>
-            <div className='relative w-full md:w-64'>
-              <input
-                type='text'
-                placeholder='Search Vendors'
-                className='pl-8 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none text-sm w-full'
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <Search className='absolute left-2 top-2.5 h-4 w-4 text-gray-400' />
-            </div>
-            <div className='flex gap-2'>
-              <div className='relative'>
-                <select
-                  className='appearance-none pl-4 pr-10 py-2 border rounded-md text-sm'
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}>
-                  <option value='name'>Sort by: Name</option>
-                  <option value='location'>Sort by: Location</option>
-                  <option value='state'>Sort by: State</option>
-                  <option value='status'>Sort by: Status</option>
-                  <option value='buses'>Sort by: Buses</option>
-                </select>
-                <ChevronDown className='absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none' />
-              </div>
+      <div className='bg-white rounded-md shadow-sm p-6'>
+        {/* Search and Filter Controls */}
+        <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4'>
+          <div className='relative w-full md:w-80'>
+            <input
+              type='text'
+              placeholder='Search vendors'
+              className='pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none text-sm w-full'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Search className='absolute left-3 top-2.5 h-4 w-4 text-gray-400' />
+          </div>
 
-              {/* State Filter Dropdown */}
-              <div className='relative'>
-                <select
-                  className='appearance-none pl-4 pr-10 py-2 border rounded-md text-sm'
-                  value={filterState}
-                  onChange={(e) => setFilterState(e.target.value)}>
-                  <option value='all'>Filter by: All States</option>
-                  {Array.from(
-                    new Set(vendors.map((v) => v.state).filter(Boolean))
-                  ).map((state) => (
-                    <option
-                      key={state}
-                      value={state}>
-                      {state}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className='absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none' />
-              </div>
+          <div className='flex gap-3'>
+            <div className='relative'>
+              <select
+                className='appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md text-sm bg-white'
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}>
+                <option value='name'>Sort by: Newest</option>
+                <option value='location'>Sort by: Location</option>
+                <option value='state'>Sort by: State</option>
+                <option value='status'>Sort by: Status</option>
+                <option value='buses'>Sort by: Buses</option>
+              </select>
+              <ChevronDown className='absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none' />
+            </div>
+
+            <div className='relative'>
+              <select
+                className='appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md text-sm bg-white'
+                value={filterState}
+                onChange={(e) => setFilterState(e.target.value)}>
+                <option value='all'>Filter by: State</option>
+                {Array.from(
+                  new Set(vendors.map((v) => v.state).filter(Boolean))
+                ).map((state) => (
+                  <option
+                    key={state}
+                    value={state}>
+                    {state}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className='absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none' />
             </div>
           </div>
         </div>
 
         {/* Loading State */}
         {loading ? (
-          <div className='flex justify-center items-center min-h-[100px]'>
+          <div className='flex justify-center items-center min-h-[400px]'>
             <LoadingSpinner size='medium' />
           </div>
         ) : error ? (
@@ -294,88 +293,89 @@ export const VendorsListPage = () => {
             icon='default'
           />
         ) : (
-          <div className='overflow-x-auto min-h-[400px]'>
-            <table className='min-w-full lg:table-fixed divide-y divide-gray-200'>
-              <thead>
-                <tr>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-16'>
-                    ID
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-48'>
-                    Vendor
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-40'>
-                    Location
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-40 hidden md:table-cell'>
-                    State
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-32'>
-                    Buses
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-32'>
-                    Status
-                  </th>
-                </tr>
-              </thead>
+          /* Vendor Cards Grid */
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-h-[400px]'>
+            {currentVendors.map((vendor) => (
+              <div
+                key={vendor.id}
+                className='bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer relative'
+                onClick={() => navigate(`/vendors/${vendor.id}`)}>
+                {/* Three dots menu */}
+                <button className='absolute top-3 right-3 p-1 hover:bg-gray-100 rounded'>
+                  <MoreHorizontal className='h-4 w-4 text-gray-400' />
+                </button>
 
-              <tbody className='bg-white divide-y divide-gray-200'>
-                {currentVendors.map((vendor) => (
-                  <tr
-                    key={vendor.id}
-                    className='hover:bg-gray-50 cursor-pointer'
-                    onClick={() => navigate(`/vendors/${vendor.id}`)}>
-                    <td className='px-4 py-4 text-sm text-gray-500 w-auto lg:w-16'>
-                      {vendor.id}
-                    </td>
-                    <td className='px-4 py-4 w-auto lg:w-48 truncate'>
-                      <div className='flex items-center'>
-                        <img
-                          className='h-10 w-10 rounded-md flex-shrink-0'
-                          src={
-                            vendor.image !==
-                            '/placeholder.svg?height=48&width=48'
-                              ? getImageUrl(vendor.image)
-                              : 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
-                          }
-                          alt={vendor.name}
-                        />
-                        <div className='ml-4 w-full'>
-                          <div
-                            className='text-sm font-medium text-gray-900 truncate'
-                            title={vendor.name}>
-                            {vendor.name}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td
-                      className='px-4 py-4 text-sm text-gray-500 truncate w-auto lg:w-40'
-                      title={vendor.location}>
-                      {vendor.location || 'Not specified'}
-                    </td>
-                    <td
-                      className='px-4 py-4 text-sm text-gray-500 truncate hidden md:table-cell w-auto lg:w-40'
-                      title={vendor.state}>
-                      {vendor.state || 'Not specified'}
-                    </td>
-                    <td className='px-4 py-4 text-sm text-gray-500 w-auto lg:w-32'>
-                      {vendor.busesCount}
-                    </td>
-                    <td className='px-4 py-4 w-auto lg:w-32'>
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          vendor.status === 'active'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                        {vendor.status === 'active' ? 'ACTIVE' : 'INACTIVE'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                {/* Vendor Profile */}
+                <div className='flex flex-col items-center mb-4'>
+                  <img
+                    className='h-12 w-12 rounded-full mb-2'
+                    src={
+                      vendor.image !== '/placeholder.svg?height=48&width=48'
+                        ? getImageUrl(vendor.image)
+                        : 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
+                    }
+                    alt={vendor.name}
+                  />
+                  <h3 className='text-sm font-medium text-gray-900 text-center leading-tight'>
+                    {vendor.name}
+                  </h3>
+                  <p className='text-xs text-gray-500 mt-1'>
+                    Located in {vendor.location || 'Not specified'}
+                  </p>
+                  <p className='text-xs text-gray-600 mt-1'>
+                    Amount earned [₹{vendor.earnings.toLocaleString()}]
+                  </p>
+                </div>
+
+                {/* Stats Grid */}
+                <div className='grid grid-cols-3 gap-3 mb-3'>
+                  <div className='text-center'>
+                    <div className='text-xs font-medium text-gray-500'>
+                      Buses
+                    </div>
+                    <div className='text-lg font-semibold text-gray-900'>
+                      {vendor.busesCount.toString().padStart(2, '0')}
+                    </div>
+                  </div>
+                  <div className='text-center'>
+                    <div className='text-xs font-medium text-gray-500'>
+                      Packages
+                    </div>
+                    <div className='text-lg font-semibold text-gray-900'>
+                      {vendor.packagesCount.toString().padStart(2, '0')}+
+                    </div>
+                  </div>
+                  <div className='text-center'>
+                    <div className='text-xs font-medium text-gray-500'>
+                      Booked
+                    </div>
+                    <div className='text-lg font-semibold text-gray-900'>
+                      {vendor.bookings.toString().padStart(2, '0')}+
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Stats */}
+                <div className='space-y-2 pt-3 border-t border-gray-100'>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-xs text-gray-600'>
+                      Available Buses / Packages
+                    </span>
+                    <span className='text-xs font-medium text-gray-900'>
+                      {vendor.availableBuses}/{vendor.packagesCount}+
+                    </span>
+                  </div>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-xs text-gray-600'>
+                      Ongoing Buses / Packages
+                    </span>
+                    <span className='text-xs font-medium text-gray-900'>
+                      {vendor.ongoingBuses}/3
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

@@ -24,3 +24,11 @@ export const createUser = async (userData) => {
     'Error occurred while creating user.'
   );
 };
+
+// Function to toggle user status (block/unblock)
+export const toggleUserStatus = async (userId) => {
+  return apiRequest(
+    () => axiosInstance.post(`/users/${userId}/toggle-status/`),
+    `Error occurred while toggling status for user with ID ${userId}.`
+  );
+};

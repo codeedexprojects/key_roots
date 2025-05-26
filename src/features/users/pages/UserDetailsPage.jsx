@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, useParams } from 'react-router';
 import { LoadingSpinner, EmptyState } from '@/components/common';
 import { getUserById } from '../services/userService';
 import { toast } from 'sonner';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export const UserDetailsPage = () => {
   const { userId } = useParams();
@@ -28,12 +30,171 @@ export const UserDetailsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // PDF Export Function
+  const exportToPDF = () => {
+    try {
+      const doc = new jsPDF();
+
+      // Set up the document
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(20);
+      doc.text('User Details Report', 20, 20);
+
+      // User basic info
+      doc.setFontSize(14);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 35);
+
+      let yPosition = 55;
+
+      // Personal Information Section
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text('Personal Information', 20, yPosition);
+      yPosition += 10;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+
+      const personalInfo = [
+        ['User Name:', user?.name || 'N/A'],
+        ['User ID:', `ID-${user?.userId || 'N/A'}`],
+        ['Phone Number:', user?.phone || 'N/A'],
+        ['Email ID:', user?.email || 'N/A'],
+        ['Location:', user?.location || 'N/A'],
+        ['Address:', user?.address || 'N/A'],
+      ];
+
+      personalInfo.forEach(([label, value]) => {
+        doc.text(label, 20, yPosition);
+        doc.text(value, 80, yPosition);
+        yPosition += 8;
+      });
+
+      yPosition += 10;
+
+      // Statistics Section
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text('Statistics', 20, yPosition);
+      yPosition += 10;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+
+      const stats = [
+        ['Total Bookings:', user?.totalBookings?.toString() || '0'],
+        ['Total Rewards:', user?.totalRewards?.toString() || '0'],
+      ];
+
+      stats.forEach(([label, value]) => {
+        doc.text(label, 20, yPosition);
+        doc.text(value, 80, yPosition);
+        yPosition += 8;
+      });
+
+      yPosition += 15;
+
+      // Bookings Table
+      if (bookings && bookings.length > 0) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.text('Booking History', 20, yPosition);
+        yPosition += 10;
+
+        const bookingTableData = bookings.map((booking) => [
+          booking.start_date,
+          `#${booking.id}`,
+          booking.booking_status,
+          booking.trip_status,
+          booking.total,
+        ]);
+
+        autoTable(doc, {
+          startY: yPosition,
+          head: [
+            [
+              'Start Date',
+              'Order ID',
+              'Booking Status',
+              'Trip Status',
+              'Amount',
+            ],
+          ],
+          body: bookingTableData,
+          theme: 'grid',
+          styles: {
+            fontSize: 9,
+            cellPadding: 3,
+          },
+          headStyles: {
+            fillColor: [220, 220, 220],
+            textColor: 0,
+            fontStyle: 'bold',
+          },
+          alternateRowStyles: {
+            fillColor: [248, 248, 248],
+          },
+        });
+
+        yPosition = doc.lastAutoTable.finalY + 20;
+      }
+
+      // Add page break if needed
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
+      // Rewards Section (if available)
+      const rewards = user?.rewards || [];
+      if (rewards.length > 0) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.text('Rewards History', 20, yPosition);
+        yPosition += 10;
+
+        const rewardsTableData = rewards.map((reward, index) => [
+          `#${reward.id || index + 1}`,
+          reward.type || 'Loyalty Points',
+          reward.points || '100',
+          reward.date || new Date().toLocaleDateString(),
+          reward.status || 'Active',
+        ]);
+
+        autoTable(doc, {
+          startY: yPosition,
+          head: [['Reward ID', 'Type', 'Points', 'Date', 'Status']],
+          body: rewardsTableData,
+          theme: 'grid',
+          styles: {
+            fontSize: 9,
+            cellPadding: 3,
+          },
+          headStyles: {
+            fillColor: [220, 220, 220],
+            textColor: 0,
+            fontStyle: 'bold',
+          },
+          alternateRowStyles: {
+            fillColor: [248, 248, 248],
+          },
+        });
+      }
+
+      // Save the PDF
+      doc.save(`User_${user?.name || userId}_Details.pdf`);
+      toast.success('PDF exported successfully!');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Failed to generate PDF. Please try again.');
+    }
+  };
+
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPageBookings(1);
   }, [searchTerm, selectedState, sortOrder]);
 
-  // Fetch user data
   useEffect(() => {
     const fetchUserDetails = async () => {
       if (!userId) return;
@@ -41,7 +202,7 @@ export const UserDetailsPage = () => {
       setIsLoading(true);
       try {
         const response = await getUserById(userId);
-        console.log(response);
+
         if (response && !response.error) {
           // Transform user data
           const userData = {
@@ -158,7 +319,9 @@ export const UserDetailsPage = () => {
 
           <div className='lg:col-span-2 space-y-6'>
             <div className='flex justify-end gap-2'>
-              <button className='px-4 py-2 border border-red-500 text-red-500 rounded-md hover:bg-red-50'>
+              <button
+                onClick={exportToPDF}
+                className='px-4 py-2 border border-red-500 text-red-500 rounded-md hover:bg-red-50'>
                 Export PDF
               </button>
             </div>

@@ -218,9 +218,7 @@ export const UserCreatePage = () => {
                       ? 'border border-red-500'
                       : 'border border-gray-300 bg-white'
                   } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}>
-                  <option value='vendor'>Vendor</option>
                   <option value='user'>User</option>
-                  <option value='admin'>Admin</option>
                 </select>
                 {errors.role && (
                   <p className='mt-1 text-sm text-red-500'>{errors.role}</p>

@@ -42,23 +42,19 @@ export const getVendorPackages = async (vendorId) => {
 };
 
 // Function to get details of a specific bus
-export const getBusDetails = async (vendorId, busId) => {
-  const response = await getVendorBuses(vendorId);
-  if (response && response.data) {
-    return response.data.find((bus) => bus.id === Number(busId));
-  }
-  return null;
+export const getBusDetails = async (busId) => {
+  return apiRequest(
+    () => axiosInstance.get(`/bus/${busId}/`),
+    `Error occurred while fetching bus details for ID ${busId}.`
+  );
 };
 
 // Function to get details of a specific package
-export const getPackageDetails = async (vendorId, packageId) => {
-  const response = await getVendorPackages(vendorId);
-  if (response && response.data) {
-    console.log(response);
-
-    return response.data.find((pkg) => pkg.id === Number(packageId));
-  }
-  return null;
+export const getPackageDetails = async (packageId) => {
+  return apiRequest(
+    () => axiosInstance.get(`/vendor/package/${packageId}/`),
+    `Error occurred while fetching package details for ID ${packageId}.`
+  );
 };
 
 // Function to create a new vendor
