@@ -40,7 +40,7 @@ export const ExploreView = ({ item, onEdit, onCancel }) => {
                     key={index}
                     className='h-64 rounded-lg overflow-hidden bg-gray-100'>
                     <img
-                      src={getImageUrl(image) || '/placeholder.svg'}
+                      src={getImageUrl(image.url) || '/placeholder.svg'}
                       alt={`Main Image ${index + 1}`}
                       className='w-full h-full object-cover'
                     />
@@ -144,7 +144,7 @@ export const ExploreView = ({ item, onEdit, onCancel }) => {
                           key={imgIndex}
                           className='h-32 rounded-lg overflow-hidden bg-gray-100'>
                           <img
-                            src={getImageUrl(image) || '/placeholder.svg'}
+                            src={getImageUrl(image.url) || '/placeholder.svg'}
                             alt={`Experience ${index + 1} Image ${
                               imgIndex + 1
                             }`}

@@ -162,14 +162,6 @@ export const LoginPage = () => {
               )}
             </button>
           </form>
-
-          <div className='mt-4 text-center'>
-            <Link
-              to='/signup'
-              className='text-red-600 hover:underline text-sm'>
-              Sign up
-            </Link>
-          </div>
         </div>
       </div>
     </div>

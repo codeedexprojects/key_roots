@@ -70,7 +70,6 @@ export function DashboardPage() {
       setDashboardCountsLoading(true);
       try {
         const response = await getDashboardCounts();
-
         if (response && !response.error) {
           setDashboardCounts({
             total_vendors: response.total_vendors,
@@ -179,7 +178,7 @@ export function DashboardPage() {
       setRecentApprovedLoading(true);
       try {
         const response = await getRecentApprovedBookings(recentApprovedState);
-        console.log('Recent approved bookings response:', response);
+        console.log('Recent approved bookings response:', response.details);
         if (response && !response.error) {
           setRecentApproved(response);
 

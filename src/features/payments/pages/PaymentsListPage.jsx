@@ -104,6 +104,22 @@ export const PaymentsListPage = () => {
     }
   };
 
+  const maxVisiblePages = 5;
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const startPage = Math.max(
+      1,
+      currentPage - Math.floor(maxVisiblePages / 2)
+    );
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case 'Completed':
@@ -293,18 +309,45 @@ export const PaymentsListPage = () => {
                   <ChevronLeft className='h-5 w-5' />
                 </button>
 
-                {[...Array(totalPages)].map((_, i) => (
+                {currentPage > Math.floor(maxVisiblePages / 2) + 1 && (
+                  <>
+                    <button
+                      onClick={() => paginate(1)}
+                      className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md'>
+                      1
+                    </button>
+                    {currentPage > Math.floor(maxVisiblePages / 2) + 2 && (
+                      <span>...</span>
+                    )}
+                  </>
+                )}
+
+                {getPageNumbers().map((page) => (
                   <button
-                    key={i}
-                    onClick={() => paginate(i + 1)}
+                    key={page}
+                    onClick={() => paginate(page)}
                     className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
-                      currentPage === i + 1
+                      currentPage === page
                         ? 'bg-primary text-white'
                         : 'text-gray-700 hover:bg-gray-50'
                     } rounded-md`}>
-                    {i + 1}
+                    {page}
                   </button>
                 ))}
+
+                {currentPage < totalPages - Math.floor(maxVisiblePages / 2) && (
+                  <>
+                    {currentPage <
+                      totalPages - Math.floor(maxVisiblePages / 2) - 1 && (
+                      <span>...</span>
+                    )}
+                    <button
+                      onClick={() => paginate(totalPages)}
+                      className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md'>
+                      {totalPages}
+                    </button>
+                  </>
+                )}
 
                 <button
                   onClick={() => paginate(currentPage + 1)}

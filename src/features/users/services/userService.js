@@ -20,7 +20,7 @@ export const getUserById = async (userId) => {
 // Function to create a new user
 export const createUser = async (userData) => {
   return apiRequest(
-    () => axiosInstance.post('/create-user/', userData),
+    () => axiosInstance.post('/admin/create-user/', userData),
     'Error occurred while creating user.'
   );
 };

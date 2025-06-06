@@ -30,9 +30,14 @@ export const ExplorePage = () => {
           id: item.id,
           title: item.title,
           description: item.description,
-          images: item.images?.map((img) => img.image) || [],
+          images:
+            item.images?.map((img) => ({
+              url: img.image,
+              id: img.id, // Include SightImage ID
+            })) || [],
           seasonDescription: item.season_description || '',
           seasons: item.seasons?.map((season) => ({
+            id: season.id, // Include SeasonTime ID
             seasonStartMonth: season.from_date
               ? new Date(season.from_date).toLocaleString('default', {
                   month: 'short',
@@ -63,6 +68,7 @@ export const ExplorePage = () => {
             ],
           })) || [
             {
+              id: null,
               seasonStartMonth: 'Jan',
               seasonEndMonth: 'May',
               seasonHeading: '',
@@ -75,11 +81,20 @@ export const ExplorePage = () => {
           ],
           experiences:
             item.experiences?.map((exp) => ({
+              id: exp.id, // Include Experience ID
               description: exp.description || '',
               header: exp.header || '',
               subHeader: exp.sub_header || '',
-              images: exp.images?.map((img) => img.image) || [],
-              imagePreviews: exp.images?.map((img) => img.image) || [],
+              images:
+                exp.images?.map((img) => ({
+                  url: img.image,
+                  id: img.id, // Include ExperienceImage ID
+                })) || [],
+              imagePreviews:
+                exp.images?.map((img) => ({
+                  url: img.image,
+                  id: img.id,
+                })) || [],
             })) || [],
         }));
         setExploreItems(transformedItems);
@@ -98,6 +113,7 @@ export const ExplorePage = () => {
 
   const handleSave = async (formData) => {
     setIsLoading(true);
+    console.log(formData);
     try {
       const isEdit = Boolean(formData.id);
       const response = await saveExploreItem(formData, isEdit);

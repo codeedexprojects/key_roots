@@ -1,5 +1,5 @@
 export const getImageUrl = (path) => {
-  if (!path) return '';
+  if (!path || typeof path !== 'string') return null;
   if (
     path.startsWith('data:') ||
     path.startsWith('blob:') ||

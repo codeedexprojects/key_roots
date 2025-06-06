@@ -136,7 +136,8 @@ const SubPackageCategories = ({
         await updateSubCategory(editingSubCategory.id, formData);
         toast.success('Subcategory updated successfully');
       } else {
-        await createSubCategory(formData);
+        const res = await createSubCategory(formData);
+        console.log(res);
         toast.success('Subcategory created successfully');
       }
 

@@ -33,7 +33,6 @@ export const BookingListPage = () => {
       setIsLoading(true);
       try {
         const response = await getAllBookings();
-
         if (!response.error) {
           // Format the bookings data for display
           const formattedBookings = formatBookingsForDisplay(response);
@@ -108,6 +107,22 @@ export const BookingListPage = () => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
     }
+  };
+
+  const maxVisiblePages = 5;
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const startPage = Math.max(
+      1,
+      currentPage - Math.floor(maxVisiblePages / 2)
+    );
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
   };
 
   // Helper function to get status badge class
@@ -211,7 +226,13 @@ export const BookingListPage = () => {
                   <tr
                     key={booking.id}
                     className='hover:bg-gray-50 cursor-pointer'
-                    onClick={() => navigate(`/booking/${booking.id}`)}>
+                    onClick={() =>
+                      navigate(
+                        `/booking/${
+                          booking.id
+                        }/${booking.category.toLowerCase()}`
+                      )
+                    }>
                     <td className='px-4 py-4'>
                       <div className='flex items-center'>
                         <img
@@ -261,58 +282,71 @@ export const BookingListPage = () => {
 
         {/* Pagination - only show when we have data and not loading */}
         {!isLoading && !error && filteredBookings.length > 0 && (
-          <div className='px-6 py-4 bg-white border-t border-gray-200'>
-            <div className='flex items-center justify-between'>
-              <div className='text-sm text-gray-700'>
-                Showing{' '}
-                <span className='font-medium'>{indexOfFirstBooking + 1}</span>{' '}
-                to{' '}
-                <span className='font-medium'>
-                  {Math.min(indexOfLastBooking, filteredBookings.length)}
-                </span>{' '}
-                of{' '}
-                <span className='font-medium'>{filteredBookings.length}</span>{' '}
-                bookings
-              </div>
+          <div className='flex px-6 py-4 bg-white border-t border-gray-200 justify-end'>
+            <div className='flex space-x-1'>
+              <button
+                onClick={() => paginate(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                  currentPage === 1
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}>
+                <span className='sr-only'>Previous</span>
+                <ChevronLeft className='h-5 w-5' />
+              </button>
 
-              <div className='flex space-x-1'>
-                <button
-                  onClick={() => paginate(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
-                    currentPage === 1
-                      ? 'text-gray-400 cursor-not-allowed'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}>
-                  <span className='sr-only'>Previous</span>
-                  <ChevronLeft className='h-5 w-5' />
-                </button>
-
-                {[...Array(totalPages)].map((_, i) => (
+              {currentPage > Math.floor(maxVisiblePages / 2) + 1 && (
+                <>
                   <button
-                    key={i}
-                    onClick={() => paginate(i + 1)}
-                    className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
-                      currentPage === i + 1
-                        ? 'bg-primary text-white'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    } rounded-md`}>
-                    {i + 1}
+                    onClick={() => paginate(1)}
+                    className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md'>
+                    1
                   </button>
-                ))}
+                  {currentPage > Math.floor(maxVisiblePages / 2) + 2 && (
+                    <span>...</span>
+                  )}
+                </>
+              )}
 
+              {getPageNumbers().map((page) => (
                 <button
-                  onClick={() => paginate(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
-                    currentPage === totalPages
-                      ? 'text-gray-400 cursor-not-allowed'
+                  key={page}
+                  onClick={() => paginate(page)}
+                  className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
+                    currentPage === page
+                      ? 'bg-primary text-white'
                       : 'text-gray-700 hover:bg-gray-50'
-                  }`}>
-                  <span className='sr-only'>Next</span>
-                  <ChevronRight className='h-5 w-5' />
+                  } rounded-md`}>
+                  {page}
                 </button>
-              </div>
+              ))}
+
+              {currentPage < totalPages - Math.floor(maxVisiblePages / 2) && (
+                <>
+                  {currentPage <
+                    totalPages - Math.floor(maxVisiblePages / 2) - 1 && (
+                    <span>...</span>
+                  )}
+                  <button
+                    onClick={() => paginate(totalPages)}
+                    className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md'>
+                    {totalPages}
+                  </button>
+                </>
+              )}
+
+              <button
+                onClick={() => paginate(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                  currentPage === totalPages
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}>
+                <span className='sr-only'>Next</span>
+                <ChevronRight className='h-5 w-5' />
+              </button>
             </div>
           </div>
         )}

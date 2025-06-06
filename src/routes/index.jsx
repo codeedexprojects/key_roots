@@ -70,7 +70,7 @@ const routes = [
         path: 'booking',
         children: [
           { index: true, element: <BookingListPage /> },
-          { path: ':bookingId', element: <BookingDetailsPage /> },
+          { path: ':bookingId/:bookingType', element: <BookingDetailsPage /> },
         ],
       },
       {

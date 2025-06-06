@@ -22,6 +22,7 @@ export const FooterSectionList = () => {
     setIsLoading(true);
     try {
       const response = await getFooterSections();
+      console.log(response);
       if (response && !response.error) {
         // Handle direct array response or response with data field
         const data = Array.isArray(response) ? response : response.data || [];
@@ -114,7 +115,7 @@ export const FooterSectionList = () => {
               className='bg-gray-50 rounded-lg shadow-sm overflow-hidden'>
               <div className='h-48 overflow-hidden'>
                 <img
-                  src={getImageUrl(item.image) || '/placeholder.svg'}
+                  src={getImageUrl(item.main_image) || '/placeholder.svg'}
                   alt={item.title}
                   className='w-full h-full object-cover'
                 />
@@ -130,11 +131,11 @@ export const FooterSectionList = () => {
                     <Trash2 className='h-4 w-4' />
                   </button>
                 </div>
-                {item.package && (
+                {/* {item.package && (
                   <p className='text-sm text-gray-600'>
-                    Package: {item.package}
+                    Package Travels Name: {item?.package?.travels_name}
                   </p>
-                )}
+                )} */}
               </div>
             </div>
           ))}

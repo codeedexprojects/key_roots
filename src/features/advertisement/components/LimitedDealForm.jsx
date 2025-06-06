@@ -13,10 +13,114 @@ export const LimitedDealForm = ({ onCancel, onSuccess }) => {
     subtitle: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  // Validation functions
+  const validateField = (name, value) => {
+    const newErrors = { ...errors };
+
+    switch (name) {
+      case 'image':
+        if (!value) {
+          newErrors.image = 'Image is required';
+        } else {
+          delete newErrors.image;
+        }
+        break;
+      case 'title':
+        if (!value.trim()) {
+          newErrors.title = 'Title is required';
+        } else if (value.trim().length < 2) {
+          newErrors.title = 'Title must be at least 2 characters long';
+        } else if (value.trim().length > 100) {
+          newErrors.title = 'Title must not exceed 100 characters';
+        } else {
+          delete newErrors.title;
+        }
+        break;
+      case 'subtitle':
+        if (value.trim() && value.trim().length < 2) {
+          newErrors.subtitle = 'Subtitle must be at least 2 characters long';
+        } else if (value.trim().length > 100) {
+          newErrors.subtitle = 'Subtitle must not exceed 100 characters';
+        } else {
+          delete newErrors.subtitle;
+        }
+        break;
+      case 'offer':
+        if (!value.trim()) {
+          newErrors.offer = 'Offer is required';
+        } else if (value.trim().length < 2) {
+          newErrors.offer = 'Offer must be at least 2 characters long';
+        } else if (value.trim().length > 50) {
+          newErrors.offer = 'Offer must not exceed 50 characters';
+        } else {
+          delete newErrors.offer;
+        }
+        break;
+      case 'terms_and_conditions':
+        if (!value.trim()) {
+          newErrors.terms_and_conditions = 'Terms and conditions are required';
+        } else if (value.trim().length < 10) {
+          newErrors.terms_and_conditions =
+            'Terms and conditions must be at least 10 characters long';
+        } else if (value.trim().length > 500) {
+          newErrors.terms_and_conditions =
+            'Terms and conditions must not exceed 500 characters';
+        } else {
+          delete newErrors.terms_and_conditions;
+        }
+        break;
+      default:
+        break;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateForm = () => {
+    const fieldsToValidate = [
+      'image',
+      'title',
+      'subtitle',
+      'offer',
+      'terms_and_conditions',
+    ];
+    let isValid = true;
+
+    fieldsToValidate.forEach((field) => {
+      const fieldValue = field === 'image' ? formData.image : formData[field];
+      if (!validateField(field, fieldValue)) {
+        isValid = false;
+      }
+    });
+
+    return isValid;
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type
+      const allowedTypes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Please select a valid image file (JPEG, PNG, or GIF)');
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (file.size > maxSize) {
+        toast.error('Image size must be less than 5MB');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData((prev) => ({
@@ -24,6 +128,7 @@ export const LimitedDealForm = ({ onCancel, onSuccess }) => {
           image: file,
           imagePreview: reader.result,
         }));
+        validateField('image', file);
       };
       reader.readAsDataURL(file);
     }
@@ -35,10 +140,17 @@ export const LimitedDealForm = ({ onCancel, onSuccess }) => {
       ...prev,
       [name]: value,
     }));
+    validateField(name, value);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      toast.error('Please fix all validation errors before submitting');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -77,7 +189,11 @@ export const LimitedDealForm = ({ onCancel, onSuccess }) => {
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
           <div>
             <div
-              className='border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center h-64 cursor-pointer hover:border-red-500 transition-colors'
+              className={`border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center h-64 cursor-pointer transition-colors ${
+                errors.image
+                  ? 'border-red-300 hover:border-red-500'
+                  : 'border-gray-300 hover:border-red-500'
+              }`}
               onClick={() => document.getElementById('deal-image').click()}>
               {formData.imagePreview ? (
                 <img
@@ -99,6 +215,9 @@ export const LimitedDealForm = ({ onCancel, onSuccess }) => {
                 onChange={handleImageChange}
               />
             </div>
+            {errors.image && (
+              <p className='text-red-500 text-sm mt-1'>{errors.image}</p>
+            )}
           </div>
 
           <div className='space-y-4'>
@@ -106,7 +225,7 @@ export const LimitedDealForm = ({ onCancel, onSuccess }) => {
               <label
                 htmlFor='title'
                 className='block text-sm font-medium text-gray-700 mb-1'>
-                Title
+                Title <span className='text-red-500'>*</span>
               </label>
               <input
                 type='text'
@@ -116,8 +235,13 @@ export const LimitedDealForm = ({ onCancel, onSuccess }) => {
                 onChange={handleInputChange}
                 required
                 placeholder='e.g., 50% Discount'
-                className='w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500'
+                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                  errors.title ? 'border-red-300' : 'border-gray-300'
+                }`}
               />
+              {errors.title && (
+                <p className='text-red-500 text-sm mt-1'>{errors.title}</p>
+              )}
             </div>
 
             <div>
@@ -133,15 +257,20 @@ export const LimitedDealForm = ({ onCancel, onSuccess }) => {
                 value={formData.subtitle}
                 onChange={handleInputChange}
                 placeholder='Optional subtitle'
-                className='w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500'
+                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                  errors.subtitle ? 'border-red-300' : 'border-gray-300'
+                }`}
               />
+              {errors.subtitle && (
+                <p className='text-red-500 text-sm mt-1'>{errors.subtitle}</p>
+              )}
             </div>
 
             <div>
               <label
                 htmlFor='offer'
                 className='block text-sm font-medium text-gray-700 mb-1'>
-                Offer
+                Offer <span className='text-red-500'>*</span>
               </label>
               <input
                 type='text'
@@ -150,15 +279,20 @@ export const LimitedDealForm = ({ onCancel, onSuccess }) => {
                 value={formData.offer}
                 onChange={handleInputChange}
                 placeholder='e.g., 50% OFF'
-                className='w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500'
+                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                  errors.offer ? 'border-red-300' : 'border-gray-300'
+                }`}
               />
+              {errors.offer && (
+                <p className='text-red-500 text-sm mt-1'>{errors.offer}</p>
+              )}
             </div>
 
             <div>
               <label
                 htmlFor='terms_and_conditions'
                 className='block text-sm font-medium text-gray-700 mb-1'>
-                Terms and Conditions
+                Terms and Conditions <span className='text-red-500'>*</span>
               </label>
               <textarea
                 id='terms_and_conditions'
@@ -167,8 +301,17 @@ export const LimitedDealForm = ({ onCancel, onSuccess }) => {
                 onChange={handleInputChange}
                 rows={4}
                 placeholder='e.g., 50% off on selected items!'
-                className='w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500'
+                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                  errors.terms_and_conditions
+                    ? 'border-red-300'
+                    : 'border-gray-300'
+                }`}
               />
+              {errors.terms_and_conditions && (
+                <p className='text-red-500 text-sm mt-1'>
+                  {errors.terms_and_conditions}
+                </p>
+              )}
             </div>
           </div>
         </div>

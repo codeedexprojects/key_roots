@@ -12,6 +12,8 @@ export const ExploreGrid = ({
 }) => {
   const displayItems = items || [];
 
+  console.log(items);
+
   if (isLoading) {
     return (
       <div className='flex justify-center items-center min-h-[500px]'>
@@ -74,7 +76,7 @@ export const ExploreGrid = ({
                   <img
                     src={
                       item.images && item.images.length > 0
-                        ? getImageUrl(item.images[0])
+                        ? getImageUrl(item.images[0].url)
                         : '/placeholder.svg'
                     }
                     alt={item.title}

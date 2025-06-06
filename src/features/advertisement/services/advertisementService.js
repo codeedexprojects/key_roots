@@ -18,7 +18,6 @@ export const getExploreItems = async () => {
 export const deleteExploreItem = async (id) => {
   try {
     const response = await axiosInstance.delete(`/explore/${id}/`);
-    // Handle 204 No Content response
     if (response.status === 204 || response.status === 200) {
       return { success: true };
     }
@@ -36,7 +35,6 @@ export const deleteExploreItem = async (id) => {
 
 export const saveAdvertisement = async (data) => {
   const formData = new FormData();
-  // Banner data
   formData.append('advertisements[0][title]', data.banner.title || '');
   formData.append(
     'advertisements[0][description]',
@@ -46,7 +44,6 @@ export const saveAdvertisement = async (data) => {
     formData.append('advertisements[0][image]', data.banner.image);
   }
 
-  // Limited deals
   if (data.deals && data.deals.length > 0) {
     data.deals.forEach((deal, index) => {
       formData.append(`limited_deals[${index}][title]`, deal.title || '');
@@ -60,7 +57,6 @@ export const saveAdvertisement = async (data) => {
     });
   }
 
-  // Footer sections
   if (data.footers && data.footers.length > 0) {
     data.footers.forEach((footer, index) => {
       formData.append(`footer_sections[${index}][title]`, footer.title || '');
@@ -96,11 +92,16 @@ export const saveExploreItem = async (data, isEdit = false) => {
     data.seasonDescription || 'Default season description'
   );
 
-  // MULTIPLE SIGHT IMAGES (sight_image_1, sight_image_2, etc.)
-  if (data.images && data.images.length > 0) {
-    data.images.forEach((image, index) => {
-      if (image instanceof File) {
-        formData.append(`sight_image_${index + 1}`, image);
+  // MULTIPLE SIGHT IMAGES
+  if (data.imagePreviews && data.imagePreviews.length > 0) {
+    data.imagePreviews.forEach((preview, index) => {
+      if (isEdit && preview.id) {
+        formData.append(`sight_image[${index}][id]`, preview.id);
+        if (data.images[index] instanceof File) {
+          formData.append(`sight_image[${index}][file]`, data.images[index]);
+        }
+      } else if (data.images[index] instanceof File) {
+        formData.append(`sight_image_${index + 1}`, data.images[index]);
       }
     });
   }
@@ -123,7 +124,10 @@ export const saveExploreItem = async (data, isEdit = false) => {
         months.indexOf(endMonth) + 1
       ).padStart(2, '0')}-28`;
 
-      // Use the correct format: season[{seasonIndex}][field]
+      if (isEdit && season.id) {
+        formData.append(`season[${seasonIndex}][id]`, season.id);
+      }
+
       formData.append(`season[${seasonIndex}][from_date]`, fromDate);
       formData.append(`season[${seasonIndex}][to_date]`, toDate);
       formData.append(
@@ -135,19 +139,43 @@ export const saveExploreItem = async (data, isEdit = false) => {
         Array.isArray(season.seasonTags) && season.seasonTags.length > 0
           ? season.seasonTags
           : [
-              { description: 'N/A' },
-              { description: 'N/A' },
-              { description: 'N/A' },
+              {
+                description: 'N/A',
+                originalImage: null,
+                isImageRemoved: false,
+              },
+              {
+                description: 'N/A',
+                originalImage: null,
+                isImageRemoved: false,
+              },
+              {
+                description: 'N/A',
+                originalImage: null,
+                isImageRemoved: false,
+              },
             ];
 
       for (let tagIndex = 0; tagIndex < 3; tagIndex++) {
-        const tag = tags[tagIndex] || { description: 'N/A' };
+        const tag = tags[tagIndex] || {
+          description: 'N/A',
+          originalImage: null,
+          isImageRemoved: false,
+        };
+
+        // Handle season tag images
         if (tag.image && tag.image instanceof File) {
+          // New image uploaded
           formData.append(
             `season[${seasonIndex}][icon${tagIndex + 1}]`,
             tag.image
           );
+        } else if (tag.isImageRemoved) {
+          // Explicitly mark for removal
+          formData.append(`season[${seasonIndex}][icon${tagIndex + 1}]`, '');
         }
+        // If unchanged (tag.originalImage exists but no new image or removal), do not append iconX field
+
         formData.append(
           `season[${seasonIndex}][icon${tagIndex + 1}_description]`,
           tag.description || 'N/A'
@@ -155,7 +183,6 @@ export const saveExploreItem = async (data, isEdit = false) => {
       }
     });
   } else {
-    // Default season if none provided
     formData.append('season[0][from_date]', '2025-01-01');
     formData.append('season[0][to_date]', '2025-12-31');
     formData.append('season[0][header]', '');
@@ -166,6 +193,10 @@ export const saveExploreItem = async (data, isEdit = false) => {
 
   // EXPERIENCES WITH MULTIPLE IMAGES
   (data.experiences || []).forEach((exp, index) => {
+    if (isEdit && exp.id) {
+      formData.append(`experiences[${index}][id]`, exp.id);
+    }
+
     formData.append(
       `experiences[${index}][description]`,
       exp?.description || ''
@@ -173,17 +204,18 @@ export const saveExploreItem = async (data, isEdit = false) => {
     formData.append(`experiences[${index}][header]`, exp?.header || '');
     formData.append(`experiences[${index}][sub_header]`, exp?.subHeader || '');
 
-    // Multiple images for each experience
-    if (exp?.images && exp.images.length > 0) {
-      exp.images.forEach((image, imgIndex) => {
-        if (image instanceof File) {
-          formData.append(`experiences[${index}][images][${imgIndex}]`, image);
+    if (exp.imagePreviews && exp.imagePreviews.length > 0) {
+      exp.imagePreviews.forEach((preview, imgIndex) => {
+        if (exp.images[imgIndex] instanceof File) {
+          formData.append(
+            `experiences[${index}][images][${imgIndex}]`,
+            exp.images[imgIndex]
+          );
         }
       });
     }
   });
 
-  // Log FormData entries for debugging
   console.log('FormData entries:');
   for (const [key, value] of formData.entries()) {
     console.log(key, value);
@@ -251,7 +283,6 @@ export const saveAdvertisementHeader = async (data) => {
 export const deleteAdvertisementHeader = async (id) => {
   try {
     const response = await axiosInstance.delete(`/advertisement/${id}/`);
-    // Handle 204 No Content response
     if (response.status === 204 || response.status === 200) {
       return { success: true };
     }
@@ -304,7 +335,6 @@ export const saveLimitedDeal = async (data) => {
 export const deleteLimitedDeal = async (id) => {
   try {
     const response = await axiosInstance.delete(`/limited-deals/${id}/`);
-    // Handle 204 No Content response
     if (response.status === 204 || response.status === 200) {
       return { success: true };
     }
@@ -351,10 +381,25 @@ export const saveReferEarn = async (data) => {
   );
 };
 
+export const updateReferEarn = async (id, data) => {
+  const formData = new FormData();
+  formData.append('price', data.price || '');
+  if (data.image) {
+    formData.append('image', data.image);
+  }
+
+  return apiRequest(
+    () =>
+      axiosInstance.patch(`/refer-and-earn/${id}/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }),
+    'Error occurred while updating refer & earn item.'
+  );
+};
+
 export const deleteReferEarn = async (id) => {
   try {
     const response = await axiosInstance.delete(`/refer-and-earn/${id}/`);
-    // Handle 204 No Content response
     if (response.status === 204 || response.status === 200) {
       return { success: true };
     }
@@ -388,8 +433,14 @@ export const getFooterSectionById = async (id) => {
 export const saveFooterSection = async (data) => {
   const formData = new FormData();
   formData.append('package', data.package || '');
-  if (data.image) {
-    formData.append('image', data.image);
+  if (data.mainImage) {
+    formData.append('main_image', data.mainImage);
+  }
+  if (data.extraImages.length > 0) {
+    formData.append('image1', data.extraImages[0]);
+  }
+  if (data.extraImages.length > 1) {
+    formData.append('image2', data.extraImages[1]);
   }
 
   return apiRequest(
@@ -404,7 +455,6 @@ export const saveFooterSection = async (data) => {
 export const deleteFooterSection = async (id) => {
   try {
     const response = await axiosInstance.delete(`/footer-sections/${id}/`);
-    // Handle 204 No Content response
     if (response.status === 204 || response.status === 200) {
       return { success: true };
     }

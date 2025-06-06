@@ -4,7 +4,6 @@ import MainPackageCategories from '../components/MainPackageCategories';
 import SubPackageCategories from '../components/SubPackageCategories';
 import VendorPackageList from '../components/VendorPackageList';
 import PackageDetails from '../components/PackageDetails';
-
 import {
   getPackageCategories,
   getSubCategories,

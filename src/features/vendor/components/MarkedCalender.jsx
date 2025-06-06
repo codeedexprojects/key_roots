@@ -6,6 +6,7 @@ export function MarkedCalender({
   currentMonth,
   onMonthChange,
 }) {
+  console.log(markedDates);
   const monthYearString = useMemo(() => {
     return currentMonth.toLocaleDateString('en-US', {
       month: 'long',

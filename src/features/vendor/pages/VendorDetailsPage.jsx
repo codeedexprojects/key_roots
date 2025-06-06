@@ -84,10 +84,18 @@ export const VendorDetailsPage = () => {
           } else {
             setPackages([]);
           }
+
+          if (vendorData.busy_dates && vendorData.busy_dates.length > 0) {
+            const dates = vendorData.busy_dates.map((entry) => entry.date);
+            setMarkedDates(dates);
+          } else {
+            setMarkedDates([]);
+          }
         } else {
           setVendor(null);
           setBuses([]);
           setPackages([]);
+          setMarkedDates([]);
         }
       } catch (error) {
         console.error('Error fetching vendor details:', error);

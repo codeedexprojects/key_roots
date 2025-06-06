@@ -79,8 +79,8 @@ export const transformBusData = (buses) => {
  * @returns {Object} Transformed amenities object
  */
 const transformAmenities = (amenities, features) => {
-  const amenityNames = amenities.map(a => a.name?.toLowerCase());
-  const featureNames = features.map(f => f.name?.toLowerCase());
+  const amenityNames = amenities.map((a) => a.name?.toLowerCase());
+  const featureNames = features.map((f) => f.name?.toLowerCase());
   const allItems = [...amenityNames, ...featureNames];
 
   return {
@@ -102,6 +102,40 @@ const transformAmenities = (amenities, features) => {
 export const formatPrice = (price) => {
   const numPrice = parseFloat(price || 0);
   return `₹${numPrice.toLocaleString('en-IN')}`;
+};
+
+export const filterBuses = (buses, searchQuery, searchFields) => {
+  if (!searchQuery) return buses;
+
+  const query = searchQuery.toLowerCase().trim();
+
+  return buses.filter((bus) => {
+    // Check each enabled search field
+    return Object.entries(searchFields).some(([field, enabled]) => {
+      if (!enabled) return false;
+
+      switch (field) {
+        case 'name':
+          return bus.title.toLowerCase().includes(query);
+        case 'number':
+          return bus.vehicleNo.toLowerCase().includes(query);
+        case 'location':
+          return bus.location.toLowerCase().includes(query);
+        case 'type':
+          return bus.busType?.toLowerCase().includes(query);
+        case 'capacity':
+          return String(bus.capacity).includes(query);
+        case 'price':
+          return (
+            bus.basePrice.includes(query) || bus.pricePerKm.includes(query)
+          );
+        case 'status':
+          return bus.status.toLowerCase().includes(query);
+        default:
+          return false;
+      }
+    });
+  });
 };
 
 /**

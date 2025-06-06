@@ -33,8 +33,6 @@ export const ExploreForm = ({ item, onSave, onCancel, isLoading }) => {
     'Dec',
   ];
 
-  console.log(item);
-
   const [formData, setFormData] = useState({
     id: null,
     images: [],
@@ -44,13 +42,32 @@ export const ExploreForm = ({ item, onSave, onCancel, isLoading }) => {
     seasonDescription: '',
     seasons: [
       {
+        id: null,
         seasonStartMonth: 'Jan',
         seasonEndMonth: 'May',
         seasonHeading: '',
         seasonTags: [
-          { description: '', image: null, imagePreview: null },
-          { description: '', image: null, imagePreview: null },
-          { description: '', image: null, imagePreview: null },
+          {
+            description: '',
+            image: undefined,
+            imagePreview: null,
+            originalImage: null,
+            isImageRemoved: false,
+          },
+          {
+            description: '',
+            image: undefined,
+            imagePreview: null,
+            originalImage: null,
+            isImageRemoved: false,
+          },
+          {
+            description: '',
+            image: undefined,
+            imagePreview: null,
+            originalImage: null,
+            isImageRemoved: false,
+          },
         ],
       },
     ],
@@ -63,54 +80,85 @@ export const ExploreForm = ({ item, onSave, onCancel, isLoading }) => {
         id: item.id,
         images: [],
         imagePreviews: Array.isArray(item.images)
-          ? item.images
+          ? item.images.map((img, index) => ({
+              url: img.url,
+              id: item.images[index]?.id || null,
+            }))
           : item.image
-          ? [item.image]
+          ? [{ url: item.image, id: null }]
           : [],
         title: item.title || '',
         description: item.description || '',
         seasonDescription: item.seasonDescription || '',
         seasons:
           item.seasons?.length > 0
-            ? item.seasons.slice(0, 3).map((season) => ({
+            ? item.seasons.slice(0, 3).map((season, index) => ({
+                id: season.id || null,
                 seasonStartMonth: season.seasonStartMonth || 'Jan',
                 seasonEndMonth: season.seasonEndMonth || 'May',
                 seasonHeading: season.seasonHeading || '',
                 seasonTags: [
                   ...season.seasonTags.map((tag) => ({
-                    image: null,
+                    image: undefined,
                     imagePreview: tag.image || null,
+                    originalImage: tag.image || null, // Store the original image URL
+                    isImageRemoved: false, // Initially, no image is marked for removal
                     description: tag.description || '',
                   })),
                   ...Array(Math.max(0, 3 - season.seasonTags.length)).fill({
                     description: '',
-                    image: null,
+                    image: undefined,
                     imagePreview: null,
+                    originalImage: null,
+                    isImageRemoved: false,
                   }),
                 ].slice(0, 3),
               }))
             : [
                 {
+                  id: null,
                   seasonStartMonth: 'Jan',
                   seasonEndMonth: 'May',
                   seasonHeading: '',
                   seasonTags: [
-                    { description: '', image: null, imagePreview: null },
-                    { description: '', image: null, imagePreview: null },
-                    { description: '', image: null, imagePreview: null },
+                    {
+                      description: '',
+                      image: undefined,
+                      imagePreview: null,
+                      originalImage: null,
+                      isImageRemoved: false,
+                    },
+                    {
+                      description: '',
+                      image: undefined,
+                      imagePreview: null,
+                      originalImage: null,
+                      isImageRemoved: false,
+                    },
+                    {
+                      description: '',
+                      image: undefined,
+                      imagePreview: null,
+                      originalImage: null,
+                      isImageRemoved: false,
+                    },
                   ],
                 },
               ],
         experiences:
-          item.experiences?.map((exp) => ({
+          item.experiences?.map((exp, index) => ({
+            id: exp.id || null,
             description: exp.description || '',
             header: exp.header || '',
             subHeader: exp.subHeader || '',
             images: [],
             imagePreviews: Array.isArray(exp.images)
-              ? exp.images
+              ? exp.images.map((img, imgIndex) => ({
+                  url: img.url,
+                  id: exp.images[imgIndex]?.id || null,
+                }))
               : exp.image
-              ? [exp.image]
+              ? [{ url: exp.image, id: null }]
               : [],
           })) || [],
       });
@@ -124,13 +172,32 @@ export const ExploreForm = ({ item, onSave, onCancel, isLoading }) => {
         seasonDescription: '',
         seasons: [
           {
+            id: null,
             seasonStartMonth: 'Jan',
             seasonEndMonth: 'May',
             seasonHeading: '',
             seasonTags: [
-              { description: '', image: null, imagePreview: null },
-              { description: '', image: null, imagePreview: null },
-              { description: '', image: null, imagePreview: null },
+              {
+                description: '',
+                image: undefined,
+                imagePreview: null,
+                originalImage: null,
+                isImageRemoved: false,
+              },
+              {
+                description: '',
+                image: undefined,
+                imagePreview: null,
+                originalImage: null,
+                isImageRemoved: false,
+              },
+              {
+                description: '',
+                image: undefined,
+                imagePreview: null,
+                originalImage: null,
+                isImageRemoved: false,
+              },
             ],
           },
         ],
@@ -149,7 +216,7 @@ export const ExploreForm = ({ item, onSave, onCancel, isLoading }) => {
         files.forEach((file) => {
           const reader = new FileReader();
           reader.onloadend = () => {
-            newPreviews.push(reader.result);
+            newPreviews.push({ url: reader.result, id: null });
             setFormData((prev) => ({
               ...prev,
               images: newImages,
@@ -194,7 +261,7 @@ export const ExploreForm = ({ item, onSave, onCancel, isLoading }) => {
         files.forEach((file) => {
           const reader = new FileReader();
           reader.onloadend = () => {
-            newPreviews.push(reader.result);
+            newPreviews.push({ url: reader.result, id: null });
             setFormData((prevState) => {
               const updatedExp = [...prevState.experiences];
               updatedExp[expIndex] = {
@@ -264,6 +331,7 @@ export const ExploreForm = ({ item, onSave, onCancel, isLoading }) => {
       experiences: [
         ...prev.experiences,
         {
+          id: null,
           images: [],
           imagePreviews: [],
           description: '',
@@ -311,13 +379,23 @@ export const ExploreForm = ({ item, onSave, onCancel, isLoading }) => {
       const imagePreview = file ? URL.createObjectURL(file) : null;
       newSeasons[seasonIndex].seasonTags[tagIndex] = {
         ...newSeasons[seasonIndex].seasonTags[tagIndex],
-        image: file,
+        image: file || undefined,
         imagePreview,
+        isImageRemoved: !file, // Mark as removed if file is null
       };
-      console.log(
-        `After updating season ${seasonIndex}, tag ${tagIndex}:`,
-        newSeasons[seasonIndex].seasonTags[tagIndex]
-      );
+      return { ...prev, seasons: newSeasons };
+    });
+  };
+
+  const removeSeasonTagImage = (seasonIndex, tagIndex) => {
+    setFormData((prev) => {
+      const newSeasons = [...prev.seasons];
+      newSeasons[seasonIndex].seasonTags[tagIndex] = {
+        ...newSeasons[seasonIndex].seasonTags[tagIndex],
+        image: undefined,
+        imagePreview: null,
+        isImageRemoved: true, // Explicitly mark for removal
+      };
       return { ...prev, seasons: newSeasons };
     });
   };
@@ -329,13 +407,32 @@ export const ExploreForm = ({ item, onSave, onCancel, isLoading }) => {
         seasons: [
           ...prev.seasons,
           {
+            id: null,
             seasonStartMonth: 'Jan',
             seasonEndMonth: 'May',
             seasonHeading: '',
             seasonTags: [
-              { description: '', image: null, imagePreview: null },
-              { description: '', image: null, imagePreview: null },
-              { description: '', image: null, imagePreview: null },
+              {
+                description: '',
+                image: undefined,
+                imagePreview: null,
+                originalImage: null,
+                isImageRemoved: false,
+              },
+              {
+                description: '',
+                image: undefined,
+                imagePreview: null,
+                originalImage: null,
+                isImageRemoved: false,
+              },
+              {
+                description: '',
+                image: undefined,
+                imagePreview: null,
+                originalImage: null,
+                isImageRemoved: false,
+              },
             ],
           },
         ],
@@ -419,7 +516,7 @@ export const ExploreForm = ({ item, onSave, onCancel, isLoading }) => {
                       key={index}
                       className='relative'>
                       <img
-                        src={getImageUrl(preview) || '/placeholder.svg'}
+                        src={getImageUrl(preview.url) || '/placeholder.svg'}
                         alt={`Preview ${index + 1}`}
                         className='w-full h-24 object-cover rounded-md'
                       />
@@ -613,27 +710,55 @@ export const ExploreForm = ({ item, onSave, onCancel, isLoading }) => {
                         </Label>
                         <div className='space-y-4'>
                           {season.seasonTags.map((tag, tagIndex) => (
-                            <SeasonTagInput
+                            <div
                               key={`${seasonIndex}-${tagIndex}`}
-                              value={tag}
-                              onChange={(index, newTag) =>
-                                handleSeasonTagChange(
-                                  seasonIndex,
-                                  index,
-                                  newTag
-                                )
-                              }
-                              onImageChange={(index, file) =>
-                                handleSeasonTagImageChange(
-                                  seasonIndex,
-                                  index,
-                                  file
-                                )
-                              }
-                              index={tagIndex}
-                              seasonIndex={seasonIndex}
-                              placeholder={seasonTagPlaceholders[tagIndex]}
-                            />
+                              className='flex items-center space-x-4'>
+                              <div className='flex-1'>
+                                <SeasonTagInput
+                                  value={tag}
+                                  onChange={(index, newTag) =>
+                                    handleSeasonTagChange(
+                                      seasonIndex,
+                                      index,
+                                      newTag
+                                    )
+                                  }
+                                  onImageChange={(index, file) =>
+                                    handleSeasonTagImageChange(
+                                      seasonIndex,
+                                      index,
+                                      file
+                                    )
+                                  }
+                                  index={tagIndex}
+                                  seasonIndex={seasonIndex}
+                                  placeholder={seasonTagPlaceholders[tagIndex]}
+                                />
+                              </div>
+                              {tag.imagePreview && (
+                                <div className='relative'>
+                                  <img
+                                    src={
+                                      getImageUrl(tag.imagePreview) ||
+                                      '/placeholder.svg'
+                                    }
+                                    alt={`Season tag ${tagIndex + 1}`}
+                                    className='w-10 h-10 object-cover rounded'
+                                  />
+                                  <button
+                                    type='button'
+                                    onClick={() =>
+                                      removeSeasonTagImage(
+                                        seasonIndex,
+                                        tagIndex
+                                      )
+                                    }
+                                    className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600'>
+                                    <X className='w-3 h-3' />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           ))}
                         </div>
                       </div>
@@ -696,7 +821,9 @@ export const ExploreForm = ({ item, onSave, onCancel, isLoading }) => {
                             key={imgIndex}
                             className='relative'>
                             <img
-                              src={getImageUrl(preview) || '/placeholder.svg'}
+                              src={
+                                getImageUrl(preview.url) || '/placeholder.svg'
+                              }
                               alt={`Experience ${index + 1} image ${
                                 imgIndex + 1
                               }`}

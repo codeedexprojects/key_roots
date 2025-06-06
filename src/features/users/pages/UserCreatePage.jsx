@@ -9,10 +9,11 @@ export const UserCreatePage = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
+    name: '',
     mobile: '',
     email: '',
     password: '',
-    role: 'vendor', // Default role
+    role: 'user', // Default role
   });
 
   const [errors, setErrors] = useState({});
@@ -37,6 +38,9 @@ export const UserCreatePage = () => {
     const newErrors = {};
 
     // Check required fields
+    if (!formData.name?.trim()) {
+      newErrors.name = 'Name is required';
+    }
     if (!formData.mobile?.trim()) {
       newErrors.mobile = 'Mobile number is required';
     }
@@ -135,6 +139,30 @@ export const UserCreatePage = () => {
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div>
                 <label
+                  htmlFor='name'
+                  className='block text-sm font-medium text-gray-700 mb-1'>
+                  Full Name *
+                </label>
+                <input
+                  type='text'
+                  id='name'
+                  name='name'
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className={`w-full px-4 py-2 ${
+                    errors.name
+                      ? 'border border-red-500'
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
+                  placeholder='Enter full name'
+                />
+                {errors.name && (
+                  <p className='mt-1 text-sm text-red-500'>{errors.name}</p>
+                )}
+              </div>
+
+              <div>
+                <label
                   htmlFor='mobile'
                   className='block text-sm font-medium text-gray-700 mb-1'>
                   Mobile Number *
@@ -150,6 +178,7 @@ export const UserCreatePage = () => {
                       ? 'border border-red-500'
                       : 'border border-gray-300 bg-white'
                   } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
+                  placeholder='Enter mobile number'
                 />
                 {errors.mobile && (
                   <p className='mt-1 text-sm text-red-500'>{errors.mobile}</p>
@@ -173,6 +202,7 @@ export const UserCreatePage = () => {
                       ? 'border border-red-500'
                       : 'border border-gray-300 bg-white'
                   } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
+                  placeholder='Enter email address'
                 />
                 {errors.email && (
                   <p className='mt-1 text-sm text-red-500'>{errors.email}</p>
@@ -196,6 +226,7 @@ export const UserCreatePage = () => {
                       ? 'border border-red-500'
                       : 'border border-gray-300 bg-white'
                   } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
+                  placeholder='Enter password'
                 />
                 {errors.password && (
                   <p className='mt-1 text-sm text-red-500'>{errors.password}</p>
@@ -219,6 +250,7 @@ export const UserCreatePage = () => {
                       : 'border border-gray-300 bg-white'
                   } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}>
                   <option value='user'>User</option>
+                  <option value='vendor'>Vendor</option>
                 </select>
                 {errors.role && (
                   <p className='mt-1 text-sm text-red-500'>{errors.role}</p>

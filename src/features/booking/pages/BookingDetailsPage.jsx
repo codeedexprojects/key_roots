@@ -6,7 +6,7 @@ import { getBookingById } from '../services/bookingService';
 import { toast } from 'sonner';
 
 export const BookingDetailsPage = () => {
-  const { bookingId } = useParams();
+  const { bookingId, bookingType } = useParams();
 
   // State for API data
   const [booking, setBooking] = useState(null);
@@ -18,7 +18,7 @@ export const BookingDetailsPage = () => {
     const fetchBookingDetails = async () => {
       setIsLoading(true);
       try {
-        const response = await getBookingById(bookingId);
+        const response = await getBookingById(bookingId, bookingType);
 
         if (!response.error) {
           setBooking(response);

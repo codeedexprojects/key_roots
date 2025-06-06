@@ -1,10 +1,6 @@
 import { axiosInstance } from '@/lib/axiosInstance';
 import { apiRequest } from '@/lib/apiRequest';
 
-/**
- * Function to get all bookings
- * @returns {Promise} Promise that resolves to the booking data
- */
 export const getAllBookings = async () => {
   return apiRequest(
     () => axiosInstance.get('/combined-bookings/'),
@@ -12,23 +8,17 @@ export const getAllBookings = async () => {
   );
 };
 
-/**
- * Function to get booking details by ID
- * @param {string|number} bookingId - The ID of the booking to fetch
- * @returns {Promise} Promise that resolves to the booking details
- */
-export const getBookingById = async (bookingId) => {
+export const getBookingById = async (bookingId, bookingType) => {
+  const endpoint =
+    bookingType === 'bus'
+      ? `/booking-detail/bus/${bookingId}/`
+      : `/booking-detail/package/${bookingId}/`;
   return apiRequest(
-    () => axiosInstance.get(`/booking-detail/package/${bookingId}/`),
-    `Error occurred while fetching booking with ID ${bookingId}.`
+    () => axiosInstance.get(endpoint),
+    `Error occurred while fetching ${bookingType} booking with ID ${bookingId}.`
   );
 };
 
-/**
- * Function to format booking data for display
- * @param {Array} bookings - Array of booking objects from API
- * @returns {Array} Formatted booking objects for display
- */
 export const formatBookingsForDisplay = (bookings) => {
   if (!bookings || !Array.isArray(bookings)) return [];
 
