@@ -24,6 +24,8 @@ const MainPackageCategories = ({
     imagePreview: null,
   });
 
+  console.log('categories: ', categories);
+
   const handleAddClick = () => {
     setEditingCategory(null);
     setNewCategory({ name: '', image: null, imagePreview: null });
@@ -170,13 +172,15 @@ const MainPackageCategories = ({
                   title='Edit Category'>
                   <FaEdit size={12} />
                 </button>
-                <button
-                  onClick={(e) => handleDeleteClick(category, e)}
-                  className='bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-colors'
-                  disabled={isSubmitting}
-                  title='Delete Category'>
-                  <FaTrash size={12} />
-                </button>
+                {category.id !== 9 && (
+                  <button
+                    onClick={(e) => handleDeleteClick(category, e)}
+                    className='bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-colors'
+                    disabled={isSubmitting}
+                    title='Delete Category'>
+                    <FaTrash size={12} />
+                  </button>
+                )}
               </div>
 
               <h3 className='p-4 text-center font-medium text-gray-800'>

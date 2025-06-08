@@ -19,10 +19,6 @@ const BusesTab = () => {
     name: true,
     number: true,
     location: true,
-    type: true,
-    capacity: false,
-    price: false,
-    status: false,
   });
 
   useEffect(() => {
@@ -57,6 +53,15 @@ const BusesTab = () => {
 
   const handleBackClick = () => {
     setSelectedBus(null);
+  };
+
+  const handlePopularityToggle = (busId, newPopularityStatus) => {
+    // Update the bus in the local state
+    setBusesData((prevBuses) =>
+      prevBuses.map((bus) =>
+        bus.id === busId ? { ...bus, isPopular: newPopularityStatus } : bus
+      )
+    );
   };
 
   // Filter buses based on search query
@@ -106,6 +111,7 @@ const BusesTab = () => {
                   key={bus.id}
                   bus={bus}
                   onClick={() => handleBusClick(bus)}
+                  onPopularityToggle={handlePopularityToggle}
                 />
               ))}
             </div>

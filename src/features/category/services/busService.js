@@ -25,6 +25,78 @@ export const getBusById = async (busId) => {
 };
 
 /**
+ * Function to delete a bus
+ * @param {string|number} busId - The ID of the bus to delete
+ * @returns {Promise} Promise that resolves to the deletion result
+ */
+export const deleteBus = async (busId) => {
+  return apiRequest(
+    () => axiosInstance.delete(`/bus/delete/${busId}/`),
+    `Error occurred while deleting bus with ID ${busId}.`
+  );
+};
+
+/**
+ * Function to toggle bus popularity
+ * @param {string|number} busId - The ID of the bus to toggle popularity
+ * @returns {Promise} Promise that resolves to the updated bus data
+ */
+export const toggleBusPopularity = async (busId) => {
+  return apiRequest(
+    () => axiosInstance.post(`/bus/${busId}/toggle-popular/`),
+    `Error occurred while toggling popularity for bus with ID ${busId}.`
+  );
+};
+
+/**
+ * Function to get all amenities
+ * @returns {Promise} Promise that resolves to the amenities data
+ */
+export const getAllAmenities = async () => {
+  return apiRequest(
+    () => axiosInstance.get('/amenities/'),
+    'Error occurred while fetching amenities.'
+  );
+};
+
+/**
+ * Function to create a new amenity
+ * @param {Object} amenityData - The amenity data to create
+ * @returns {Promise} Promise that resolves to the created amenity
+ */
+export const createAmenity = async (amenityData) => {
+  return apiRequest(
+    () => axiosInstance.post('/amenities/', amenityData),
+    'Error occurred while creating amenity.'
+  );
+};
+
+/**
+ * Function to update an amenity
+ * @param {string|number} amenityId - The ID of the amenity to update
+ * @param {Object} amenityData - The updated amenity data
+ * @returns {Promise} Promise that resolves to the updated amenity
+ */
+export const updateAmenity = async (amenityId, amenityData) => {
+  return apiRequest(
+    () => axiosInstance.put(`/amenities/${amenityId}/`, amenityData),
+    `Error occurred while updating amenity with ID ${amenityId}.`
+  );
+};
+
+/**
+ * Function to delete an amenity
+ * @param {string|number} amenityId - The ID of the amenity to delete
+ * @returns {Promise} Promise that resolves to the deletion result
+ */
+export const deleteAmenity = async (amenityId) => {
+  return apiRequest(
+    () => axiosInstance.delete(`/amenities/${amenityId}/`),
+    `Error occurred while deleting amenity with ID ${amenityId}.`
+  );
+};
+
+/**
  * Transform bus data from API response to component format
  * @param {Array} buses - Array of bus objects from API
  * @returns {Array} Transformed bus data
@@ -41,9 +113,9 @@ export const transformBusData = (buses) => {
     contactNumber: 'N/A', // Not provided in API response
     image: bus.images?.[0]?.bus_view_image || bus.travels_logo || null,
     seats: bus.capacity || 0, // Using capacity as seats
-    basePrice: parseFloat(bus.base_price || 0),
-    pricePerKm: parseFloat(bus.price_per_km || 0),
-    minimumFare: parseFloat(bus.minimum_fare || 0),
+    basePrice: Number.parseFloat(bus.base_price || 0),
+    pricePerKm: Number.parseFloat(bus.price_per_km || 0),
+    minimumFare: Number.parseFloat(bus.minimum_fare || 0),
     rcNumber: bus.vehicle_rc_number || 'N/A',
     description: bus.vehicle_description || 'No description available',
     status: bus.status || 'available',
@@ -100,7 +172,7 @@ const transformAmenities = (amenities, features) => {
  * @returns {string} Formatted price string
  */
 export const formatPrice = (price) => {
-  const numPrice = parseFloat(price || 0);
+  const numPrice = Number.parseFloat(price || 0);
   return `₹${numPrice.toLocaleString('en-IN')}`;
 };
 

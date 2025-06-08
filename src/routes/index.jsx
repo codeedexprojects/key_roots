@@ -25,7 +25,7 @@ import { ReviewsListPage } from '@/features/reviews/pages';
 import { Navigate } from 'react-router';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { PrivateRoute } from '@/lib/PrivateRoute.jsx';
-import { PayoutPage } from '@/features/payout/pages/Payout';
+import PayoutPage from '@/features/payout/pages/PayoutPage';
 
 const routes = [
   {

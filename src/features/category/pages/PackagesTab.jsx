@@ -90,12 +90,13 @@ const PackagesTab = () => {
     setIsLoadingPackages(true);
     try {
       const response = await getPackagesBySubCategory(subCategoryId);
-
+      console.log('response', response);
       if (response) {
         // Handle direct array response
         const packagesData = Array.isArray(response)
           ? response
           : response.data || [];
+
         const transformedPackages = transformPackageData(packagesData);
         setPackages(transformedPackages);
       } else {
