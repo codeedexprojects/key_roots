@@ -31,7 +31,7 @@ export const getRecentApprovedBookings = async () => {
 
 export const getRecentReviews = async (limit = 5) => {
   return apiRequest(
-    () => axiosInstance.get(`/reviews/recent/`),
+    () => axiosInstance.get(`/recent-reviews/`),
     'Error occurred while fetching recent reviews.'
   );
 };

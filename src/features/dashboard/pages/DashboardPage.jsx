@@ -800,11 +800,11 @@ export function DashboardPage() {
                   <div className='flex items-center w-full'>
                     <img
                       src={review.img || '/placeholder.svg?height=40&width=40'}
-                      alt={review.name}
+                      alt={review.user}
                       className='h-10 w-10 rounded-full bg-gray-200'
                     />
                     <div className='ml-3 flex-1'>
-                      <h4 className='font-medium'>{review.name}</h4>
+                      <h4 className='font-medium'>{review.user}</h4>
                       <div className='flex items-center mt-1'>
                         {[...Array(5)].map((_, i) => (
                           <Star
@@ -818,7 +818,7 @@ export function DashboardPage() {
                         ))}
                       </div>
                       <p className='text-xs text-gray-500 mt-1 line-clamp-2'>
-                        {review.content}
+                        {review.comment}
                       </p>
                     </div>
                   </div>

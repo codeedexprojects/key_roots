@@ -41,6 +41,7 @@ export const UsersListPage = () => {
     try {
       const response = await getAllUsers();
 
+      console.log(response);
       if (response && !response.error) {
         setUsers(response.users || []);
 

@@ -47,6 +47,7 @@ export const FooterSectionList = () => {
     if (window.confirm(`Are you sure you want to delete "${itemName}"?`)) {
       try {
         const response = await deleteFooterSection(id);
+
         if (response && response.success) {
           setFooterItems(footerItems.filter((item) => item.id !== id));
           toast.success('Footer section deleted successfully');
