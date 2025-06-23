@@ -8,6 +8,7 @@ import {
   updateAmenity,
   deleteAmenity,
 } from '../services/busService';
+import { getImageUrl } from '@/lib/getImageUrl';
 
 const AmenitiesModal = ({ isOpen, onClose }) => {
   const [amenities, setAmenities] = useState([]);
@@ -84,7 +85,7 @@ const AmenitiesModal = ({ isOpen, onClose }) => {
     setFormData({
       name: amenity.name || '',
       description: amenity.description || '',
-      icon: amenity.icon || '',
+      icon: null, // File inputs can't be prefilled
     });
     setShowForm(true);
   };
@@ -109,14 +110,18 @@ const AmenitiesModal = ({ isOpen, onClose }) => {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', description: '', icon: '' });
+    setFormData({ name: '', description: '', icon: null });
     setEditingAmenity(null);
     setShowForm(false);
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, files } = e.target;
+    if (name === 'icon') {
+      setFormData((prev) => ({ ...prev, icon: files[0] || null }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   if (!isOpen) return null;
@@ -161,7 +166,9 @@ const AmenitiesModal = ({ isOpen, onClose }) => {
               </h3>
               <form
                 onSubmit={handleSubmit}
-                className='space-y-4'>
+                className='space-y-4'
+                encType='multipart/form-data' // Add this
+              >
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                   <div>
                     <label className='block text-sm font-medium text-gray-700 mb-1'>
@@ -182,12 +189,11 @@ const AmenitiesModal = ({ isOpen, onClose }) => {
                       Icon
                     </label>
                     <input
-                      type='text'
+                      type='file' // Change to file input
                       name='icon'
-                      value={formData.icon}
                       onChange={handleInputChange}
                       className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500'
-                      placeholder='Icon name or URL'
+                      accept='image/*' // Restrict to images if ImageField
                     />
                   </div>
                 </div>
@@ -248,9 +254,11 @@ const AmenitiesModal = ({ isOpen, onClose }) => {
                     <div className='flex items-center gap-3'>
                       {amenity.icon && (
                         <div className='w-8 h-8 bg-red-100 rounded-full flex items-center justify-center'>
-                          <span className='text-red-600 text-sm'>
-                            {amenity.icon}
-                          </span>
+                          <img
+                            src={getImageUrl(amenity.icon)}
+                            alt={amenity.name}
+                            className='w-full h-full object-cover rounded-full'
+                          />
                         </div>
                       )}
                       <h4 className='font-medium text-gray-800'>

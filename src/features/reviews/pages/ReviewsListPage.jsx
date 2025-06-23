@@ -23,7 +23,7 @@ export const ReviewsListPage = () => {
       apiData.bus_reviews.forEach((review) => {
         allReviews.push({
           id: `bus_${review.id}`,
-          customerName: `User ${review.user}`,
+          customerName: review.user_name,
           avatar: '/placeholder.svg?height=40&width=40',
           tripProvider: `Bus ID: ${review.bus}`,
           type: 'Bus',
@@ -46,7 +46,7 @@ export const ReviewsListPage = () => {
       apiData.package_reviews.forEach((review) => {
         allReviews.push({
           id: `package_${review.id}`,
-          customerName: `User ${review.user}`,
+          customerName: review.user_name,
           avatar: '/placeholder.svg?height=40&width=40',
           tripProvider: `Package ID: ${review.package}`,
           type: 'Package',
@@ -69,7 +69,7 @@ export const ReviewsListPage = () => {
       apiData.app_reviews.forEach((review) => {
         allReviews.push({
           id: `app_${review.id}`,
-          customerName: `User ${review.user}`,
+          customerName: review.user_name,
           avatar: '/placeholder.svg?height=40&width=40',
           tripProvider: 'App Review',
           type: 'App',

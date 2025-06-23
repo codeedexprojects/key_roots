@@ -20,6 +20,8 @@ export const BookingDetailsPage = () => {
       try {
         const response = await getBookingById(bookingId, bookingType);
 
+        console.log(response);
+
         if (!response.error) {
           setBooking(response);
           setError(null);
@@ -41,7 +43,7 @@ export const BookingDetailsPage = () => {
     if (bookingId) {
       fetchBookingDetails();
     }
-  }, [bookingId]);
+  }, [bookingId, bookingType]);
 
   // Format booking data for display
   const formatBookingData = () => {

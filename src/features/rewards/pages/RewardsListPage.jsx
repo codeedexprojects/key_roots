@@ -1,104 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getAllRewards } from '../services/rewardsService';
 
 export const RewardsListPage = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [rewards, setRewards] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const rewards = [
-    {
-      id: 1,
-      name: 'Ziyad',
-      date: '01/02/2025',
-      referID: '#30125845',
-      amount: '$300',
-      status: 'Withdraw',
-      source: 'Booking',
-    },
-    {
-      id: 2,
-      name: 'Amal',
-      date: '08/01/2025',
-      referID: '#30125702',
-      amount: '$200',
-      status: 'Completed',
-      source: 'Invite friend',
-    },
-    {
-      id: 3,
-      name: 'Amal',
-      date: '08/01/2025',
-      referID: '#30125702',
-      amount: '$200',
-      status: 'Completed',
-      source: 'Invite friend',
-    },
-    {
-      id: 4,
-      name: 'Amal',
-      date: '08/01/2025',
-      referID: '#30125702',
-      amount: '$200',
-      status: 'Completed',
-      source: 'Invite friend',
-    },
-    {
-      id: 5,
-      name: 'Amal',
-      date: '08/01/2025',
-      referID: '#30125702',
-      amount: '$200',
-      status: 'Completed',
-      source: 'Invite friend',
-    },
-    {
-      id: 6,
-      name: 'Rahul',
-      date: '07/01/2025',
-      referID: '#30125699',
-      amount: '$150',
-      status: 'Pending',
-      source: 'Invite friend',
-    },
-    {
-      id: 7,
-      name: 'Priya',
-      date: '06/01/2025',
-      referID: '#30125688',
-      amount: '$250',
-      status: 'Withdraw',
-      source: 'Booking',
-    },
-    {
-      id: 8,
-      name: 'Sanjay',
-      date: '05/01/2025',
-      referID: '#30125675',
-      amount: '$180',
-      status: 'Pending',
-      source: 'Invite friend',
-    },
-    {
-      id: 9,
-      name: 'Meera',
-      date: '04/01/2025',
-      referID: '#30125662',
-      amount: '$220',
-      status: 'Completed',
-      source: 'Booking',
-    },
-    {
-      id: 10,
-      name: 'Arjun',
-      date: '03/01/2025',
-      referID: '#30125650',
-      amount: '$190',
-      status: 'Pending',
-      source: 'Invite friend',
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await getAllRewards();
+        const data =
+          response.data && Array.isArray(response.data) ? response.data : [];
+        setRewards(
+          data.map((reward) => ({
+            id: reward.id,
+            name: reward.name,
+            date: new Date(reward.created_at).toLocaleDateString('en-US', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+            }),
+            referID: reward.refer_id,
+            amount: `$${parseFloat(reward.reward_amount).toFixed(2)}`,
+            status: reward.status_text,
+            source: reward.booking_type === 'bus' ? 'Booking' : 'Invite friend',
+          }))
+        );
+      } catch (err) {
+        setError('Failed to load rewards');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const filteredRewards = rewards.filter((reward) => {
     if (searchTerm === '') return true;
@@ -139,6 +81,31 @@ export const RewardsListPage = () => {
   const handleRowClick = (rewardId) => {
     navigate(`/rewards/${rewardId}`);
   };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+  if (filteredRewards.length === 0) {
+    return (
+      <div className='flex-1 overflow-auto'>
+        <h1 className='text-2xl font-semibold mb-6'>Rewards</h1>
+        <div className='mb-6'>
+          <div className='relative w-full md:w-64'>
+            <input
+              type='text'
+              placeholder='Search by name or refer ID...'
+              className='w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Search className='absolute left-3 top-2.5 h-5 w-5 text-gray-400' />
+          </div>
+        </div>
+        <div className='bg-white rounded-lg shadow-sm p-6 text-center'>
+          <p className='text-gray-500'>No rewards found</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='flex-1 overflow-auto'>

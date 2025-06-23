@@ -1,10 +1,6 @@
 import { axiosInstance } from '@/lib/axiosInstance';
 import { apiRequest } from '@/lib/apiRequest';
 
-/**
- * Function to get all buses
- * @returns {Promise} Promise that resolves to the buses data
- */
 export const getAllBuses = async () => {
   return apiRequest(
     () => axiosInstance.get('/buses/'),
@@ -12,11 +8,6 @@ export const getAllBuses = async () => {
   );
 };
 
-/**
- * Function to get bus details by ID
- * @param {string|number} busId - The ID of the bus to fetch
- * @returns {Promise} Promise that resolves to the bus details
- */
 export const getBusById = async (busId) => {
   return apiRequest(
     () => axiosInstance.get(`/bus/${busId}/`),
@@ -24,11 +15,6 @@ export const getBusById = async (busId) => {
   );
 };
 
-/**
- * Function to delete a bus
- * @param {string|number} busId - The ID of the bus to delete
- * @returns {Promise} Promise that resolves to the deletion result
- */
 export const deleteBus = async (busId) => {
   return apiRequest(
     () => axiosInstance.delete(`/bus/delete/${busId}/`),
@@ -36,11 +22,6 @@ export const deleteBus = async (busId) => {
   );
 };
 
-/**
- * Function to toggle bus popularity
- * @param {string|number} busId - The ID of the bus to toggle popularity
- * @returns {Promise} Promise that resolves to the updated bus data
- */
 export const toggleBusPopularity = async (busId) => {
   return apiRequest(
     () => axiosInstance.post(`/bus/${busId}/toggle-popular/`),
@@ -48,10 +29,6 @@ export const toggleBusPopularity = async (busId) => {
   );
 };
 
-/**
- * Function to get all amenities
- * @returns {Promise} Promise that resolves to the amenities data
- */
 export const getAllAmenities = async () => {
   return apiRequest(
     () => axiosInstance.get('/amenities/'),
@@ -59,36 +36,38 @@ export const getAllAmenities = async () => {
   );
 };
 
-/**
- * Function to create a new amenity
- * @param {Object} amenityData - The amenity data to create
- * @returns {Promise} Promise that resolves to the created amenity
- */
 export const createAmenity = async (amenityData) => {
+  const formData = new FormData();
+  formData.append('name', amenityData.name);
+  formData.append('description', amenityData.description || '');
+  if (amenityData.icon) {
+    formData.append('icon', amenityData.icon);
+  }
   return apiRequest(
-    () => axiosInstance.post('/amenities/', amenityData),
+    () =>
+      axiosInstance.post('/amenities/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }),
     'Error occurred while creating amenity.'
   );
 };
 
-/**
- * Function to update an amenity
- * @param {string|number} amenityId - The ID of the amenity to update
- * @param {Object} amenityData - The updated amenity data
- * @returns {Promise} Promise that resolves to the updated amenity
- */
 export const updateAmenity = async (amenityId, amenityData) => {
+  const formData = new FormData();
+  formData.append('name', amenityData.name);
+  formData.append('description', amenityData.description || '');
+  if (amenityData.icon) {
+    formData.append('icon', amenityData.icon);
+  }
   return apiRequest(
-    () => axiosInstance.put(`/amenities/${amenityId}/`, amenityData),
+    () =>
+      axiosInstance.put(`/amenities/${amenityId}/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }),
     `Error occurred while updating amenity with ID ${amenityId}.`
   );
 };
 
-/**
- * Function to delete an amenity
- * @param {string|number} amenityId - The ID of the amenity to delete
- * @returns {Promise} Promise that resolves to the deletion result
- */
 export const deleteAmenity = async (amenityId) => {
   return apiRequest(
     () => axiosInstance.delete(`/amenities/${amenityId}/`),
@@ -96,11 +75,6 @@ export const deleteAmenity = async (amenityId) => {
   );
 };
 
-/**
- * Transform bus data from API response to component format
- * @param {Array} buses - Array of bus objects from API
- * @returns {Array} Transformed bus data
- */
 export const transformBusData = (buses) => {
   if (!Array.isArray(buses)) return [];
 
@@ -144,12 +118,6 @@ export const transformBusData = (buses) => {
   }));
 };
 
-/**
- * Transform amenities and features arrays to object format
- * @param {Array} amenities - Array of amenity objects
- * @param {Array} features - Array of feature objects
- * @returns {Object} Transformed amenities object
- */
 const transformAmenities = (amenities, features) => {
   const amenityNames = amenities.map((a) => a.name?.toLowerCase());
   const featureNames = features.map((f) => f.name?.toLowerCase());
@@ -166,11 +134,6 @@ const transformAmenities = (amenities, features) => {
   };
 };
 
-/**
- * Format price for display
- * @param {string|number} price - Price value
- * @returns {string} Formatted price string
- */
 export const formatPrice = (price) => {
   const numPrice = Number.parseFloat(price || 0);
   return `₹${numPrice.toLocaleString('en-IN')}`;
@@ -210,11 +173,6 @@ export const filterBuses = (buses, searchQuery, searchFields) => {
   });
 };
 
-/**
- * Get status badge color
- * @param {string} status - Bus status
- * @returns {string} CSS class for status badge
- */
 export const getStatusColor = (status) => {
   switch (status?.toLowerCase()) {
     case 'available':
