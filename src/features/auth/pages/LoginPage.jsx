@@ -4,7 +4,7 @@ import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { loginAdmin } from '../services/loginService';
 import { useAuth } from '@/hooks/useAuth';
-import Logo from '@/public/Logo.png';
+import Logo from '../../../../public/Logo.png';
 
 export const LoginPage = () => {
   const navigate = useNavigate();

@@ -798,7 +798,7 @@ export function DashboardPage() {
             />
           ) : (
             <div className='space-y-4'>
-              {filteredReviews.slice(0, 5).map((review, idx) => (
+              {filteredReviews.slice(0, 4).map((review, idx) => (
                 <div
                   key={idx}
                   className='flex items-center justify-between'>
@@ -812,7 +812,7 @@ export function DashboardPage() {
                       className='h-10 w-10 rounded-full bg-gray-200'
                     />
                     <div className='ml-3 flex-1'>
-                      <h4 className='font-medium'>{review.user}</h4>
+                      <span className='font-medium'>{review.user}</span>
                       <div className='flex items-center mt-1'>
                         {[...Array(5)].map((_, i) => (
                           <Star
