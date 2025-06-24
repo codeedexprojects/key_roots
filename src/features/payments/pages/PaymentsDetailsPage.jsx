@@ -16,6 +16,50 @@ export const PaymentDetailsPage = () => {
 
   // Fetch payment details
   useEffect(() => {
+    // Format payment data for display
+    const formatPaymentData = (data) => {
+      if (!data) return null;
+
+      // Format the payment status
+      const status = formatPaymentStatus(data.payment_status);
+
+      // Format the payment details
+      const formattedPayment = {
+        id: data.id.toString(),
+        tripName: data.bus_or_package || 'Unknown Trip',
+        customerName: data.vendor_name || 'Unknown Customer',
+        status,
+        payment: {
+          baseFare: data.total_amount
+            ? `₹${parseFloat(data.total_amount).toLocaleString('en-IN')}`
+            : '₹0',
+          taxes: '₹0', // Not provided in the API response
+          total: data.total_amount
+            ? `₹${parseFloat(data.total_amount).toLocaleString('en-IN')}`
+            : '₹0',
+          amountPaid: data.advance_amount
+            ? `₹${parseFloat(data.advance_amount).toLocaleString('en-IN')}`
+            : '₹0',
+          ourEarnings: calculateIncome(data),
+          returnAmount:
+            data.payment_status?.toLowerCase() === 'cancelled' ||
+            data.payment_status?.toLowerCase() === 'canceled'
+              ? `₹${parseFloat(data.advance_amount || 0).toLocaleString(
+                  'en-IN'
+                )}`
+              : '₹0',
+        },
+        paymentMode: 'Advance Paid & Remaining to Driver', // Not provided in the API response
+        placedOn: new Date().toLocaleDateString(), // Not provided in the API response
+        bookingType: data.booking_type || 'Unknown',
+        balanceAmount: data.balance_amount
+          ? `₹${parseFloat(data.balance_amount).toLocaleString('en-IN')}`
+          : '₹0',
+      };
+
+      return formattedPayment;
+    };
+
     const fetchPaymentDetails = async () => {
       setIsLoading(true);
       try {
@@ -54,48 +98,6 @@ export const PaymentDetailsPage = () => {
       fetchPaymentDetails();
     }
   }, [paymentId]);
-
-  // Format payment data for display
-  const formatPaymentData = (data) => {
-    if (!data) return null;
-
-    // Format the payment status
-    const status = formatPaymentStatus(data.payment_status);
-
-    // Format the payment details
-    const formattedPayment = {
-      id: data.id.toString(),
-      tripName: data.bus_or_package || 'Unknown Trip',
-      customerName: data.vendor_name || 'Unknown Customer',
-      status,
-      payment: {
-        baseFare: data.total_amount
-          ? `₹${parseFloat(data.total_amount).toLocaleString('en-IN')}`
-          : '₹0',
-        taxes: '₹0', // Not provided in the API response
-        total: data.total_amount
-          ? `₹${parseFloat(data.total_amount).toLocaleString('en-IN')}`
-          : '₹0',
-        amountPaid: data.advance_amount
-          ? `₹${parseFloat(data.advance_amount).toLocaleString('en-IN')}`
-          : '₹0',
-        ourEarnings: calculateIncome(data),
-        returnAmount:
-          data.payment_status?.toLowerCase() === 'cancelled' ||
-          data.payment_status?.toLowerCase() === 'canceled'
-            ? `₹${parseFloat(data.advance_amount || 0).toLocaleString('en-IN')}`
-            : '₹0',
-      },
-      paymentMode: 'Advance Paid & Remaining to Driver', // Not provided in the API response
-      placedOn: new Date().toLocaleDateString(), // Not provided in the API response
-      bookingType: data.booking_type || 'Unknown',
-      balanceAmount: data.balance_amount
-        ? `₹${parseFloat(data.balance_amount).toLocaleString('en-IN')}`
-        : '₹0',
-    };
-
-    return formattedPayment;
-  };
 
   // Helper function to format payment status
   const formatPaymentStatus = (status) => {
