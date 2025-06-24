@@ -24,6 +24,7 @@ export const VendorsListPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [filterState, setFilterState] = useState('all');
+  const [filterDistrict, setFilterDistrict] = useState('all'); // New state for district filter
 
   // Data state
   const [vendors, setVendors] = useState([]);
@@ -43,15 +44,14 @@ export const VendorsListPage = () => {
     const fetchVendors = async () => {
       setLoading(true);
       try {
-        // Fetch vendors
         const response = await getAllVendors();
-        console.log(response);
         if (response && response.data) {
           const transformedVendors = response.data.map((vendor) => ({
             id: vendor.user_id,
             name: vendor.travels_name,
             location: vendor.location || vendor.city,
             state: vendor.state || 'Unknown',
+            district: vendor.district || 'Not specified', // New district field
             busesCount: vendor.bus_count || 0,
             packagesCount: vendor.package_count || 0,
             availableBuses: vendor.buses?.length || 0,
@@ -100,6 +100,13 @@ export const VendorsListPage = () => {
     fetchVendors();
   }, []);
 
+  // Reset district filter when state filter or sorting changes
+  useEffect(() => {
+    if (filterState === 'all' && sortBy !== 'state') {
+      setFilterDistrict('all');
+    }
+  }, [filterState, sortBy]);
+
   // Process vendors with filtering and sorting
   let processedVendors = [...vendors];
 
@@ -109,7 +116,8 @@ export const VendorsListPage = () => {
       (vendor) =>
         vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         vendor.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vendor.state.toLowerCase().includes(searchTerm.toLowerCase())
+        vendor.state.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        vendor.district.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }
 
@@ -117,6 +125,16 @@ export const VendorsListPage = () => {
   if (filterState !== 'all') {
     processedVendors = processedVendors.filter(
       (vendor) => vendor.state.toLowerCase() === filterState.toLowerCase()
+    );
+  }
+
+  // Apply district filter
+  if (
+    filterDistrict !== 'all' &&
+    (filterState !== 'all' || sortBy === 'state')
+  ) {
+    processedVendors = processedVendors.filter(
+      (vendor) => vendor.district.toLowerCase() === filterDistrict.toLowerCase()
     );
   }
 
@@ -146,6 +164,20 @@ export const VendorsListPage = () => {
       setCurrentPage(pageNumber);
     }
   };
+
+  // Get unique districts for the selected state or all districts if sorted by state
+  const availableDistricts = Array.from(
+    new Set(
+      vendors
+        .filter((vendor) =>
+          filterState !== 'all'
+            ? vendor.state.toLowerCase() === filterState.toLowerCase()
+            : sortBy === 'state'
+        )
+        .map((vendor) => vendor.district)
+        .filter(Boolean)
+    )
+  ).sort();
 
   return (
     <div className='flex flex-col min-h-screen'>
@@ -274,6 +306,27 @@ export const VendorsListPage = () => {
               </select>
               <ChevronDown className='absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none' />
             </div>
+
+            {/* District Filter Dropdown (Conditional) */}
+            {(filterState !== 'all' || sortBy === 'state') &&
+              availableDistricts.length > 0 && (
+                <div className='relative'>
+                  <select
+                    className='appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md text-sm bg-white'
+                    value={filterDistrict}
+                    onChange={(e) => setFilterDistrict(e.target.value)}>
+                    <option value='all'>Filter by: District</option>
+                    {availableDistricts.map((district) => (
+                      <option
+                        key={district}
+                        value={district}>
+                        {district}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className='absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none' />
+                </div>
+              )}
           </div>
         </div>
 
@@ -316,11 +369,20 @@ export const VendorsListPage = () => {
                     }
                     alt={vendor.name}
                   />
-                  <h3 className='text-sm font-medium text-gray-900 text-center leading-tight'>
+                  <h3
+                    className='text-sm font-medium text-gray-900 text-center leading-tight truncate w-full'
+                    title={vendor.name}>
                     {vendor.name}
                   </h3>
-                  <p className='text-xs text-gray-500 mt-1'>
+                  <p
+                    className='text-xs text-gray-500 mt-1 truncate w-full text-center'
+                    title={vendor.location}>
                     Located in {vendor.location || 'Not specified'}
+                  </p>
+                  <p
+                    className='text-xs text-gray-500 mt-1 truncate w-full text-center'
+                    title={vendor.district}>
+                    District: {vendor.district || 'Not specified'}
                   </p>
                   <p className='text-xs text-gray-600 mt-1'>
                     Amount earned [₹{vendor.earnings.toLocaleString()}]

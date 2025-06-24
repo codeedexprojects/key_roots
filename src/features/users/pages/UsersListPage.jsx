@@ -16,9 +16,9 @@ export const UsersListPage = () => {
   const navigate = useNavigate();
 
   const [currentPage, setCurrentPage] = useState(1);
-
   const [sortBy, setSortBy] = useState('name');
   const [filterState, setFilterState] = useState('all');
+  const [filterDistrict, setFilterDistrict] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   // State for API data
@@ -41,10 +41,8 @@ export const UsersListPage = () => {
     try {
       const response = await getAllUsers();
 
-      console.log(response);
       if (response && !response.error) {
         setUsers(response.users || []);
-
         setUserStats({
           total_users: response.total_users || 0,
           booked_users_count: response.booked_users_count || 0,
@@ -68,9 +66,15 @@ export const UsersListPage = () => {
     fetchUsers();
   }, []);
 
+  // Reset district filter when state filter or sorting changes
+  useEffect(() => {
+    if (filterState === 'all' && sortBy !== 'place') {
+      setFilterDistrict('all');
+    }
+  }, [filterState, sortBy]);
+
   // Toggle user status function
   const handleToggleUserStatus = async (userId, currentStatus, event) => {
-    // Prevent row click navigation
     event.stopPropagation();
 
     setTogglingUserId(userId);
@@ -78,15 +82,12 @@ export const UsersListPage = () => {
       const response = await toggleUserStatus(userId);
 
       if (response && !response.error) {
-        // Show success message
         toast.success(
           response.message ||
             `User has been ${
               response.is_active ? 'unblocked' : 'blocked'
             } successfully.`
         );
-
-        // Refetch users list to update the data
         await fetchUsers();
       } else {
         toast.error(response?.message || 'Failed to update user status');
@@ -117,11 +118,21 @@ export const UsersListPage = () => {
     );
   }
 
+  // Filtering by district
+  if (
+    filterDistrict !== 'all' &&
+    (filterState !== 'all' || sortBy === 'place')
+  ) {
+    processedUsers = processedUsers.filter(
+      (user) => user.district === filterDistrict
+    );
+  }
+
   // Sorting
   processedUsers.sort((a, b) => {
     if (sortBy === 'name') return a.name.localeCompare(b.name);
     if (sortBy === 'place') return (a.place || '').localeCompare(b.place || '');
-    if (sortBy === 'status') return b.is_active - a.is_active; // Active first
+    if (sortBy === 'status') return b.is_active - a.is_active;
     return 0;
   });
 
@@ -137,6 +148,20 @@ export const UsersListPage = () => {
       setCurrentPage(pageNumber);
     }
   };
+
+  // Get unique districts for the selected state or all districts if sorted by place
+  const availableDistricts = Array.from(
+    new Set(
+      users
+        .filter((user) =>
+          filterState !== 'all'
+            ? user.place === filterState
+            : sortBy === 'place'
+        )
+        .map((user) => user.district)
+        .filter(Boolean)
+    )
+  ).sort();
 
   return (
     <div className='flex flex-col min-h-screen'>
@@ -248,6 +273,24 @@ export const UsersListPage = () => {
                   </option>
                 ))}
               </select>
+
+              {/* District Filter Dropdown (Conditional) */}
+              {(filterState !== 'all' || sortBy === 'place') &&
+                availableDistricts.length > 0 && (
+                  <select
+                    className='appearance-none pl-4 pr-10 py-2 border rounded-md text-sm'
+                    value={filterDistrict}
+                    onChange={(e) => setFilterDistrict(e.target.value)}>
+                    <option value='all'>Filter by: All Districts</option>
+                    {availableDistricts.map((district) => (
+                      <option
+                        key={district}
+                        value={district}>
+                        {district}
+                      </option>
+                    ))}
+                  </select>
+                )}
             </div>
           </div>
         </div>
@@ -267,29 +310,32 @@ export const UsersListPage = () => {
             icon='default'
           />
         ) : (
-          <div className='overflow-x-auto min-h-[400px]'>
+          <div className='overflow-x-auto min-h-[400px] no-scrollbar'>
             <table className='min-w-full lg:table-fixed divide-y divide-gray-200'>
               <thead>
                 <tr>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-16'>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-12'>
                     ID
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-48'>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-44'>
                     Customer
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-40'>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-36'>
                     Phone Number
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-56 hidden md:table-cell'>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-48 hidden md:table-cell'>
                     Email
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-40'>
-                    Place
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-36'>
+                    State
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-32'>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-36'>
+                    District
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-28'>
                     Status
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-32'>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-auto lg:w-28'>
                     Actions
                   </th>
                 </tr>
@@ -301,10 +347,10 @@ export const UsersListPage = () => {
                     key={user.id}
                     className='hover:bg-gray-50 cursor-pointer'
                     onClick={() => navigate(`/users/${user.id}`)}>
-                    <td className='px-4 py-4 text-sm text-gray-500 w-auto lg:w-16'>
+                    <td className='px-4 py-4 text-sm text-gray-500 w-auto lg:w-12 truncate'>
                       {user.id}
                     </td>
-                    <td className='px-4 py-4 w-auto lg:w-48 truncate'>
+                    <td className='px-4 py-4 w-auto lg:w-44 truncate'>
                       <div className='flex items-center'>
                         <img
                           className='h-10 w-10 rounded-md flex-shrink-0'
@@ -321,21 +367,26 @@ export const UsersListPage = () => {
                       </div>
                     </td>
                     <td
-                      className='px-4 py-4 text-sm text-gray-500 truncate w-auto lg:w-40'
+                      className='px-4 py-4 text-sm text-gray-500 truncate w-auto lg:w-36'
                       title={user.mobile}>
                       {user.mobile || 'Not specified'}
                     </td>
                     <td
-                      className='px-4 py-4 text-sm text-gray-500 truncate hidden md:table-cell w-auto lg:w-56'
+                      className='px-4 py-4 text-sm text-gray-500 truncate hidden md:table-cell w-auto lg:w-48'
                       title={user.email}>
                       {user.email || 'Not specified'}
                     </td>
                     <td
-                      className='px-4 py-4 text-sm text-gray-500 truncate w-auto lg:w-40'
+                      className='px-4 py-4 text-sm text-gray-500 truncate w-auto lg:w-36'
                       title={user.place}>
                       {user.place || 'Not specified'}
                     </td>
-                    <td className='px-4 py-4 w-auto lg:w-32'>
+                    <td
+                      className='px-4 py-4 text-sm text-gray-500 truncate w-auto lg:w-36'
+                      title={user.district}>
+                      {user.district || 'Not specified'}
+                    </td>
+                    <td className='px-4 py-4 w-auto lg:w-28'>
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                           user.is_active
@@ -345,7 +396,7 @@ export const UsersListPage = () => {
                         {user.is_active ? 'ACTIVE' : 'INACTIVE'}
                       </span>
                     </td>
-                    <td className='px-4 py-4 w-auto lg:w-32'>
+                    <td className='px-4 py-4 w-auto lg:w-28'>
                       <button
                         onClick={(e) =>
                           handleToggleUserStatus(user.id, user.is_active, e)
