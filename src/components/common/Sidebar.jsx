@@ -16,7 +16,7 @@ import {
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { NavLink } from 'react-router';
-import Logo from '../../public/Logo.png';
+import Logo from '../../../public/Logo.png';
 import { useAuth } from '@/hooks/useAuth';
 
 const menuItems = [

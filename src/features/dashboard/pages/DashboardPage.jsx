@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { Star, ArrowRight, ChevronDown } from 'lucide-react';
+import { FaArrowRightLong } from 'react-icons/fa6';
 import { LoadingSpinner, EmptyState } from '@/components/common';
 import { Link } from 'react-router';
 import {
@@ -101,13 +102,13 @@ export function DashboardPage() {
       setTopVendorsLoading(true);
       try {
         const response = await getTopVendors(topVendorsState);
-
+        console.log('top vendors', response);
         if (response && !response.error) {
           const transformedVendors = response.map((vendor) => ({
             name: vendor.name,
             location: vendor.place,
             bookings: vendor.total_booking_count || 0,
-            img: '/placeholder.svg?height=40&width=40',
+            img: 'https://img.freepik.com/premium-vector/user-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg',
             state: vendor.state,
           }));
           setTopVendors(transformedVendors);
@@ -138,14 +139,14 @@ export function DashboardPage() {
       setRecentUsersLoading(true);
       try {
         const response = await getRecentUsers(recentUsersState);
-        console.log('Recent users response:', response);
+        console.log('Recent Users: ', response);
         if (response && !response.error) {
           const transformedUsers = response.map((user) => ({
             id: user.id,
             name: user.name,
             email: user.email,
             joined: new Date(user.created_at).toLocaleDateString(),
-            img: '/placeholder.svg?height=40&width=40',
+            img: 'https://img.freepik.com/premium-vector/user-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg',
             state: user.state,
           }));
           setRecentUsers(transformedUsers);
@@ -178,7 +179,7 @@ export function DashboardPage() {
       setRecentApprovedLoading(true);
       try {
         const response = await getRecentApprovedBookings(recentApprovedState);
-        console.log('Recent approved bookings response:', response.details);
+
         if (response && !response.error) {
           setRecentApproved(response);
 
@@ -210,7 +211,7 @@ export function DashboardPage() {
       setRevenueLoading(true);
       try {
         const response = await getRevenueData();
-        console.log('Revenue data response:', response);
+
         if (response && !response.error) {
           setRevenueData(response);
           if (response.monthly_revenue && response.monthly_revenue.length > 0) {
@@ -299,7 +300,7 @@ export function DashboardPage() {
       setReviewsLoading(true);
       try {
         const response = await getRecentReviews(5, reviewsState);
-        console.log('Reviews response:', response);
+        console.log('recentReviews: ', response);
         if (response && !response.error) {
           setReviews(response);
 
@@ -584,8 +585,9 @@ export function DashboardPage() {
                         {booking.default_member_name} • {booking.total_members}{' '}
                         members
                       </div>
-                      <div className='font-medium'>
-                        {booking.from_location} ————→ {booking.to_location}
+                      <div className='font-medium flex items-center gap-2'>
+                        {booking.from_location} <FaArrowRightLong />
+                        {booking.to_location}
                       </div>
                       <div className='text-xs text-gray-500'>
                         {formatDate(booking.created_at)} •{' '}
@@ -728,7 +730,10 @@ export function DashboardPage() {
                   className='flex items-center justify-between'>
                   <div className='flex items-center w-full'>
                     <img
-                      src={user.img}
+                      src={
+                        user.img ||
+                        'https://img.freepik.com/premium-vector/user-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg'
+                      }
                       alt={user.name}
                       className='h-10 w-10 rounded-full bg-gray-200'
                     />
@@ -799,7 +804,10 @@ export function DashboardPage() {
                   className='flex items-center justify-between'>
                   <div className='flex items-center w-full'>
                     <img
-                      src={review.img || '/placeholder.svg?height=40&width=40'}
+                      src={
+                        review.img ||
+                        'https://img.freepik.com/premium-vector/user-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg'
+                      }
                       alt={review.user}
                       className='h-10 w-10 rounded-full bg-gray-200'
                     />

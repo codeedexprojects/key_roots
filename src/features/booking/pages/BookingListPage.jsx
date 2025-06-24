@@ -21,6 +21,8 @@ export const BookingListPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [filterBy, setFilterBy] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [selectedDate, setSelectedDate] = useState('');
 
   // State for API data
   const [bookings, setBookings] = useState([]);
@@ -34,7 +36,6 @@ export const BookingListPage = () => {
       try {
         const response = await getAllBookings();
         if (!response.error) {
-          // Format the bookings data for display
           const formattedBookings = formatBookingsForDisplay(response);
           setBookings(formattedBookings);
           setError(null);
@@ -52,41 +53,64 @@ export const BookingListPage = () => {
     };
 
     fetchBookings();
-    // This effect should only run once on mount
-    // formatBookingsForDisplay is imported and doesn't change
   }, []);
+
+  // Date filter logic
+  const filterBookingsByDate = (booking) => {
+    if (dateFilter === 'all') return true;
+    if (!booking.rawDate) return false;
+
+    const bookingDate = new Date(booking.rawDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (dateFilter === 'day' && selectedDate) {
+      const selected = new Date(selectedDate);
+      selected.setHours(0, 0, 0, 0);
+      return bookingDate.toDateString() === selected.toDateString();
+    }
+    if (dateFilter === 'week') {
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      return bookingDate >= startOfWeek && bookingDate <= endOfWeek;
+    }
+    if (dateFilter === 'month') {
+      return (
+        bookingDate.getMonth() === today.getMonth() &&
+        bookingDate.getFullYear() === today.getFullYear()
+      );
+    }
+    return true;
+  };
 
   // Filter and sort bookings
   const filteredBookings = bookings
     .filter((booking) => {
-      // Apply search filter
       if (searchTerm) {
         return (
           booking.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           booking.trip.toLowerCase().includes(searchTerm.toLowerCase())
         );
       }
-
-      // Apply category filter
-      if (filterBy === 'all') return true;
-      if (filterBy === 'bus') return booking.category === 'Bus';
-      if (filterBy === 'package') return booking.category === 'Package';
-
-      return true;
+      if (filterBy === 'all') return filterBookingsByDate(booking);
+      if (filterBy === 'bus')
+        return booking.category === 'Bus' && filterBookingsByDate(booking);
+      if (filterBy === 'package')
+        return booking.category === 'Package' && filterBookingsByDate(booking);
+      return filterBookingsByDate(booking);
     })
     .sort((a, b) => {
-      // Apply sorting based on date or ID
       if (sortBy === 'newest') {
-        // If we have dates, use them for sorting
-        if (a.date && b.date) {
-          return new Date(b.date) - new Date(a.date);
+        if (a.rawDate && b.rawDate) {
+          return new Date(b.rawDate) - new Date(a.rawDate);
         }
-        // Fallback to ID sorting
         return b.id - a.id;
       }
       if (sortBy === 'oldest') {
-        if (a.date && b.date) {
-          return new Date(a.date) - new Date(b.date);
+        if (a.rawDate && b.rawDate) {
+          return new Date(a.rawDate) - new Date(b.rawDate);
         }
         return a.id - b.id;
       }
@@ -113,15 +137,32 @@ export const BookingListPage = () => {
 
   const getPageNumbers = () => {
     const pages = [];
-    const startPage = Math.max(
-      1,
-      currentPage - Math.floor(maxVisiblePages / 2)
-    );
-    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    const halfVisible = Math.floor(maxVisiblePages / 2);
+    let startPage = Math.max(1, currentPage - halfVisible);
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
+    // Adjust startPage if endPage is too close to totalPages
+    if (endPage === totalPages && endPage - startPage + 1 > maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // Add ellipsis if not at the start
+    if (startPage > 1) {
+      pages.push(1);
+      if (startPage > 2) pages.push('...');
+    }
+
+    // Add page numbers
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
+
+    // Add ellipsis and last page if not already included
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) pages.push('...');
+      pages.push(totalPages);
+    }
+
     return pages;
   };
 
@@ -180,6 +221,33 @@ export const BookingListPage = () => {
             </select>
             <ChevronDown className='absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none' />
           </div>
+
+          <div className='relative'>
+            <select
+              className='appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm'
+              value={dateFilter}
+              onChange={(e) => {
+                setDateFilter(e.target.value);
+                if (e.target.value !== 'day') setSelectedDate('');
+              }}>
+              <option value='all'>Date: All</option>
+              <option value='day'>Specific Date</option>
+              <option value='week'>This Week</option>
+              <option value='month'>This Month</option>
+            </select>
+            <ChevronDown className='absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none' />
+          </div>
+
+          {dateFilter === 'day' && (
+            <div className='relative'>
+              <input
+                type='date'
+                className='pl-4 pr-4 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm'
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -215,7 +283,7 @@ export const BookingListPage = () => {
                   ].map((header, i) => (
                     <th
                       key={i}
-                      className={`px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider`}>
+                      className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                       {header}
                     </th>
                   ))}
@@ -280,7 +348,7 @@ export const BookingListPage = () => {
           </div>
         )}
 
-        {/* Pagination - only show when we have data and not loading */}
+        {/* Pagination */}
         {!isLoading && !error && filteredBookings.length > 0 && (
           <div className='flex px-6 py-4 bg-white border-t border-gray-200 justify-end'>
             <div className='flex space-x-1'>
@@ -296,45 +364,29 @@ export const BookingListPage = () => {
                 <ChevronLeft className='h-5 w-5' />
               </button>
 
-              {currentPage > Math.floor(maxVisiblePages / 2) + 1 && (
-                <>
+              {getPageNumbers().map((page, index) => {
+                if (page === '...') {
+                  return (
+                    <span
+                      key={index}
+                      className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700'>
+                      ...
+                    </span>
+                  );
+                }
+                return (
                   <button
-                    onClick={() => paginate(1)}
-                    className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md'>
-                    1
+                    key={page}
+                    onClick={() => paginate(page)}
+                    className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
+                      currentPage === page
+                        ? 'bg-primary text-white'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    } rounded-md`}>
+                    {page}
                   </button>
-                  {currentPage > Math.floor(maxVisiblePages / 2) + 2 && (
-                    <span>...</span>
-                  )}
-                </>
-              )}
-
-              {getPageNumbers().map((page) => (
-                <button
-                  key={page}
-                  onClick={() => paginate(page)}
-                  className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
-                    currentPage === page
-                      ? 'bg-primary text-white'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  } rounded-md`}>
-                  {page}
-                </button>
-              ))}
-
-              {currentPage < totalPages - Math.floor(maxVisiblePages / 2) && (
-                <>
-                  {currentPage <
-                    totalPages - Math.floor(maxVisiblePages / 2) - 1 && (
-                    <span>...</span>
-                  )}
-                  <button
-                    onClick={() => paginate(totalPages)}
-                    className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md'>
-                    {totalPages}
-                  </button>
-                </>
-              )}
+                );
+              })}
 
               <button
                 onClick={() => paginate(currentPage + 1)}

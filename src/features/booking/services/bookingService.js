@@ -37,6 +37,7 @@ export const formatBookingsForDisplay = (bookings) => {
           day: 'numeric',
         })
       : 'N/A',
+    rawDate: booking.start_date ? booking.start_date : null,
     category: booking.booking_type === 'bus' ? 'Bus' : 'Package',
     trip:
       booking.from_location && booking.to_location
