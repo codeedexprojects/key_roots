@@ -263,7 +263,7 @@ export const UserDetailsPage = () => {
         <h1 className='text-2xl font-semibold'>User Details</h1>
 
         <Link
-          to='/users'
+          to='/admin/users'
           className='inline-flex items-center text-gray-600 hover:text-gray-900'>
           <ArrowLeft className='h-4 w-4 mr-2' />
           <span>Go Back</span>

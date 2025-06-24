@@ -12,7 +12,7 @@ const CategoryPage = () => {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    navigate(`/category/${tab}`);
+    navigate(`/admin/category/${tab}`);
   };
 
   return (

@@ -26,23 +26,57 @@ import { Navigate } from 'react-router';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { PrivateRoute } from '@/lib/PrivateRoute.jsx';
 import PayoutPage from '@/features/payout/pages/PayoutPage';
+import Home from '@/features/landing/pages/Home';
+import VendorTermsAndConditions from '@/features/landing/pages/VendorTermsAndConditions';
+import UserTerms from '@/features/landing/pages/UserTermsAndConditions';
+import UserPrivacyPolicy from '@/features/landing/pages/UserPrivacyPolicy';
+import VendorPrivacyPolicy from '@/features/landing/pages/VendorPrivacyPolicy';
+import RightToDelete from '@/features/landing/pages/VendorDeleteAC';
+import UserDeletePolicy from '@/features/landing/pages/UserDeleteAC';
 
 const routes = [
+  {
+    path: '/',
+    element: <Home />,
+  },
+  {
+    path: '/vendor-terms',
+    element: <VendorTermsAndConditions />,
+  },
+  {
+    path: '/user-terms',
+    element: <UserTerms />,
+  },
+  {
+    path: '/user-privacy',
+    element: <UserPrivacyPolicy />,
+  },
+  {
+    path: '/vendor-privacy',
+    element: <VendorPrivacyPolicy />,
+  },
+  {
+    path: '/vendor-delete',
+    element: <RightToDelete />,
+  },
+  {
+    path: '/user-delete',
+    element: <UserDeletePolicy />,
+  },
   {
     path: '/login',
     element: <LoginPage />,
   },
   {
-    path: '/',
+    path: '/admin',
     element: (
       <PrivateRoute>
         <Layout />
       </PrivateRoute>
     ),
-    // errorElement: <AppErrorFallback />,
     children: [
-      { index: true, element: <DashboardPage /> },
-
+      { index: true, element: <Navigate to='/admin/dashboard' /> },
+      { path: 'dashboard', element: <DashboardPage /> },
       {
         path: 'users',
         children: [
@@ -56,7 +90,6 @@ const routes = [
         children: [
           { index: true, element: <VendorsListPage /> },
           { path: 'create', element: <VendorCreatePage /> },
-          { path: ':vendorId', element: <VendorDetailsPage /> },
           { path: ':vendorId', element: <VendorDetailsPage /> },
           { path: ':vendorId/inventory', element: <VendorInventoryPage /> },
           { path: ':vendorId/buses/:busId', element: <VendorBusDetailsPage /> },
@@ -125,7 +158,7 @@ const routes = [
         path: '*',
         element: (
           <Navigate
-            to='/'
+            to='/admin/dashboard'
             replace
           />
         ),

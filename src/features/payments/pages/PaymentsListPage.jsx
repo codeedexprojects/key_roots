@@ -225,7 +225,7 @@ export const PaymentsListPage = () => {
                   <tr
                     key={payment.id}
                     className='hover:bg-gray-50 cursor-pointer'
-                    onClick={() => navigate(`/payments/${payment.id}`)}>
+                    onClick={() => navigate(`/admin/payments/${payment.id}`)}>
                     <td className='px-6 py-4 whitespace-nowrap'>
                       <div className='flex items-center'>
                         <img

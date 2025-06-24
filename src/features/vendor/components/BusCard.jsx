@@ -7,8 +7,8 @@ export const BusCard = ({ bus, vendorId }) => {
     <Link
       to={
         vendorId
-          ? `/vendors/${vendorId}/buses/${bus.id}`
-          : `/category/buses/${bus.id}`
+          ? `/admin/vendors/${vendorId}/buses/${bus.id}`
+          : `/admin/category/buses/${bus.id}`
       }
       className='block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden'>
       <div className='h-48 bg-gray-200 overflow-hidden'>

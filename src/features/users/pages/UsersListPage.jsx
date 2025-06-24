@@ -168,7 +168,7 @@ export const UsersListPage = () => {
       <div className='flex justify-between items-center mb-6'>
         <h1 className='text-2xl font-semibold'>Total Users</h1>
         <Link
-          to='/users/create'
+          to='/admin/users/create'
           className='inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'>
           <Plus className='h-4 w-4 mr-2' />
           Add User
@@ -346,7 +346,7 @@ export const UsersListPage = () => {
                   <tr
                     key={user.id}
                     className='hover:bg-gray-50 cursor-pointer'
-                    onClick={() => navigate(`/users/${user.id}`)}>
+                    onClick={() => navigate(`/admin/users/${user.id}`)}>
                     <td className='px-4 py-4 text-sm text-gray-500 w-auto lg:w-12 truncate'>
                       {user.id}
                     </td>

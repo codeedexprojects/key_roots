@@ -79,7 +79,7 @@ export const RewardsListPage = () => {
   };
 
   const handleRowClick = (rewardId) => {
-    navigate(`/rewards/${rewardId}`);
+    navigate(`/admin/rewards/${rewardId}`);
   };
 
   if (loading) return <div>Loading...</div>;

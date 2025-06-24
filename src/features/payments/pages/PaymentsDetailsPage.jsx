@@ -239,7 +239,7 @@ export const PaymentDetailsPage = () => {
       {/* Back Button */}
       <div className='mb-6'>
         <Link
-          to='/payments'
+          to='/admin/payments'
           className='inline-flex items-center text-gray-600 hover:text-gray-900'>
           <ArrowLeft className='h-4 w-4 mr-2' />
           <span>Back to Payments</span>

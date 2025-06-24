@@ -106,7 +106,7 @@ export const RewardDetailsPage = () => {
     <div className='flex-1 overflow-auto'>
       <div className='mb-6'>
         <Link
-          to='/rewards'
+          to='/admin/rewards'
           className='inline-flex items-center text-gray-600 hover:text-gray-900'>
           <ArrowLeft className='h-4 w-4 mr-2' />
           <span>Back</span>

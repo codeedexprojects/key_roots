@@ -138,7 +138,7 @@ export const VendorDetailsPage = () => {
         <div className='bg-white rounded-lg shadow-sm p-8 text-center'>
           <p className='text-gray-500'>Vendor not found.</p>
           <button
-            onClick={() => navigate('/vendors')}
+            onClick={() => navigate('/admin/vendors')}
             className='mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors'>
             Back to Vendors
           </button>
@@ -179,7 +179,7 @@ export const VendorDetailsPage = () => {
 
         {/* Back Button */}
         <Link
-          to='/vendors'
+          to='/admin/vendors'
           className='inline-flex items-center text-gray-600 hover:text-gray-900'>
           <ArrowLeft className='h-4 w-4 mr-2' />
           <span>Go Back</span>
@@ -223,7 +223,7 @@ export const VendorDetailsPage = () => {
         <div className='flex justify-between items-center mb-4'>
           <h2 className='text-lg font-semibold'>Available Buses</h2>
           <Link
-            to={`/vendors/${vendorId}/inventory`}
+            to={`/admin/vendors/${vendorId}/inventory`}
             className='inline-flex items-center text-blue-500 hover:text-blue-700'>
             <span className='text-sm'>See All</span>
             <ChevronRight className='h-4 w-4 ml-1' />
@@ -249,7 +249,7 @@ export const VendorDetailsPage = () => {
                 description="Add buses to this vendor's inventory to get started."
                 actionLabel='Add Bus'
                 onAction={() =>
-                  navigate(`/vendors/${vendorId}/inventory?tab=buses`)
+                  navigate(`/admin/vendors/${vendorId}/inventory?tab=buses`)
                 }
                 icon='bus'
               />
@@ -263,7 +263,7 @@ export const VendorDetailsPage = () => {
         <div className='flex justify-between items-center mb-4'>
           <h2 className='text-lg font-semibold'>Available Packages</h2>
           <Link
-            to={`/vendors/${vendorId}/inventory?tab=packages`}
+            to={`/admin/vendors/${vendorId}/inventory?tab=packages`}
             className='inline-flex items-center text-blue-500 hover:text-blue-700'>
             <span className='text-sm'>See All</span>
             <ChevronRight className='h-4 w-4 ml-1' />
@@ -289,7 +289,7 @@ export const VendorDetailsPage = () => {
                 description="Add buses to this vendor's inventory to get started."
                 actionLabel='Add Bus'
                 onAction={() =>
-                  navigate(`/vendors/${vendorId}/inventory?tab=buses`)
+                  navigate(`/admin/vendors/${vendorId}/inventory?tab=buses`)
                 }
                 icon='bus'
               />

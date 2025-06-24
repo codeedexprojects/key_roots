@@ -184,7 +184,7 @@ export const VendorsListPage = () => {
       <div className='flex justify-between items-center mb-6'>
         <h1 className='text-2xl font-semibold'>All Vendors</h1>
         <Link
-          to='/vendors/create'
+          to='/admin/vendors/create'
           className='inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'>
           <Plus className='h-4 w-4 mr-2' />
           Add Vendor
@@ -352,7 +352,7 @@ export const VendorsListPage = () => {
               <div
                 key={vendor.id}
                 className='bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer relative'
-                onClick={() => navigate(`/vendors/${vendor.id}`)}>
+                onClick={() => navigate(`/admin/vendors/${vendor.id}`)}>
                 {/* Three dots menu */}
                 <button className='absolute top-3 right-3 p-1 hover:bg-gray-100 rounded'>
                   <MoreHorizontal className='h-4 w-4 text-gray-400' />

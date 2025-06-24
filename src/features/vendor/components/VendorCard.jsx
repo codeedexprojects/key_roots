@@ -4,7 +4,7 @@ import { MapPin, Bus, Package, Calendar } from 'lucide-react';
 export const VendorCard = ({ vendor }) => {
   return (
     <Link
-      to={`/vendors/${vendor.id}`}
+      to={`/admin/vendors/${vendor.id}`}
       className='block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden'>
       <div className='p-4'>
         <div className='flex items-center mb-4'>

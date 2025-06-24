@@ -92,7 +92,7 @@ export const VendorCreatePage = () => {
         );
       } else {
         toast.success('The vendor has been created successfully.');
-        navigate('/vendors');
+        navigate('/admin/vendors');
       }
     } catch (error) {
       toast.error(error?.message || 'Something went wrong. Please try again.');
@@ -106,7 +106,7 @@ export const VendorCreatePage = () => {
       {/* Back Button */}
       <div className='mb-6'>
         <Link
-          to='/vendors'
+          to='/admin/vendors'
           className='inline-flex items-center text-gray-600 hover:text-gray-900'>
           <ArrowLeft className='h-4 w-4 mr-2' />
           <span>Back to Vendors</span>
@@ -421,7 +421,7 @@ export const VendorCreatePage = () => {
         <div className='px-6 py-4 bg-gray-50 flex justify-end'>
           <button
             type='button'
-            onClick={() => navigate('/vendors')}
+            onClick={() => navigate('/admin/vendors')}
             className='px-4 py-2 rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 mr-3'>
             Cancel
           </button>

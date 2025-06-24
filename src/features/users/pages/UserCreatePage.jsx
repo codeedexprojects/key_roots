@@ -104,7 +104,7 @@ export const UserCreatePage = () => {
         toast.error(errorMsg);
       } else {
         toast.success('The user has been created successfully.');
-        navigate('/users');
+        navigate('/admin/users');
       }
     } catch (error) {
       toast.error(error?.message || 'Something went wrong. Please try again.');
@@ -118,7 +118,7 @@ export const UserCreatePage = () => {
       {/* Back Button */}
       <div className='mb-6'>
         <Link
-          to='/users'
+          to='/admin/users'
           className='inline-flex items-center text-gray-600 hover:text-gray-900'>
           <ArrowLeft className='h-4 w-4 mr-2' />
           <span>Back to Users</span>
@@ -264,7 +264,7 @@ export const UserCreatePage = () => {
         <div className='px-6 py-4 bg-gray-50 flex justify-end'>
           <button
             type='button'
-            onClick={() => navigate('/users')}
+            onClick={() => navigate('/admin/users')}
             className='px-4 py-2 rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 mr-3'>
             Cancel
           </button>

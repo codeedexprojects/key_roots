@@ -7,8 +7,8 @@ export const PackageCard = ({ pkg, vendorId }) => {
     <Link
       to={
         vendorId
-          ? `/vendors/${vendorId}/packages/${pkg.id}`
-          : `/category/packages/${pkg.id}`
+          ? `/admin/vendors/${vendorId}/packages/${pkg.id}`
+          : `/admin/category/packages/${pkg.id}`
       }
       className='block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden'>
       <div className='h-48 bg-gray-200 overflow-hidden'>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router';
+import { useNavigate } from 'react-router';
 import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { loginAdmin } from '../services/loginService';
@@ -17,7 +17,7 @@ export const LoginPage = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/', { replace: true });
+      navigate('/admin', { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
@@ -46,16 +46,15 @@ export const LoginPage = () => {
     setIsSubmitting(true);
 
     try {
-      console.log(formData);
       const res = await loginAdmin({
         email_or_phone: formData.email,
         password: formData.password,
       });
 
       login(res.access);
-      navigate('/');
+      navigate('/admin');
     } catch (err) {
-      console.log(err);
+      console.log('Error', err);
     } finally {
       setIsSubmitting(false);
     }

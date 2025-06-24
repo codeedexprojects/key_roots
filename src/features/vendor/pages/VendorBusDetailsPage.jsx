@@ -73,7 +73,7 @@ export const VendorBusDetailsPage = () => {
       <div className='bg-white rounded-lg shadow-sm p-8 text-center'>
         <p className='text-gray-500'>Bus not found.</p>
         <Link
-          to={vendorId ? `/vendors/${vendorId}` : '/vendors'}
+          to={vendorId ? `/admin/vendors/${vendorId}` : '/vendors'}
           className='mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors'>
           Back to Vendor
         </Link>
@@ -86,7 +86,7 @@ export const VendorBusDetailsPage = () => {
       {/* Back Button */}
       <div className='mb-6'>
         <Link
-          to={vendorId ? `/vendors/${vendorId}` : '/vendors'}
+          to={vendorId ? `/admin/vendors/${vendorId}` : '/vendors'}
           className='inline-flex items-center text-gray-600 hover:text-gray-900'>
           <ArrowLeft className='h-4 w-4 mr-2' />
           <span>Back to {vendorId ? 'Vendor' : 'Vendors'}</span>

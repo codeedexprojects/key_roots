@@ -20,16 +20,20 @@ import Logo from '../../public/Logo.png';
 import { useAuth } from '@/hooks/useAuth';
 
 const menuItems = [
-  { name: 'Dashboard', icon: Home, to: '/' },
-  { name: 'Users', icon: Users, to: '/users' },
-  { name: 'Vendor', icon: Store, to: '/vendors' },
-  { name: 'Reviews', icon: Star, to: '/reviews' },
-  { name: 'Booking Details', icon: Calendar, to: '/booking' },
-  { name: 'Payments', icon: CreditCard, to: '/payments' },
-  { name: 'Advertisement', icon: MonitorSmartphone, to: '/advertisements' },
-  { name: 'Category', icon: Grid3X3, to: '/category' },
-  { name: 'Reward', icon: Award, to: '/rewards' },
-  { name: 'Pay Out', icon: DollarSign, to: '/payouts' },
+  { name: 'Dashboard', icon: Home, to: '/admin/dashboard' },
+  { name: 'Users', icon: Users, to: '/admin/users' },
+  { name: 'Vendor', icon: Store, to: '/admin/vendors' },
+  { name: 'Reviews', icon: Star, to: '/admin/reviews' },
+  { name: 'Booking Details', icon: Calendar, to: '/admin/booking' },
+  { name: 'Payments', icon: CreditCard, to: '/admin/payments' },
+  {
+    name: 'Advertisement',
+    icon: MonitorSmartphone,
+    to: '/admin/advertisements',
+  },
+  { name: 'Category', icon: Grid3X3, to: '/admin/category' },
+  { name: 'Reward', icon: Award, to: '/admin/rewards' },
+  { name: 'Pay Out', icon: DollarSign, to: '/admin/payouts' },
 ];
 
 export const Sidebar = () => {

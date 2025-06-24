@@ -606,7 +606,7 @@ export function DashboardPage() {
 
           {/* Sticky footer */}
           <Link
-            to='/booking'
+            to='/admin/booking'
             className='mt-4 flex items-center justify-center text-gray-500 text-sm hover:text-primary hover:underline'>
             <span>SEE ALL BOOKINGS</span>
             <ArrowRight className='h-4 w-4 ml-1' />
@@ -677,7 +677,7 @@ export function DashboardPage() {
             </div>
           )}
           <Link
-            to='/vendors'
+            to='/admin/vendors'
             className='mt-4 flex items-center justify-center w-full text-gray-500 text-sm hover:text-primary hover:underline'>
             <span>SEE ALL VENDORS</span>
             <ArrowRight className='h-4 w-4 ml-1' />
@@ -748,7 +748,7 @@ export function DashboardPage() {
             </div>
           )}
           <Link
-            to='/users'
+            to='/admin/users'
             className='mt-4 flex items-center justify-center w-full text-gray-500 text-sm hover:text-primary hover:underline'>
             <span>SEE ALL USERS</span>
             <ArrowRight className='h-4 w-4 ml-1' />
@@ -827,7 +827,7 @@ export function DashboardPage() {
             </div>
           )}
           <Link
-            to='/reviews'
+            to='/admin/reviews'
             className='mt-4 flex items-center justify-center w-full text-gray-500 text-sm hover:text-primary hover:underline'>
             <span>SEE ALL REVIEWS</span>
             <ArrowRight className='h-4 w-4 ml-1' />

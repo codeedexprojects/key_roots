@@ -228,7 +228,7 @@ export const BookingListPage = () => {
                     className='hover:bg-gray-50 cursor-pointer'
                     onClick={() =>
                       navigate(
-                        `/booking/${
+                        `/admin/booking/${
                           booking.id
                         }/${booking.category.toLowerCase()}`
                       )

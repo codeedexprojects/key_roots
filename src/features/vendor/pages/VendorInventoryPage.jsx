@@ -122,7 +122,7 @@ export const VendorInventoryPage = () => {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     navigate(
-      `/vendors/${vendorId}/inventory${
+      `/admin/vendors/${vendorId}/inventory${
         tab === 'packages' ? '?tab=packages' : ''
       }`
     );
@@ -143,7 +143,7 @@ export const VendorInventoryPage = () => {
         description="We couldn't find the vendor you're looking for."
         action={{
           label: 'Back to Vendors',
-          onClick: () => navigate('/vendors'),
+          onClick: () => navigate('/admin/vendors'),
         }}
       />
     );
@@ -160,7 +160,7 @@ export const VendorInventoryPage = () => {
           <p className='text-gray-500'>{vendor.location}</p>
         </div>
         <Link
-          to={`/vendors/${vendorId}`}
+          to={`/admin/vendors/${vendorId}`}
           className='inline-flex items-center text-gray-600 hover:text-gray-900'>
           <ArrowLeft className='h-4 w-4 mr-2' />
           <span>Go Back</span>
@@ -251,7 +251,7 @@ export const VendorInventoryPage = () => {
                     </div>
 
                     <Link
-                      to={`/vendors/${vendorId}/buses/${bus.id}`}
+                      to={`/admin/vendors/${vendorId}/buses/${bus.id}`}
                       className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors inline-block'>
                       View Details
                     </Link>
@@ -327,7 +327,7 @@ export const VendorInventoryPage = () => {
                     </div>
 
                     <Link
-                      to={`/vendors/${vendorId}/packages/${pkg.id}`}
+                      to={`/admin/vendors/${vendorId}/packages/${pkg.id}`}
                       className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors inline-block'>
                       View Details
                     </Link>
