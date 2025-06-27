@@ -1,13 +1,6 @@
-'use client';
-import { Eye, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 
-const PayoutTable = ({
-  payouts,
-  onViewDetails,
-  onExportPayout,
-  isLoading = false,
-  type = 'pending',
-}) => {
+const PendingPayoutTable = ({ payouts, onExportPayout, isLoading = false }) => {
   if (isLoading) {
     return (
       <div className='bg-white rounded-lg shadow-sm border'>
@@ -23,7 +16,7 @@ const PayoutTable = ({
     return (
       <div className='bg-white rounded-lg shadow-sm border'>
         <div className='p-8 text-center'>
-          <p className='text-gray-500'>No {type} payouts found</p>
+          <p className='text-gray-500'>No pending payouts found</p>
         </div>
       </div>
     );
@@ -45,6 +38,9 @@ const PayoutTable = ({
                 Phone number
               </th>
               <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Account number
+              </th>
+              <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 IFSC Code
               </th>
               <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
@@ -59,11 +55,13 @@ const PayoutTable = ({
               <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Category
               </th>
-              {type === 'completed' && (
-                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Completed Date
-                </th>
-              )}
+              <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Total Amount
+              </th>
+              <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Reward
+              </th>
+
               <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Actions
               </th>
@@ -76,73 +74,69 @@ const PayoutTable = ({
                 className='hover:bg-gray-50'>
                 <td className='px-4 py-4 whitespace-nowrap'>
                   <div className='text-sm font-medium text-gray-900'>
-                    {payout.vendorName}
+                    {payout.vendor_name || 'N/A'}
                   </div>
                 </td>
                 <td className='px-4 py-4 whitespace-nowrap'>
-                  <div className='text-sm text-gray-900'>{payout.emailId}</div>
-                </td>
-                <td className='px-4 py-4 whitespace-nowrap'>
                   <div className='text-sm text-gray-900'>
-                    {payout.phoneNumber}
+                    {payout.vendor_email || 'N/A'}
                   </div>
                 </td>
                 <td className='px-4 py-4 whitespace-nowrap'>
-                  <div className='text-sm text-gray-900'>{payout.ifscCode}</div>
+                  <div className='text-sm text-gray-900'>
+                    {payout.vendor_phone || 'N/A'}
+                  </div>
                 </td>
                 <td className='px-4 py-4 whitespace-nowrap'>
                   <div className='text-sm text-gray-900'>
-                    {payout.payoutMode}
+                    {payout.vendor_account_number || 'N/A'}
+                  </div>
+                </td>
+                <td className='px-4 py-4 whitespace-nowrap'>
+                  <div className='text-sm text-gray-900'>
+                    {payout.vendor_ifsc_code || 'N/A'}
+                  </div>
+                </td>
+                <td className='px-4 py-4 whitespace-nowrap'>
+                  <div className='text-sm text-gray-900'>
+                    {payout.payout_mode || 'Account'}
                   </div>
                 </td>
                 <td className='px-4 py-4 whitespace-nowrap'>
                   <div className='text-sm font-medium text-gray-900'>
-                    ₹{payout.payoutAmount?.toLocaleString()}
+                    ₹{payout.amount?.toLocaleString() || 'N/A'}
                   </div>
                 </td>
                 <td className='px-4 py-4 whitespace-nowrap'>
                   <div className='text-sm text-gray-900'>
-                    ₹{payout.adminCommission?.toLocaleString()}
+                    ₹{payout.admin_commission?.toLocaleString() || 'N/A'}
                   </div>
                 </td>
                 <td className='px-4 py-4 whitespace-nowrap'>
                   <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800'>
-                    {payout.category}
+                    {payout.type?.[0].toUpperCase() + payout.type?.slice(1) ||
+                      'N/A'}
                   </span>
                 </td>
-                {type === 'completed' && (
-                  <td className='px-4 py-4 whitespace-nowrap'>
-                    <div className='text-sm text-gray-900'>
-                      {payout.completedDate
-                        ? new Date(payout.completedDate).toLocaleDateString()
-                        : '-'}
-                    </div>
-                  </td>
-                )}
+
+                <td className='px-4 py-4 whitespace-nowrap'>
+                  <div className='text-sm text-gray-900'>
+                    ₹{payout.net_amount || 'N/A'}
+                  </div>
+                </td>
+                <td className='px-4 py-4 whitespace-nowrap'>
+                  <div className='text-sm text-gray-900'>
+                    {payout.rewards || 'N/A'}
+                  </div>
+                </td>
                 <td className='px-4 py-4 whitespace-nowrap text-sm font-medium'>
                   <div className='flex items-center space-x-2'>
                     <button
-                      onClick={() => onViewDetails(payout)}
-                      className='text-blue-600 hover:text-blue-900 p-1 rounded'
-                      title='View Details'>
-                      <Eye className='h-4 w-4' />
+                      onClick={() => onExportPayout(payout)}
+                      className='text-green-600 hover:text-green-900 p-1 rounded'
+                      title='Export to PDF'>
+                      <Download className='h-4 w-4' />
                     </button>
-                    {type === 'pending' && (
-                      <button
-                        onClick={() => onExportPayout(payout)}
-                        className='text-green-600 hover:text-green-900 p-1 rounded'
-                        title='Export to PDF'>
-                        <Download className='h-4 w-4' />
-                      </button>
-                    )}
-                    {type === 'completed' && (
-                      <button
-                        onClick={() => onExportPayout(payout, false)}
-                        className='text-green-600 hover:text-green-900 p-1 rounded'
-                        title='Download PDF'>
-                        <Download className='h-4 w-4' />
-                      </button>
-                    )}
                   </div>
                 </td>
               </tr>
@@ -154,4 +148,4 @@ const PayoutTable = ({
   );
 };
 
-export default PayoutTable;
+export default PendingPayoutTable;
