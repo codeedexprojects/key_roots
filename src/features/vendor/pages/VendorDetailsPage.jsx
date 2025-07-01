@@ -45,7 +45,7 @@ export const VendorDetailsPage = () => {
               vendorData.buses?.[0]?.travels_logo ||
               'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
             contactPerson: vendorData.full_name,
-            phone: '+91 9876543210',
+            phone: vendorData.phone,
             email: vendorData.email_address,
             address: `${vendorData.address || ''}, ${vendorData.city || ''}, ${
               vendorData.state || ''
