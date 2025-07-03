@@ -45,11 +45,15 @@ export const VendorDetailsPage = () => {
               vendorData.buses?.[0]?.travels_logo ||
               'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
             contactPerson: vendorData.full_name,
+<<<<<<< HEAD
             phone: vendorData.phone,
+=======
+            phone: vendorData.phone || 'N/A',
+>>>>>>> 58ece83 (Removed hardcoded number from single vendor details)
             email: vendorData.email_address,
-            address: `${vendorData.address || ''}, ${vendorData.city || ''}, ${
-              vendorData.state || ''
-            } - ${vendorData.pincode || ''}`,
+            address: `${vendorData.address || 'N/A'}, ${
+              vendorData.city || ''
+            }, ${vendorData.state || ''} - ${vendorData.pincode || ''}`,
           };
 
           setVendor(transformedVendor);
