@@ -1,17 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FileText, CheckCircle, Clock } from 'lucide-react';
-import PendingPayoutTable from '../components/PendingPayoutTable';
-
+import { FileText, Clock } from 'lucide-react';
+import PayoutTable from '../components/PayoutTable';
 import { payoutService } from '../services/payoutService';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from 'sonner';
-import CompletedPayoutTable from '../components/CompletedPayoutTable';
 
 const PayoutPage = () => {
-  const [activeTab, setActiveTab] = useState('pending');
-  const [pendingPayouts, setPendingPayouts] = useState([]);
-  const [completedPayouts, setCompletedPayouts] = useState([]);
+  const [payouts, setPayouts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -20,65 +16,114 @@ const PayoutPage = () => {
   const loadPayouts = useCallback(async () => {
     setIsLoading(true);
     try {
-      const pendingRes = await payoutService.getPendingPayouts();
-      if (pendingRes.length) {
-        setPendingPayouts(pendingRes);
-        setTotalPages(1);
-      }
-
-      const completedRes = await payoutService.getCompletedPayouts();
-      if (completedRes.length) {
-        setCompletedPayouts(completedRes);
-        setTotalPages(1);
+      const response = await payoutService.getPayouts(currentPage);
+      if (response.payout_requests?.length) {
+        const mappedPayouts = response.payout_requests.map((payout) => ({
+          id: payout.id,
+          vendor_name: payout.vendor_name,
+          vendor_email: payout.bank_detail.email_id,
+          vendor_phone: payout.bank_detail.phone_number,
+          vendor_id: payout.vendor_travels,
+          vendor_account_number: payout.bank_detail.account_number,
+          vendor_ifsc_code: payout.bank_detail.ifsc_code,
+          payoutMode: payout.bank_detail.payout_mode,
+          amount: payout.request_amount,
+          admin_remarks: payout.admin_remarks || '',
+          type: payout.remarks,
+          booking_id: payout.transaction_id || payout.id,
+          created_at: payout.requested_at,
+          completedDate: payout.processed_at,
+          status: payout.status,
+        }));
+        setPayouts(mappedPayouts);
+        setTotalPages(Math.ceil(response.total_requests / 10));
+      } else {
+        setPayouts([]);
       }
     } catch (error) {
-      toast.error('Error loading pending and completed payouts');
+      toast.error('Error loading payouts');
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [currentPage]);
 
-  // Load data on component mount and tab change
+  // Load data on component mount
   useEffect(() => {
     loadPayouts();
-  }, [activeTab, currentPage, loadPayouts]);
+  }, [currentPage, loadPayouts]);
 
-  // Handle tab change
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    setCurrentPage(1);
+  // Handle export PDF
+  const handleExportPayout = async (payout) => {
+    try {
+      const payoutDetails = await payoutService.getPayoutById(payout.id);
+      if (payoutDetails.error) {
+        toast.error(payoutDetails.message);
+        if (payoutDetails.status === 401) {
+          window.location.href = '/login';
+        }
+        return;
+      }
+      const mappedDetails = {
+        id: payoutDetails.id,
+        vendor_name: payoutDetails.vendor_name,
+        vendor_email: payoutDetails.bank_detail.email_id,
+        vendor_phone: payoutDetails.bank_detail.phone_number,
+        vendor_id: payoutDetails.vendor_travels,
+        vendor_account_number: payoutDetails.bank_detail.account_number,
+        vendor_ifsc_code: payoutDetails.bank_detail.ifsc_code,
+        payoutMode: payoutDetails.bank_detail.payout_mode,
+        amount: payoutDetails.request_amount,
+        admin_remarks: payoutDetails.admin_remarks || '',
+        type: payoutDetails.remarks,
+        booking_id: payoutDetails.transaction_id || payoutDetails.id,
+        created_at: payoutDetails.requested_at,
+        completedDate: payoutDetails.processed_at,
+        status: payoutDetails.status,
+      };
+      await exportSinglePayoutToPDF(mappedDetails);
+      toast.success('PDF exported successfully.');
+    } catch (error) {
+      toast.error('Error exporting payout');
+      console.error(error);
+    }
   };
 
-  const handleMoveToCompleted = async (payout) => {
-    const payload = {
-      vendor_id: payout.vendor_id,
-      payout_mode: 'account',
-      booking_ids: [{ type: payout.type, id: payout.booking_id }],
-    };
-
-    exportSinglePayoutToPDF(payout);
-    const response = await payoutService.markPayoutCompleted(payload);
-    if (Object.entries(response).length) {
-      toast.success('PDF exported successfully and moved to completed.');
+  // Handle status change
+  const handleCompletePayout = async (payoutId, status, admin_remarks) => {
+    try {
+      const response = await payoutService.completePayout(
+        payoutId,
+        status,
+        admin_remarks
+      );
+      if (response.error) {
+        toast.error(response.message);
+        if (response.status === 401) {
+          window.location.href = '/login';
+        }
+        return;
+      }
+      toast.success(`Payout status changed to ${status}.`);
       loadPayouts();
+    } catch (error) {
+      toast.error('Error changing payout status');
+      console.error(error);
     }
   };
 
   // Generate and download PDF for a single payout
   const exportSinglePayoutToPDF = (payout) => {
-    console.log(payout);
     return new Promise((resolve, reject) => {
       try {
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.width;
         const margin = 20;
 
-        // Add title
         doc.setFontSize(20);
         doc.setFont('helvetica', 'bold');
         doc.text('Payout Details Report', margin, 30);
 
-        // Add generation date
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         doc.text(
@@ -87,7 +132,6 @@ const PayoutPage = () => {
           30
         );
 
-        // Vendor Information Section
         let yPosition = 50;
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
@@ -112,7 +156,6 @@ const PayoutPage = () => {
           doc.text(value, margin + 40, yPosition);
         });
 
-        // Payout Information Section
         yPosition += 20;
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
@@ -131,13 +174,8 @@ const PayoutPage = () => {
               ? `${payout.amount.toLocaleString()}`
               : 'Not provided',
           ],
-          [
-            'Admin Commission:',
-            payout.admin_commission
-              ? ` ${payout.admin_commission.toLocaleString()}`
-              : 'Not provided',
-          ],
           ['Category:', payout.type || 'Not provided'],
+          ['Admin Remarks:', payout.admin_remarks || 'Not provided'],
         ];
 
         payoutInfo.forEach(([label, value]) => {
@@ -148,7 +186,6 @@ const PayoutPage = () => {
           doc.text(value, margin + 40, yPosition);
         });
 
-        // Booking Information Section
         yPosition += 20;
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
@@ -183,7 +220,6 @@ const PayoutPage = () => {
           doc.text(value, margin + 40, yPosition);
         });
 
-        // Summary Section
         if (yPosition > 200) {
           doc.addPage();
           yPosition = 30;
@@ -197,23 +233,19 @@ const PayoutPage = () => {
 
         yPosition += 10;
 
-        const totalAmount =
-          (payout.amount || 0) + (payout.admin_commission || 0);
-
         const summaryData = [
-          ['Total Amount', `${totalAmount.toLocaleString()}`],
           [
             'Payout Amount',
             payout.amount ? `${payout.amount.toLocaleString()}` : '0',
           ],
-          [
-            'Admin Commission',
-            payout.admin_commission
-              ? `${payout.admin_commission.toLocaleString()}`
-              : '0',
-          ],
           ['Payment Method', payout.payoutMode || 'Not specified'],
-          ['Status', payout.completedDate ? 'Completed' : 'Pending'],
+          [
+            'Status',
+            payout.status
+              ? payout.status.charAt(0).toUpperCase() + payout.status.slice(1)
+              : 'Pending',
+          ],
+          ['Admin Remarks', payout.admin_remarks || 'None'],
           ['Generated Date', new Date().toLocaleDateString()],
         ];
 
@@ -227,7 +259,6 @@ const PayoutPage = () => {
           styles: { fontSize: 10 },
         });
 
-        // Add footer
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
           doc.setPage(i);
@@ -240,7 +271,6 @@ const PayoutPage = () => {
           );
         }
 
-        // Save the PDF
         const filename = `payout-details-${payout.vendor_name.replace(
           /\s+/g,
           '-'
@@ -257,67 +287,19 @@ const PayoutPage = () => {
     });
   };
 
-  const currentPayouts =
-    activeTab === 'pending' ? pendingPayouts : completedPayouts;
-
   return (
     <div className='min-h-screen bg-gray-50'>
-      {/* Header */}
       <div className='bg-white shadow-sm border-b'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='flex items-center justify-between h-16'>
             <div className='flex items-center'>
-              <h1 className='text-2xl font-semibold text-gray-900'>Pay out</h1>
+              <h1 className='text-2xl font-semibold text-gray-900'>Payouts</h1>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
-        {/* Tabs */}
-        <div className='mb-6'>
-          <div className='border-b border-gray-200'>
-            <nav className='-mb-px flex space-x-8'>
-              <button
-                onClick={() => handleTabChange('pending')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'pending'
-                    ? 'border-red-500 text-red-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}>
-                <div className='flex items-center'>
-                  <Clock className='h-4 w-4 mr-2' />
-                  Pending Payouts
-                  {pendingPayouts.length > 0 && (
-                    <span className='ml-2 bg-red-100 text-red-600 py-0.5 px-2 rounded-full text-xs'>
-                      {pendingPayouts.length}
-                    </span>
-                  )}
-                </div>
-              </button>
-              <button
-                onClick={() => handleTabChange('completed')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'completed'
-                    ? 'border-red-500 text-red-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}>
-                <div className='flex items-center'>
-                  <CheckCircle className='h-4 w-4 mr-2' />
-                  Completed Payouts
-                  {completedPayouts.length > 0 && (
-                    <span className='ml-2 bg-green-100 text-green-600 py-0.5 px-2 rounded-full text-xs'>
-                      {completedPayouts.length}
-                    </span>
-                  )}
-                </div>
-              </button>
-            </nav>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
         <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-6'>
           <div className='bg-white overflow-hidden shadow rounded-lg'>
             <div className='p-5'>
@@ -331,7 +313,11 @@ const PayoutPage = () => {
                       Pending Payouts
                     </dt>
                     <dd className='text-lg font-medium text-gray-900'>
-                      {pendingPayouts.length}
+                      {
+                        payouts.filter((p) =>
+                          ['pending', 'approved'].includes(p.status)
+                        ).length
+                      }
                     </dd>
                   </dl>
                 </div>
@@ -343,7 +329,7 @@ const PayoutPage = () => {
             <div className='p-5'>
               <div className='flex items-center'>
                 <div className='flex-shrink-0'>
-                  <CheckCircle className='h-8 w-8 text-green-400' />
+                  <Clock className='h-8 w-8 text-green-400' />
                 </div>
                 <div className='ml-5 w-0 flex-1'>
                   <dl>
@@ -351,7 +337,7 @@ const PayoutPage = () => {
                       Completed Payouts
                     </dt>
                     <dd className='text-lg font-medium text-gray-900'>
-                      {completedPayouts.length}
+                      {payouts.filter((p) => p.status === 'processed').length}
                     </dd>
                   </dl>
                 </div>
@@ -371,11 +357,11 @@ const PayoutPage = () => {
                       Total Amount Pending
                     </dt>
                     <dd className='text-lg font-medium text-gray-900'>
-                      {pendingPayouts
-                        .reduce(
-                          (sum, payout) => sum + (payout.payoutAmount || 0),
-                          0
+                      {payouts
+                        .filter((p) =>
+                          ['pending', 'approved'].includes(p.status)
                         )
+                        .reduce((sum, payout) => sum + (payout.amount || 0), 0)
                         .toLocaleString()}
                     </dd>
                   </dl>
@@ -385,20 +371,13 @@ const PayoutPage = () => {
           </div>
         </div>
 
-        {activeTab === 'pending' ? (
-          <PendingPayoutTable
-            payouts={currentPayouts}
-            onExportPayout={handleMoveToCompleted}
-            isLoading={isLoading}
-          />
-        ) : (
-          <CompletedPayoutTable
-            payouts={currentPayouts}
-            isLoading={isLoading}
-          />
-        )}
+        <PayoutTable
+          payouts={payouts}
+          onExportPayout={handleExportPayout}
+          onCompletePayout={handleCompletePayout}
+          isLoading={isLoading}
+        />
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className='mt-6 flex items-center justify-between'>
             <div className='flex-1 flex justify-between sm:hidden'>

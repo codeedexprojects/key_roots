@@ -1,42 +1,36 @@
-import { apiRequest } from '../../../lib/apiRequest';
+import { apiRequest } from '@/lib/apiRequest';
 import { axiosInstance } from '@/lib/axiosInstance';
 
 const PAYOUT_ENDPOINTS = {
-  PENDING: '/payout/unpaid-bookings/',
-  COMPLETED: '/payout/history/',
-  MARK_COMPLETED: '/payout/create/',
+  PAYOUTS: '/payout-requests/',
 };
 
 export const payoutService = {
-  // Get pending payouts
-  getPendingPayouts: async () => {
+  // Get all payouts with pagination
+  getPayouts: async (page = 1) => {
     return apiRequest(
-      () => axiosInstance.get(PAYOUT_ENDPOINTS.PENDING),
-      'Error getting pending payouts.'
+      () => axiosInstance.get(`${PAYOUT_ENDPOINTS.PAYOUTS}?page=${page}`),
+      'Error fetching payouts.'
     );
   },
 
-  // Get completed payouts
-  getCompletedPayouts: async () => {
+  // Get payout details by ID (for PDF export)
+  getPayoutById: async (id) => {
     return apiRequest(
-      () => axiosInstance.get(`${PAYOUT_ENDPOINTS.COMPLETED}`),
-      'Error fetching completed payouts.'
+      () => axiosInstance.get(`${PAYOUT_ENDPOINTS.PAYOUTS}${id}/`),
+      `Error fetching payout details for ID ${id}.`
     );
   },
 
-  // Get single payout details
-  getPayoutDetails: async (payoutId) => {
+  // Update payout status and remarks
+  completePayout: async (payoutId, status, admin_remarks) => {
     return apiRequest(
-      () => axiosInstance.get(`${PAYOUT_ENDPOINTS.PENDING}${payoutId}/`),
-      'Error fetching payout details.'
-    );
-  },
-
-  // Mark payout as completed
-  markPayoutCompleted: async (payload) => {
-    return apiRequest(
-      () => axiosInstance.post(`${PAYOUT_ENDPOINTS.MARK_COMPLETED}`, payload),
-      'Error marking payout as completed.'
+      () =>
+        axiosInstance.patch(`${PAYOUT_ENDPOINTS.PAYOUTS}${payoutId}/`, {
+          status,
+          admin_remarks,
+        }),
+      `Error updating payout for ID ${payoutId}.`
     );
   },
 };
