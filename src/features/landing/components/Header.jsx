@@ -80,10 +80,10 @@ export default function Header() {
               About us
             </button>
             <button
-              onClick={() => scrollToSection('privacy')}
+              onClick={() => scrollToSection('contact')}
               className="text-red-600 font-bold text-lg hover:text-red-700 transition-colors px-2 text-left"
             >
-              Privacy policy
+              Contact Us
             </button>
             <button
               onClick={() => scrollToSection('download')}
