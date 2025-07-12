@@ -13,9 +13,10 @@ export const UserCreatePage = () => {
     mobile: '',
     email: '',
     password: '',
+    state: '',
+    district: '',
     role: 'user', // Default role
   });
-
   const [errors, setErrors] = useState({});
 
   const handleInputChange = (e) => {
@@ -41,17 +42,29 @@ export const UserCreatePage = () => {
     if (!formData.name?.trim()) {
       newErrors.name = 'Name is required';
     }
+
     if (!formData.mobile?.trim()) {
       newErrors.mobile = 'Mobile number is required';
     }
+
     if (!formData.email?.trim()) {
       newErrors.email = 'Email is required';
     }
+
     if (!formData.password?.trim()) {
       newErrors.password = 'Password is required';
     }
+
     if (!formData.role?.trim()) {
       newErrors.role = 'Role is required';
+    }
+
+    if (!formData.state?.trim()) {
+      newErrors.state = 'State is required';
+    }
+
+    if (!formData.district?.trim()) {
+      newErrors.district = 'District is required';
     }
 
     // Validate email format
@@ -235,6 +248,54 @@ export const UserCreatePage = () => {
 
               <div>
                 <label
+                  htmlFor='state'
+                  className='block text-sm font-medium text-gray-700 mb-1'>
+                  State *
+                </label>
+                <input
+                  type='state'
+                  id='state'
+                  name='state'
+                  value={formData.state}
+                  onChange={handleInputChange}
+                  className={`w-full px-4 py-2 ${
+                    errors.state
+                      ? 'border border-red-500'
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
+                  placeholder='Enter state'
+                />
+                {errors.state && (
+                  <p className='mt-1 text-sm text-red-500'>{errors.state}</p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor='district'
+                  className='block text-sm font-medium text-gray-700 mb-1'>
+                  District *
+                </label>
+                <input
+                  type='district'
+                  id='district'
+                  name='district'
+                  value={formData.district}
+                  onChange={handleInputChange}
+                  className={`w-full px-4 py-2 ${
+                    errors.district
+                      ? 'border border-red-500'
+                      : 'border border-gray-300 bg-white'
+                  } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}
+                  placeholder='Enter district'
+                />
+                {errors.district && (
+                  <p className='mt-1 text-sm text-red-500'>{errors.district}</p>
+                )}
+              </div>
+
+              <div>
+                <label
                   htmlFor='role'
                   className='block text-sm font-medium text-gray-700 mb-1'>
                   Role *
@@ -250,7 +311,6 @@ export const UserCreatePage = () => {
                       : 'border border-gray-300 bg-white'
                   } rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary`}>
                   <option value='user'>User</option>
-                  <option value='vendor'>Vendor</option>
                 </select>
                 {errors.role && (
                   <p className='mt-1 text-sm text-red-500'>{errors.role}</p>

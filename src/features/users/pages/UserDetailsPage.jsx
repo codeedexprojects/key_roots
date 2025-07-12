@@ -202,7 +202,7 @@ export const UserDetailsPage = () => {
       setIsLoading(true);
       try {
         const response = await getUserById(userId);
-
+        console.log(response);
         if (response && !response.error) {
           // Transform user data
           const userData = {
@@ -346,7 +346,6 @@ export const UserDetailsPage = () => {
                   </div>
                   <div className='mt-2 flex items-baseline'>
                     <p className='text-2xl font-semibold'>{value}</p>
-                    <span className='ml-2 text-xs text-green-500'>+0%</span>
                   </div>
                 </div>
               ))}

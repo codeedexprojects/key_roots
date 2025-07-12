@@ -7,7 +7,7 @@ import {
   ChevronRight,
   MoreHorizontal,
 } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { useNavigate } from 'react-router';
 import { getAllVendors } from '../services/vendorService';
 import { LoadingSpinner, EmptyState } from '@/components/common';
@@ -16,15 +16,18 @@ import { getImageUrl } from '@/lib/getImageUrl';
 
 export const VendorsListPage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => {
+    return Number(searchParams.get('page')) || 1;
+  });
 
   // Filter and sort state
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [filterState, setFilterState] = useState('all');
-  const [filterDistrict, setFilterDistrict] = useState('all'); // New state for district filter
+  const [filterDistrict, setFilterDistrict] = useState('all');
 
   // Data state
   const [vendors, setVendors] = useState([]);
@@ -45,13 +48,15 @@ export const VendorsListPage = () => {
       setLoading(true);
       try {
         const response = await getAllVendors();
+
+        console.log(response);
         if (response && response.data) {
           const transformedVendors = response.data.map((vendor) => ({
             id: vendor.user_id,
             name: vendor.travels_name,
             location: vendor.location || vendor.city,
             state: vendor.state || 'Unknown',
-            district: vendor.district || 'Not specified', // New district field
+            district: vendor.district || 'Not specified',
             busesCount: vendor.bus_count || 0,
             packagesCount: vendor.package_count || 0,
             availableBuses: vendor.buses?.length || 0,
@@ -62,6 +67,7 @@ export const VendorsListPage = () => {
             image:
               vendor.buses?.[0]?.travels_logo ||
               '/placeholder.svg?height=48&width=48',
+            created_at: vendor.created_at || new Date().toISOString(), // Fallback for created_at
           }));
           setVendors(transformedVendors);
 
@@ -146,6 +152,12 @@ export const VendorsListPage = () => {
     if (sortBy === 'status') return a.status.localeCompare(b.status);
     if (sortBy === 'earnings') return b.earnings - a.earnings;
     if (sortBy === 'buses') return b.busesCount - a.busesCount;
+    if (sortBy === 'newest')
+      return new Date(b.created_at) - new Date(a.created_at);
+    if (sortBy === 'bookings')
+      return (b.bookings > 0 ? 1 : 0) - (a.bookings > 0 ? 1 : 0);
+    if (sortBy === 'packages')
+      return (b.packagesCount > 0 ? 1 : 0) - (a.packagesCount > 0 ? 1 : 0);
     return 0;
   });
 
@@ -162,6 +174,7 @@ export const VendorsListPage = () => {
   const paginate = (pageNumber) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
+      setSearchParams({ page: pageNumber });
     }
   };
 
@@ -178,6 +191,22 @@ export const VendorsListPage = () => {
         .filter(Boolean)
     )
   ).sort();
+
+  const maxVisiblePages = 5;
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const startPage = Math.max(
+      1,
+      currentPage - Math.floor(maxVisiblePages / 2)
+    );
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
 
   return (
     <div className='flex flex-col min-h-screen'>
@@ -197,7 +226,7 @@ export const VendorsListPage = () => {
           <LoadingSpinner size='medium' />
         </div>
       ) : error ? (
-        <div className='bg-red-50 border border-red-200 rounded-lg p-6 text-center'>
+        <div className='bg-red-50 border border-gray-200 rounded-lg p-6 text-center'>
           <p className='text-red-600'>{error}</p>
         </div>
       ) : (
@@ -279,11 +308,14 @@ export const VendorsListPage = () => {
                 className='appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md text-sm bg-white'
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}>
-                <option value='name'>Sort by: Newest</option>
+                <option value='name'>Sort by: Name</option>
                 <option value='location'>Sort by: Location</option>
                 <option value='state'>Sort by: State</option>
                 <option value='status'>Sort by: Status</option>
                 <option value='buses'>Sort by: Buses</option>
+                <option value='newest'>Sort by: Newest</option>
+                <option value='bookings'>Sort by: Bookings</option>
+                <option value='packages'>Sort by: Packages</option>
               </select>
               <ChevronDown className='absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none' />
             </div>
@@ -336,7 +368,7 @@ export const VendorsListPage = () => {
             <LoadingSpinner size='medium' />
           </div>
         ) : error ? (
-          <div className='bg-red-50 border border-red-200 rounded-lg p-6 text-center min-h-[300px] flex items-center justify-center'>
+          <div className='bg-red-50 border border-gray-200 rounded-lg p-6 text-center min-h-[300px] flex items-center justify-center'>
             <p className='text-red-600'>{error}</p>
           </div>
         ) : processedVendors.length === 0 ? (
@@ -352,7 +384,9 @@ export const VendorsListPage = () => {
               <div
                 key={vendor.id}
                 className='bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer relative'
-                onClick={() => navigate(`/admin/vendors/${vendor.id}`)}>
+                onClick={() =>
+                  navigate(`/admin/vendors/${vendor.id}?page=${currentPage}`)
+                }>
                 {/* Three dots menu */}
                 <button className='absolute top-3 right-3 p-1 hover:bg-gray-100 rounded'>
                   <MoreHorizontal className='h-4 w-4 text-gray-400' />
@@ -443,48 +477,88 @@ export const VendorsListPage = () => {
 
         {/* Pagination */}
         {processedVendors.length > 0 && (
-          <div className='flex justify-between items-center border-t border-gray-200 px-4 py-3 mt-4'>
-            <p className='text-sm text-gray-700'>
-              Showing {indexOfFirstVendor + 1}–
-              {Math.min(indexOfLastVendor, processedVendors.length)} of{' '}
-              {processedVendors.length} vendors
-            </p>
+          <div className='px-6 py-4 bg-white border-t border-gray-200'>
+            <div className='flex items-center justify-between'>
+              <div className='text-sm text-gray-700'>
+                Showing{' '}
+                <span className='font-medium'>{indexOfFirstVendor + 1}</span> to{' '}
+                <span className='font-medium'>
+                  {Math.min(indexOfLastVendor, processedVendors.length)}
+                </span>{' '}
+                of{' '}
+                <span className='font-medium'>{processedVendors.length}</span>{' '}
+                vendors
+              </div>
 
-            <div className='flex items-center space-x-2'>
-              <button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`p-2 rounded-md ${
-                  currentPage === 1
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}>
-                <ChevronLeft className='h-5 w-5' />
-              </button>
-
-              {[...Array(totalPages)].map((_, i) => (
+              <div className='flex space-x-1'>
                 <button
-                  key={i}
-                  onClick={() => paginate(i + 1)}
-                  className={`px-3 py-1 rounded-md ${
-                    currentPage === i + 1
-                      ? 'bg-blue-500 text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
+                  onClick={() => paginate(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                    currentPage === 1
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : 'text-gray-700 hover:bg-gray-50'
                   }`}>
-                  {i + 1}
+                  <span className='sr-only'>Previous</span>
+                  <ChevronLeft className='h-5 w-5' />
                 </button>
-              ))}
 
-              <button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className={`p-2 rounded-md ${
-                  currentPage === totalPages
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}>
-                <ChevronRight className='h-5 w-5' />
-              </button>
+                {currentPage > Math.floor(maxVisiblePages / 2) + 1 && (
+                  <>
+                    <button
+                      onClick={() => paginate(1)}
+                      className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md'>
+                      1
+                    </button>
+                    {currentPage > Math.floor(maxVisiblePages / 2) + 2 && (
+                      <span className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700'>
+                        ...
+                      </span>
+                    )}
+                  </>
+                )}
+
+                {getPageNumbers().map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => paginate(page)}
+                    className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
+                      currentPage === page
+                        ? 'bg-primary text-white'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    } rounded-md`}>
+                    {page}
+                  </button>
+                ))}
+
+                {currentPage < totalPages - Math.floor(maxVisiblePages / 2) && (
+                  <>
+                    {currentPage <
+                      totalPages - Math.floor(maxVisiblePages / 2) - 1 && (
+                      <span className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700'>
+                        ...
+                      </span>
+                    )}
+                    <button
+                      onClick={() => paginate(totalPages)}
+                      className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md'>
+                      {totalPages}
+                    </button>
+                  </>
+                )}
+
+                <button
+                  onClick={() => paginate(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                    currentPage === totalPages
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}>
+                  <span className='sr-only'>Next</span>
+                  <ChevronRight className='h-5 w-5' />
+                </button>
+              </div>
             </div>
           </div>
         )}

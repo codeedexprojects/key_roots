@@ -30,6 +30,7 @@ const BusDetails = ({ bus, onBack }) => {
       setIsLoading(true);
       try {
         const response = await getBusById(busId);
+        console.log(response);
         if (response && !response.error) {
           setBusDetails({
             ...bus,

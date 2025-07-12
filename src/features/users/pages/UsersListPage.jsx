@@ -16,10 +16,12 @@ export const UsersListPage = () => {
   const navigate = useNavigate();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortBy, setSortBy] = useState('name');
+  const [sortBy, setSortBy] = useState('newest');
   const [filterState, setFilterState] = useState('all');
   const [filterDistrict, setFilterDistrict] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [selectedDate, setSelectedDate] = useState('');
 
   // State for API data
   const [users, setUsers] = useState([]);
@@ -40,7 +42,6 @@ export const UsersListPage = () => {
     setIsLoading(true);
     try {
       const response = await getAllUsers();
-
       if (response && !response.error) {
         setUsers(response.users || []);
         setUserStats({
@@ -68,7 +69,7 @@ export const UsersListPage = () => {
 
   // Reset district filter when state filter or sorting changes
   useEffect(() => {
-    if (filterState === 'all' && sortBy !== 'place') {
+    if (filterState === 'all' && sortBy !== 'state') {
       setFilterDistrict('all');
     }
   }, [filterState, sortBy]);
@@ -114,25 +115,41 @@ export const UsersListPage = () => {
   // Filtering by state
   if (filterState !== 'all') {
     processedUsers = processedUsers.filter(
-      (user) => user.place === filterState
+      (user) => user.state === filterState
     );
   }
 
   // Filtering by district
   if (
     filterDistrict !== 'all' &&
-    (filterState !== 'all' || sortBy === 'place')
+    (filterState !== 'all' || sortBy === 'state')
   ) {
     processedUsers = processedUsers.filter(
       (user) => user.district === filterDistrict
     );
   }
 
+  // Date filtering
+  if (sortBy === 'date' && selectedDate) {
+    const selected = new Date(selectedDate);
+    selected.setHours(0, 0, 0, 0);
+    processedUsers = processedUsers.filter((user) => {
+      if (!user.created_at) return false;
+      const userDate = new Date(user.created_at);
+      userDate.setHours(0, 0, 0, 0);
+      return userDate.toDateString() === selected.toDateString();
+    });
+  }
+
   // Sorting
   processedUsers.sort((a, b) => {
     if (sortBy === 'name') return a.name.localeCompare(b.name);
-    if (sortBy === 'place') return (a.place || '').localeCompare(b.place || '');
+    if (sortBy === 'state') return (a.state || '').localeCompare(b.state || '');
     if (sortBy === 'status') return b.is_active - a.is_active;
+    if (sortBy === 'newest')
+      return new Date(b.created_at) - new Date(a.created_at);
+    if (sortBy === 'oldest')
+      return new Date(a.created_at) - new Date(b.created_at);
     return 0;
   });
 
@@ -142,6 +159,7 @@ export const UsersListPage = () => {
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = processedUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const maxVisiblePages = 5;
 
   const paginate = (pageNumber) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
@@ -149,14 +167,28 @@ export const UsersListPage = () => {
     }
   };
 
-  // Get unique districts for the selected state or all districts if sorted by place
+  const getPageNumbers = () => {
+    const pages = [];
+    const startPage = Math.max(
+      1,
+      currentPage - Math.floor(maxVisiblePages / 2)
+    );
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+
+  // Get unique districts for the selected state or all districts if sorted by state
   const availableDistricts = Array.from(
     new Set(
       users
         .filter((user) =>
           filterState !== 'all'
-            ? user.place === filterState
-            : sortBy === 'place'
+            ? user.state === filterState
+            : sortBy === 'state'
         )
         .map((user) => user.district)
         .filter(Boolean)
@@ -251,10 +283,16 @@ export const UsersListPage = () => {
               <select
                 className='appearance-none pl-4 pr-10 py-2 border rounded-md text-sm'
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}>
+                onChange={(e) => {
+                  setSortBy(e.target.value);
+                  if (e.target.value !== 'date') setSelectedDate('');
+                }}>
                 <option value='name'>Sort by: Name</option>
-                <option value='place'>Sort by: Place</option>
+                <option value='state'>Sort by: State</option>
                 <option value='status'>Sort by: Status</option>
+                <option value='newest'>Sort by: Newest</option>
+                <option value='oldest'>Sort by: Oldest</option>
+                <option value='date'>Sort by: Date</option>
               </select>
 
               {/* State Filter Dropdown */}
@@ -264,7 +302,7 @@ export const UsersListPage = () => {
                 onChange={(e) => setFilterState(e.target.value)}>
                 <option value='all'>Filter by: All States</option>
                 {Array.from(
-                  new Set(users.map((u) => u.place).filter(Boolean))
+                  new Set(users.map((u) => u.state).filter(Boolean))
                 ).map((state) => (
                   <option
                     key={state}
@@ -275,7 +313,7 @@ export const UsersListPage = () => {
               </select>
 
               {/* District Filter Dropdown (Conditional) */}
-              {(filterState !== 'all' || sortBy === 'place') &&
+              {(filterState !== 'all' || sortBy === 'state') &&
                 availableDistricts.length > 0 && (
                   <select
                     className='appearance-none pl-4 pr-10 py-2 border rounded-md text-sm'
@@ -291,6 +329,17 @@ export const UsersListPage = () => {
                     ))}
                   </select>
                 )}
+
+              {sortBy === 'date' && (
+                <div className='relative'>
+                  <input
+                    type='date'
+                    className='pl-4 pr-4 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm'
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -378,8 +427,8 @@ export const UsersListPage = () => {
                     </td>
                     <td
                       className='px-4 py-4 text-sm text-gray-500 truncate w-auto lg:w-36'
-                      title={user.place}>
-                      {user.place || 'Not specified'}
+                      title={user.state}>
+                      {user.state || 'Not specified'}
                     </td>
                     <td
                       className='px-4 py-4 text-sm text-gray-500 truncate w-auto lg:w-36'
@@ -429,48 +478,87 @@ export const UsersListPage = () => {
         )}
 
         {processedUsers.length > 0 && (
-          <div className='flex justify-between items-center border-t border-gray-200 px-4 py-3 mt-4'>
-            <p className='text-sm text-gray-700'>
-              Showing {indexOfFirstUser + 1}–
-              {Math.min(indexOfLastUser, processedUsers.length)} of{' '}
-              {processedUsers.length} users
-            </p>
+          <div className='px-6 py-4 bg-white border-t border-gray-200'>
+            <div className='flex items-center justify-between'>
+              <div className='text-sm text-gray-700'>
+                Showing{' '}
+                <span className='font-medium'>{indexOfFirstUser + 1}</span> to{' '}
+                <span className='font-medium'>
+                  {Math.min(indexOfLastUser, processedUsers.length)}
+                </span>{' '}
+                of <span className='font-medium'>{processedUsers.length}</span>{' '}
+                users
+              </div>
 
-            <div className='flex items-center space-x-2'>
-              <button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`p-2 rounded-md ${
-                  currentPage === 1
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}>
-                <ChevronLeft className='h-5 w-5' />
-              </button>
-
-              {[...Array(totalPages)].map((_, i) => (
+              <div className='flex space-x-1'>
                 <button
-                  key={i}
-                  onClick={() => paginate(i + 1)}
-                  className={`px-3 py-1 rounded-md ${
-                    currentPage === i + 1
-                      ? 'bg-blue-500 text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
+                  onClick={() => paginate(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                    currentPage === 1
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : 'text-gray-700 hover:bg-gray-50'
                   }`}>
-                  {i + 1}
+                  <span className='sr-only'>Previous</span>
+                  <ChevronLeft className='h-5 w-5' />
                 </button>
-              ))}
 
-              <button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className={`p-2 rounded-md ${
-                  currentPage === totalPages
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}>
-                <ChevronRight className='h-5 w-5' />
-              </button>
+                {currentPage > Math.floor(maxVisiblePages / 2) + 1 && (
+                  <>
+                    <button
+                      onClick={() => paginate(1)}
+                      className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md'>
+                      1
+                    </button>
+                    {currentPage > Math.floor(maxVisiblePages / 2) + 2 && (
+                      <span className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700'>
+                        ...
+                      </span>
+                    )}
+                  </>
+                )}
+
+                {getPageNumbers().map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => paginate(page)}
+                    className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
+                      currentPage === page
+                        ? 'bg-primary text-white'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    } rounded-md`}>
+                    {page}
+                  </button>
+                ))}
+
+                {currentPage < totalPages - Math.floor(maxVisiblePages / 2) && (
+                  <>
+                    {currentPage <
+                      totalPages - Math.floor(maxVisiblePages / 2) - 1 && (
+                      <span className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700'>
+                        ...
+                      </span>
+                    )}
+                    <button
+                      onClick={() => paginate(totalPages)}
+                      className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md'>
+                      {totalPages}
+                    </button>
+                  </>
+                )}
+
+                <button
+                  onClick={() => paginate(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`relative inline-flex items-center px-2 py-2 rounded-md text-sm font-medium ${
+                    currentPage === totalPages
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}>
+                  <span className='sr-only'>Next</span>
+                  <ChevronRight className='h-5 w-5' />
+                </button>
+              </div>
             </div>
           </div>
         )}

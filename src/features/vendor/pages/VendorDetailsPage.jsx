@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router';
 import { ArrowLeft, DollarSign, Calendar, ChevronRight } from 'lucide-react';
 import { VendorInfoCard } from '../components/VendorInfoCard';
 import { BusCard } from '../components/BusCard';
@@ -12,6 +12,7 @@ import { MarkedCalender } from '../components/MarkedCalender';
 export const VendorDetailsPage = () => {
   const { vendorId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [vendor, setVendor] = useState(null);
   const [buses, setBuses] = useState([]);
   const [packages, setPackages] = useState([]);
@@ -138,7 +139,10 @@ export const VendorDetailsPage = () => {
         <div className='bg-white rounded-lg shadow-sm p-8 text-center'>
           <p className='text-gray-500'>Vendor not found.</p>
           <button
-            onClick={() => navigate('/admin/vendors')}
+            onClick={() => {
+              const page = searchParams.get('page') || 1;
+              navigate(`/admin/vendors?page=${page}`);
+            }}
             className='mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors'>
             Back to Vendors
           </button>
@@ -162,10 +166,9 @@ export const VendorDetailsPage = () => {
           {showCalendar && (
             <div
               className='fixed inset-0 z-50 flex items-center justify-center bg-black/30'
-              onClick={() => setShowCalendar(false)} // click outside closes
-            >
+              onClick={() => setShowCalendar(false)}>
               <div
-                onClick={(e) => e.stopPropagation()} // prevent close on inside click
+                onClick={(e) => e.stopPropagation()}
                 className='w-full max-w-xl'>
                 <MarkedCalender
                   markedDates={markedDates}
@@ -179,7 +182,7 @@ export const VendorDetailsPage = () => {
 
         {/* Back Button */}
         <Link
-          to='/admin/vendors'
+          to={`/admin/vendors?page=${searchParams.get('page') || 1}`}
           className='inline-flex items-center text-gray-600 hover:text-gray-900'>
           <ArrowLeft className='h-4 w-4 mr-2' />
           <span>Go Back</span>

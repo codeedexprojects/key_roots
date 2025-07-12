@@ -175,11 +175,6 @@ export const PaymentsListPage = () => {
             </select>
             <ChevronDown className='absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none' />
           </div>
-
-          <button className='inline-flex items-center px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50'>
-            <Download className='h-4 w-4 mr-2' />
-            Export PDF
-          </button>
         </div>
       </div>
 
