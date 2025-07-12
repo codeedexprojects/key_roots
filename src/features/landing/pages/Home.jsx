@@ -4,6 +4,7 @@ import KeyrouteHeroSection from '../components/Home/Section1';
 import KeyRouteAboutSection from '../components/Home/Section3';
 import Section4 from '../components/Home/Section4';
 import KeyRouteApp from '../components/Home/Section2';
+import FollowUs from '../components/Home/Section5';
 
 function Home() {
   return (
@@ -20,6 +21,9 @@ function Home() {
       </div>
       <div>
         <Section4></Section4>
+      </div>
+      <div>
+        <FollowUs></FollowUs>
       </div>
     </div>
   );

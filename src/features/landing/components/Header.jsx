@@ -4,8 +4,19 @@ import logo from '../assets/logo.png';
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const scrollToSection = (sectionId) => {
+    setIsMenuOpen(false);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+
   return (
-    <header className="bg-white shadow px-4 py-4 w-full fixed top-0 left-0 z-100">
+    <header className="bg-white shadow px-4 py-4 w-full fixed top-0 left-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo */}
         <div className="flex items-center">
@@ -18,21 +29,25 @@ export default function Header() {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-8">
-          <a
-            href="#about"
+          <button
+            onClick={() => scrollToSection('about')}
             className="text-red-600 font-bold text-lg hover:text-red-700 transition-colors"
           >
             About us
-          </a>
-          <a href="#privacy" className="text-red-600 font-bold text-lg hover:text-red-700 transition-colors">
-            Privacy policy
-          </a>
-          <a
-            href="#download"
+          </button>
+          <button
+            onClick={() => scrollToSection('contact')}
+            className="text-red-600 font-bold text-lg hover:text-red-700 transition-colors"
+          >
+            Contact Us
+          </button>
+
+          <button
+            onClick={() => scrollToSection('download')}
             className="bg-red-600 text-white px-4 py-2 rounded font-medium hover:bg-red-700 transition-colors"
           >
             Download App
-          </a>
+          </button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -58,27 +73,24 @@ export default function Header() {
       {isMenuOpen && (
         <div className="md:hidden mt-4 pt-2 border-t border-gray-200 animate-fade-in">
           <nav className="flex flex-col space-y-4">
-            <a
-              href="#about"
-              className="text-red-600 font-bold text-lg hover:text-red-700 transition-colors px-2"
-              onClick={() => setIsMenuOpen(false)}
+            <button
+              onClick={() => scrollToSection('about')}
+              className="text-red-600 font-bold text-lg hover:text-red-700 transition-colors px-2 text-left"
             >
               About us
-            </a>
-            <a
-              href="#privacy"
-              className="text-red-600 font-bold text-lg hover:text-red-700 transition-colors px-2"
-              onClick={() => setIsMenuOpen(false)}
+            </button>
+            <button
+              onClick={() => scrollToSection('contact')}
+              className="text-red-600 font-bold text-lg hover:text-red-700 transition-colors px-2 text-left"
             >
-              Privacy policy
-            </a>
-            <a
-              href="#download"
+              Contact Us
+            </button>
+            <button
+              onClick={() => scrollToSection('download')}
               className="bg-red-600 text-white px-4 py-2 rounded font-medium hover:bg-red-700 transition-colors text-center mx-2"
-              onClick={() => setIsMenuOpen(false)}
             >
               Download App
-            </a>
+            </button>
           </nav>
         </div>
       )}
