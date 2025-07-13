@@ -8,6 +8,7 @@ import { getVendorById } from '../services/vendorService';
 import { EmptyState } from '@/components/common/EmptyState';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { MarkedCalender } from '../components/MarkedCalender';
+import AddBusForm from '../components/AddBusForm';
 
 export const VendorDetailsPage = () => {
   const { vendorId } = useParams();
@@ -22,6 +23,8 @@ export const VendorDetailsPage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarRef = useRef(null);
+
+  const [showAddBusForm, setShowAddBusForm] = useState(false);
 
   useEffect(() => {
     const fetchVendorDetails = async () => {
@@ -251,13 +254,16 @@ export const VendorDetailsPage = () => {
                 title='No buses added yet'
                 description="Add buses to this vendor's inventory to get started."
                 actionLabel='Add Bus'
-                onAction={() =>
-                  navigate(`/admin/vendors/${vendorId}/inventory?tab=buses`)
-                }
+                onAction={() => setShowAddBusForm(true)}
                 icon='bus'
               />
             )}
           </div>
+          <AddBusForm
+            isOpen={showAddBusForm}
+            onClose={() => setShowAddBusForm(false)}
+            vendorId={vendorId}
+          />
         </div>
       </div>
 

@@ -64,3 +64,27 @@ export const createVendor = async (vendorData) => {
     'Error occurred while creating vendor.'
   );
 };
+
+// Function to get all amenities
+export const getAllAmenities = async () => {
+  return apiRequest(
+    () => axiosInstance.get('/amenities/'),
+    'Error occurred while fetching amenities.'
+  );
+};
+
+// Function to add the bus
+export const addBusToVendor = async (vendorId, busData) => {
+  // Add vendor_id to the FormData
+  busData.append('vendor_id', vendorId);
+
+  return apiRequest(
+    () =>
+      axiosInstance.post('/bus/create/', busData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }),
+    'Error occurred while adding bus to vendor.'
+  );
+};
