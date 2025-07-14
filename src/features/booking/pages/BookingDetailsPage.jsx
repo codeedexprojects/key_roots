@@ -19,8 +19,7 @@ export const BookingDetailsPage = () => {
       setIsLoading(true);
       try {
         const response = await getBookingById(bookingId, bookingType);
-
-        console.log(response);
+        console.log('Booking Details Response:', response);
 
         if (!response.error) {
           setBooking(response);
@@ -57,12 +56,23 @@ export const BookingDetailsPage = () => {
           }`
         : 'Unknown';
 
-    // Format the travel date
-    const travelDate = booking.start_date
+    // Format the travel date (Journey Date)
+    const journeyDate = booking.start_date
       ? new Date(booking.start_date).toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'long',
           day: 'numeric',
+        })
+      : 'N/A';
+
+    // Format the booking date (created_at)
+    const bookingDate = booking.created_at
+      ? new Date(booking.created_at).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
         })
       : 'N/A';
 
@@ -80,21 +90,21 @@ export const BookingDetailsPage = () => {
         ? booking.travelers[0].mobile
         : 'N/A';
 
-    // Format payment details
+    // Format payment details using direct values from API
     const payment = {
       baseFare: booking.total_amount
-        ? `₹${parseFloat(booking.total_amount).toLocaleString('en-IN')}`
-        : '₹0',
-      taxes: '₹0', // Not provided in the API response
+        ? `₹${parseFloat(booking.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : '₹0.00',
+      taxes: '₹0.00', // Not provided in the API response
       total: booking.total_amount
-        ? `₹${parseFloat(booking.total_amount).toLocaleString('en-IN')}`
-        : '₹0',
+        ? `₹${parseFloat(booking.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : '₹0.00',
       amountPaid: booking.advance_amount
-        ? `₹${parseFloat(booking.advance_amount).toLocaleString('en-IN')}`
-        : '₹0',
+        ? `₹${parseFloat(booking.advance_amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : '₹0.00',
       amountToBePaid: booking.balance_amount
-        ? `₹${parseFloat(booking.balance_amount).toLocaleString('en-IN')}`
-        : '₹0',
+        ? `₹${parseFloat(booking.balance_amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : '₹0.00',
     };
 
     // Get trip name based on booking type
@@ -111,7 +121,8 @@ export const BookingDetailsPage = () => {
       id: booking.id.toString(),
       customerName: `${travelerName} & ${booking.total_travelers || 0} members`,
       tripName,
-      travelDate,
+      journeyDate,
+      bookingDate,
       place: tripLocation,
       phone,
       payment,
@@ -197,22 +208,27 @@ export const BookingDetailsPage = () => {
               <div>
                 <div className='space-y-4'>
                   <div>
-                    <p className='text-sm text-gray-500'>Your Booking Id</p>
+                    <p className='text-sm text-gray-500'>Booking ID</p>
                     <p className='font-medium'>{formattedBooking.id}</p>
                   </div>
 
                   <div>
-                    <p className='text-sm text-gray-500'>Travel date</p>
-                    <p className='font-medium'>{formattedBooking.travelDate}</p>
+                    <p className='text-sm text-gray-500'>Booking Date</p>
+                    <p className='font-medium'>{formattedBooking.bookingDate}</p>
                   </div>
 
                   <div>
-                    <p className='text-sm text-gray-500'>Place</p>
+                    <p className='text-sm text-gray-500'>Journey Date</p>
+                    <p className='font-medium'>{formattedBooking.journeyDate}</p>
+                  </div>
+
+                  <div>
+                    <p className='text-sm text-gray-500'>Route</p>
                     <p className='font-medium'>{formattedBooking.place}</p>
                   </div>
 
                   <div>
-                    <p className='text-sm text-gray-500'>Phone</p>
+                    <p className='text-sm text-gray-500'>Contact Number</p>
                     <p className='font-medium'>{formattedBooking.phone}</p>
                   </div>
 
@@ -253,7 +269,7 @@ export const BookingDetailsPage = () => {
 
               {/* Payment Details */}
               <div>
-                <h2 className='text-lg font-semibold mb-4'>Payment Detail</h2>
+                <h2 className='text-lg font-semibold mb-4'>Payment Details</h2>
 
                 <div className='space-y-3'>
                   <div className='flex justify-between items-center'>
@@ -271,22 +287,22 @@ export const BookingDetailsPage = () => {
                   </div>
 
                   <div className='flex justify-between items-center pt-2 border-t'>
-                    <p className='text-gray-600 font-semibold'>Total</p>
+                    <p className='text-gray-600 font-semibold'>Total Amount</p>
                     <p className='font-semibold text-red-600'>
                       {formattedBooking.payment.total}
                     </p>
                   </div>
 
                   <div className='flex justify-between items-center'>
-                    <p className='text-gray-600'>Amount paid</p>
-                    <p className='font-medium'>
+                    <p className='text-gray-600'>Advance Paid</p>
+                    <p className='font-medium text-green-600'>
                       {formattedBooking.payment.amountPaid}
                     </p>
                   </div>
 
                   <div className='flex justify-between items-center pt-2 border-t'>
                     <p className='text-gray-600 font-semibold'>
-                      Amount to be paid
+                      Balance Amount
                     </p>
                     <p className='font-semibold text-red-600'>
                       {formattedBooking.payment.amountToBePaid}

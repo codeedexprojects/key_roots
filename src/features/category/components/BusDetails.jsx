@@ -110,7 +110,7 @@ const BusDetails = ({ bus, onBack }) => {
       <div className='p-5'>
         {/* Enhanced Image Gallery */}
         <div className='mb-6'>
-          <div className='w-full h-72 rounded-lg overflow-hidden mb-4 relative'>
+          <div className='w-full h-110 rounded-lg overflow-hidden mb-4 relative'>
             <img
               src={
                 allImages[activeImageIndex] ||
@@ -118,7 +118,7 @@ const BusDetails = ({ bus, onBack }) => {
                 '/placeholder.svg'
               }
               alt={busDetails.bus_name || busDetails.title}
-              className='w-full h-full object-cover'
+              className='w-full h-full '
             />
             {busDetails.isPopular && (
               <div className='absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium'>

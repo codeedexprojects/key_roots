@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Filter, Settings } from 'lucide-react';
+import { Search, Filter, Settings, ChevronDown } from 'lucide-react';
 import AmenitiesModal from '../components/AmenetiesModal';
 
 const BusSearch = ({
@@ -8,9 +8,12 @@ const BusSearch = ({
   searchFields,
   setSearchFields,
   busCount,
+  sortOption,
+  setSortOption,
 }) => {
   const [showFilters, setShowFilters] = useState(false);
   const [showAmenities, setShowAmenities] = useState(false);
+  const [showSortOptions, setShowSortOptions] = useState(false);
 
   const handleFieldToggle = (field) => {
     setSearchFields((prev) => ({
@@ -27,6 +30,14 @@ const BusSearch = ({
     { key: 'capacity', label: 'Capacity' },
     { key: 'status', label: 'Status' },
   ];
+
+const sortOptions = [
+  { value: 'new', label: 'New Buses' },
+  { value: 'joining-date', label: 'Joining Date' },
+  { value: 'state', label: 'State' },
+  { value: 'district', label: 'District' },
+  { value: 'contact', label: 'Contact Number' },
+];
 
   return (
     <>
@@ -48,20 +59,55 @@ const BusSearch = ({
 
           {/* Action Buttons */}
           <div className='flex gap-3'>
+            {/* Sort Dropdown */}
+            <div className='relative'>
+              <button
+                onClick={() => setShowSortOptions(!showSortOptions)}
+                className='flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors'
+              >
+                <span>Sort</span>
+                <ChevronDown className='h-4 w-4' />
+              </button>
+              {showSortOptions && (
+                <div className='absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10 border border-gray-200'>
+                  <div className='py-1'>
+                    {sortOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setSortOption(option.value);
+                          setShowSortOptions(false);
+                        }}
+                        className={`block w-full text-left px-4 py-2 text-sm ${
+                          sortOption === option.value
+                            ? 'bg-red-50 text-red-700'
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
                 showFilters
                   ? 'bg-red-50 border-red-200 text-red-700'
                   : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-              }`}>
+              }`}
+            >
               <Filter className='h-4 w-4' />
               Filters
             </button>
 
             <button
               onClick={() => setShowAmenities(true)}
-              className='flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors'>
+              className='flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors'
+            >
               <Settings className='h-4 w-4' />
               Amenities
             </button>
@@ -78,7 +124,8 @@ const BusSearch = ({
               {searchFieldOptions.map(({ key, label }) => (
                 <label
                   key={key}
-                  className='flex items-center gap-2 cursor-pointer'>
+                  className='flex items-center gap-2 cursor-pointer'
+                >
                   <input
                     type='checkbox'
                     checked={searchFields[key] || false}
@@ -93,11 +140,14 @@ const BusSearch = ({
         )}
 
         {/* Results Count */}
-        {searchQuery && (
+        {(searchQuery || sortOption !== 'newest') && (
           <div className='mt-3 pt-3 border-t border-gray-200'>
             <p className='text-sm text-gray-600'>
               Found <span className='font-medium'>{busCount}</span> buses
               {searchQuery && <span> matching {searchQuery}</span>}
+              {sortOption !== 'newest' && (
+                <span>, sorted by {sortOptions.find(o => o.value === sortOption)?.label.toLowerCase()}</span>
+              )}
             </p>
           </div>
         )}

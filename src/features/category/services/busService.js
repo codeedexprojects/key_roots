@@ -78,45 +78,80 @@ export const deleteAmenity = async (amenityId) => {
 export const transformBusData = (buses) => {
   if (!Array.isArray(buses)) return [];
 
-  return buses.map((bus) => ({
-    id: bus.id,
-    title: bus.bus_name || 'Unknown Bus',
-    vehicleNo: bus.bus_number || 'N/A',
-    busType: bus.bus_type || 'Standard',
-    capacity: bus.capacity || 0,
-    contactNumber: 'N/A', // Not provided in API response
-    image: bus.images?.[0]?.bus_view_image || bus.travels_logo || null,
-    seats: bus.capacity || 0, // Using capacity as seats
-    basePrice: Number.parseFloat(bus.base_price || 0),
-    pricePerKm: Number.parseFloat(bus.price_per_km || 0),
-    minimumFare: Number.parseFloat(bus.minimum_fare || 0),
-    rcNumber: bus.vehicle_rc_number || 'N/A',
-    description: bus.vehicle_description || 'No description available',
-    status: bus.status || 'available',
-    location: bus.location || 'N/A',
-    latitude: bus.latitude || 0,
-    longitude: bus.longitude || 0,
-    isPopular: bus.is_popular || false,
-    averageRating: bus.average_rating || 0,
-    totalReviews: bus.total_reviews || 0,
-    vendor: bus.vendor,
-    // Transform amenities array to object format
-    amenities: transformAmenities(bus.amenities || [], bus.features || []),
-    // Document URLs
-    documents: {
-      travels_logo: bus.travels_logo,
-      rc_certificate: bus.rc_certificate,
-      license: bus.license,
-      contract_carriage_permit: bus.contract_carriage_permit,
-      passenger_insurance: bus.passenger_insurance,
-      vehicle_insurance: bus.vehicle_insurance,
-    },
-    // Raw data for detailed view
-    rawAmenities: bus.amenities || [],
-    rawFeatures: bus.features || [],
-    rawImages: bus.images || [],
-  }));
+  return buses.map((bus) => {
+    // Extract state and district from location string (e.g., "7QFJ+22C, Kozhikode")
+    const [districtRaw, stateRaw] = bus.location?.split(',')?.map(s => s.trim()) || [];
+    const district = districtRaw || 'Unknown District';
+    const state = stateRaw || 'Unknown State';
+
+    return {
+      // Core identification
+      id: bus.id,
+      title: bus.bus_name || 'Unknown Bus',
+      vehicleNo: bus.bus_number || 'N/A',
+      
+      // Sorting-related fields
+      isNew: !bus.id || bus.id > 1000, // Example logic for "new" buses
+      joiningDate: bus.created_at || new Date().toISOString(), // Fallback to current date
+      state,
+      district,
+      contactNumber: bus.vendor_contact || 'N/A', // Will need API update for real data
+      
+      // Bus specifications
+      busType: bus.bus_type || 'Standard',
+      capacity: bus.capacity || 0,
+      seats: bus.capacity || 0,
+      description: bus.vehicle_description || 'No description available',
+      status: bus.status || 'available',
+      
+      // Pricing
+      basePrice: Number.parseFloat(bus.base_price || 0),
+      pricePerKm: Number.parseFloat(bus.price_per_km || 0),
+      minimumFare: Number.parseFloat(bus.minimum_fare || 0),
+      
+      // Location
+      location: bus.location || 'N/A',
+      latitude: bus.latitude || 0,
+      longitude: bus.longitude || 0,
+      
+      // Ratings
+      isPopular: bus.is_popular || false,
+      averageRating: bus.average_rating || 0,
+      totalReviews: bus.total_reviews || 0,
+      
+      // Media
+      image: bus.images?.[0]?.bus_view_image || bus.travels_logo || null,
+      documents: {
+        travels_logo: bus.travels_logo,
+        rc_certificate: bus.rc_certificate,
+        license: bus.license,
+        contract_carriage_permit: bus.contract_carriage_permit,
+        passenger_insurance: bus.passenger_insurance,
+        vehicle_insurance: bus.vehicle_insurance,
+      },
+      
+      // Raw data preservation
+      rawAmenities: bus.amenities || [],
+      rawFeatures: bus.features || [],
+      rawImages: bus.images || [],
+      vendor: bus.vendor,
+      
+      // Transformed amenities
+      amenities: transformAmenities(bus.amenities || [], bus.features || [])
+    };
+  });
 };
+
+// Helper function to extract state/district more robustly
+function extractLocationParts(location) {
+  if (!location) return { district: 'Unknown', state: 'Unknown' };
+  
+  const parts = location.split(',').map(part => part.trim());
+  return {
+    district: parts[0] || 'Unknown District',
+    state: parts[1] || 'Unknown State'
+  };
+}
 
 const transformAmenities = (amenities, features) => {
   const amenityNames = amenities.map((a) => a.name?.toLowerCase());
