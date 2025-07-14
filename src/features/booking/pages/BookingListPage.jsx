@@ -35,6 +35,7 @@ export const BookingListPage = () => {
       setIsLoading(true);
       try {
         const response = await getAllBookings();
+        
 
         if (!response.error) {
           const formattedBookings = formatBookingsForDisplay(response);

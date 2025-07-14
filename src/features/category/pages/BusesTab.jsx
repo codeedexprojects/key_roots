@@ -15,6 +15,7 @@ const BusesTab = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedBus, setSelectedBus] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortOption, setSortOption] = useState('newest');
   const [searchFields, setSearchFields] = useState({
     name: true,
     number: true,
@@ -29,8 +30,9 @@ const BusesTab = () => {
     setIsLoading(true);
     try {
       const response = await getAllBuses();
+      console.log('Fetched buses:', response);
+      
       if (response && !response.error) {
-        // Handle direct array response or response with data field
         const data = Array.isArray(response) ? response : response.data || [];
         const transformedBuses = transformBusData(data);
         setBusesData(transformedBuses);
@@ -47,6 +49,43 @@ const BusesTab = () => {
     }
   };
 
+ const sortBuses = (buses, option) => {
+  const sortedBuses = [...buses];
+  
+  switch (option) {
+    case 'new':
+      // Sort by newest (assuming newer buses have higher IDs or a `createdAt` field)
+      return sortedBuses.sort((a, b) => b.id - a.id);
+    
+    case 'joining-date':
+      // Sort by joining date (requires `joiningDate` in API response)
+      return sortedBuses.sort((a, b) => 
+        new Date(b.joiningDate) - new Date(a.joiningDate)
+      );
+    
+    case 'state':
+      // Sort alphabetically by state
+      return sortedBuses.sort((a, b) => 
+        (a.state || '').localeCompare(b.state || '')
+      );
+    
+    case 'district':
+      // Sort alphabetically by district
+      return sortedBuses.sort((a, b) => 
+        (a.district || '').localeCompare(b.district || '')
+      );
+    
+    case 'contact':
+      // Sort by contact number (assuming `contactNumber` is a string)
+      return sortedBuses.sort((a, b) => 
+        (a.contactNumber || '').localeCompare(b.contactNumber || '')
+      );
+    
+    default:
+      return sortedBuses;
+  }
+};
+
   const handleBusClick = (bus) => {
     setSelectedBus(bus);
   };
@@ -56,7 +95,6 @@ const BusesTab = () => {
   };
 
   const handlePopularityToggle = (busId, newPopularityStatus) => {
-    // Update the bus in the local state
     setBusesData((prevBuses) =>
       prevBuses.map((bus) =>
         bus.id === busId ? { ...bus, isPopular: newPopularityStatus } : bus
@@ -64,8 +102,9 @@ const BusesTab = () => {
     );
   };
 
-  // Filter buses based on search query
+  // Filter and sort buses
   const filteredBuses = filterBuses(busesData, searchQuery, searchFields);
+  const sortedBuses = sortBuses(filteredBuses, sortOption);
 
   return (
     <div className='w-full'>
@@ -82,7 +121,9 @@ const BusesTab = () => {
               setSearchQuery={setSearchQuery}
               searchFields={searchFields}
               setSearchFields={setSearchFields}
-              busCount={filteredBuses.length}
+              busCount={sortedBuses.length}
+              sortOption={sortOption}
+              setSortOption={setSortOption}
             />
           )}
 
@@ -97,7 +138,7 @@ const BusesTab = () => {
               actionLabel='Refresh'
               onAction={loadBuses}
             />
-          ) : filteredBuses.length === 0 ? (
+          ) : sortedBuses.length === 0 ? (
             <EmptyState
               title='No matching buses'
               description={`No buses match your search for "${searchQuery}". Try different keywords or filters.`}
@@ -106,7 +147,7 @@ const BusesTab = () => {
             />
           ) : (
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-5'>
-              {filteredBuses.map((bus) => (
+              {sortedBuses.map((bus) => (
                 <BusCard
                   key={bus.id}
                   bus={bus}
