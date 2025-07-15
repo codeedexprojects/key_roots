@@ -1,9 +1,23 @@
 import { getImageUrl } from '@/lib/getImageUrl';
-import { Users, FileText } from 'lucide-react';
+import { Users, FileText, EditIcon } from 'lucide-react';
 import { Link } from 'react-router';
 
-export const BusCard = ({ bus, vendorId }) => {
+export const BusCard = ({ bus, vendorId, onEdit }) => {
   return (
+     <div className="relative block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
+      {onEdit && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onEdit(bus);
+          }}
+          className="absolute top-2 right-2 z-10 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"
+          aria-label="Edit bus"
+        >
+          <EditIcon className="w-4 h-4" />
+        </button>
+      )}
     <Link
       to={
         vendorId
@@ -12,6 +26,7 @@ export const BusCard = ({ bus, vendorId }) => {
       }
       className='block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden'>
       <div className='h-48 bg-gray-200 overflow-hidden'>
+        
         <img
           src={
             getImageUrl(bus.image) ||
@@ -52,6 +67,9 @@ export const BusCard = ({ bus, vendorId }) => {
           </div>
         </div>
       </div>
+      
     </Link>
+    </div>
+    
   );
 };

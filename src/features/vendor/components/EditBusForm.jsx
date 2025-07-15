@@ -10,16 +10,17 @@ import {
   Settings,
   Bus,
 } from "lucide-react";
-import { addBusToVendor, getAllAmenities } from "../services/vendorService";
+import { editBusById, getAllAmenities, getBusDetails } from "../services/vendorService";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
 
-const AddBusForm = ({ isOpen, onClose, vendorId }) => {
+const EditBusForm = ({ isOpen, onClose, bus, vendorId, onBusUpdated }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availableAmenities, setAvailableAmenities] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     // Basic Information
     bus_name: "",
@@ -58,6 +59,8 @@ const AddBusForm = ({ isOpen, onClose, vendorId }) => {
 
   const [imagePreviews, setImagePreviews] = useState([]);
   const [documentPreviews, setDocumentPreviews] = useState({});
+  
+  // Initialize leaflet icon
   delete L.Icon.Default.prototype._getIconUrl;
   L.Icon.Default.mergeOptions({
     iconRetinaUrl:
@@ -67,10 +70,10 @@ const AddBusForm = ({ isOpen, onClose, vendorId }) => {
     shadowUrl:
       "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
   });
+
   function LocationMarker() {
     const map = useMapEvents({
       click(e) {
-        // Only update coordinates when clicking the map
         setFormData((prev) => ({
           ...prev,
           latitude: e.latlng.lat,
@@ -97,7 +100,6 @@ const AddBusForm = ({ isOpen, onClose, vendorId }) => {
             ...prev,
             latitude: lat,
             longitude: lng,
-            // Update location with the full address from search
             location: label,
           }));
         }
@@ -109,10 +111,106 @@ const AddBusForm = ({ isOpen, onClose, vendorId }) => {
   }, [formData.location]);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && bus) {
       loadAmenities();
+      initializeFormData();
     }
-  }, [isOpen]);
+  }, [isOpen, bus]);
+  
+  useEffect(() => {
+    if (isOpen && bus) {
+      loadAmenities();
+      fetchBusData();
+    }
+  }, [isOpen, bus]);
+    const fetchBusData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getBusDetails(bus.id);
+      console.log(response);
+      
+
+      if (response) {
+        const data = response;
+        initializeFormData(data);
+        
+        // Set document previews
+        const docFields = {
+          'travels_logo': data.travels_logo,
+          'rc_certificate': data.rc_certificate,
+          'license': data.license,
+          'contract_carriage_permit': data.contract_carriage_permit,
+          'passenger_insurance': data.passenger_insurance,
+          'vehicle_insurance': data.vehicle_insurance
+        };
+        
+        const newDocPreviews = {};
+        Object.entries(docFields).forEach(([field, value]) => {
+          if (value) {
+            newDocPreviews[field] = value;
+          }
+        });
+        setDocumentPreviews(newDocPreviews);
+      }
+    } catch (error) {
+      console.error('Error fetching bus details:', error);
+      toast.error('Failed to load bus details');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+const initializeFormData = (data = bus) => {
+  // Transform the bus data to match the form structure
+  const transformedBus = {
+    bus_name: data.bus_name || "",
+    bus_number: data.bus_number || "",
+    bus_type: data.bus_type ||  "",
+    capacity: data.capacity || "",
+    vehicle_description: data.vehicle_description || "",
+    status: data.status || "available",
+    is_popular: data.is_popular || false,
+    base_price: data.base_price || "",
+    base_price_km: data.base_price_km || "",
+    price_per_km: data.price_per_km || "",
+    night_allowance: data.night_allowance || "",
+    minimum_fare: data.minimum_fare || "",
+    location: data.location || "",
+    latitude: data.latitude || "",
+    longitude: data.longitude || "",
+    travels_logo: data.travels_logo || null,
+    rc_certificate: data.rc_certificate || null,
+    license: data.license || null,
+    contract_carriage_permit: data.contract_carriage_permit || null,
+    passenger_insurance: data.passenger_insurance || null,
+    vehicle_insurance: data.vehicle_insurance || null,
+    bus_images: data.images?.map(img => img.bus_view_image) || [],
+    amenities: data.amenities?.map(amenity => amenity.id) || [],
+    features: data.features?.map(feature => feature.id) || [],
+  };
+
+  setFormData(transformedBus);
+
+  // Set image previews
+  if (data.images && data.images.length > 0) {
+    setImagePreviews(data.images.map(img => img.bus_view_image));
+  }
+
+  // Set document previews if available
+  const docFields = [
+    'travels_logo', 'rc_certificate', 'license', 
+    'contract_carriage_permit', 'passenger_insurance', 'vehicle_insurance'
+  ];
+  
+  const newDocPreviews = {};
+  docFields.forEach(field => {
+    if (data[field]) {
+      newDocPreviews[field] = data[field];
+    }
+  });
+  setDocumentPreviews(newDocPreviews);
+};
 
   const loadAmenities = async () => {
     try {
@@ -197,6 +295,7 @@ const AddBusForm = ({ isOpen, onClose, vendorId }) => {
         : [...prev.amenities, amenityId],
     }));
   };
+
   const FEATURE_MAPPING = {
     AC: 3,
     Pushback: 4,
@@ -208,8 +307,8 @@ const AddBusForm = ({ isOpen, onClose, vendorId }) => {
     setFormData((prev) => ({
       ...prev,
       features: prev.features.includes(featureId)
-        ? prev.features.filter((id) => id !== featureId) // Remove if exists
-        : [...prev.features, featureId], // Add the numeric ID
+        ? prev.features.filter((id) => id !== featureId)
+        : [...prev.features, featureId],
     }));
   };
 
@@ -221,7 +320,7 @@ const AddBusForm = ({ isOpen, onClose, vendorId }) => {
       // Create FormData for file upload
       const submitData = new FormData();
 
-      // Add basic fields (excluding arrays and files)
+      // Add basic fields
       const basicFields = [
         "bus_name",
         "bus_number",
@@ -246,7 +345,7 @@ const AddBusForm = ({ isOpen, onClose, vendorId }) => {
         }
       });
 
-      // Add document files
+      // Add document files if they are new files
       const documentFields = [
         "travels_logo",
         "rc_certificate",
@@ -257,14 +356,16 @@ const AddBusForm = ({ isOpen, onClose, vendorId }) => {
       ];
 
       documentFields.forEach((field) => {
-        if (formData[field]) {
+        if (formData[field] && formData[field] instanceof File) {
           submitData.append(field, formData[field]);
         }
       });
 
-      // Add bus images array
-      formData.bus_images.forEach((image, index) => {
-        submitData.append(`bus_images`, image);
+      // Add bus images array (only new images)
+      formData.bus_images.forEach((image) => {
+        if (image instanceof File) {
+          submitData.append(`bus_images`, image);
+        }
       });
 
       // Add amenities array
@@ -276,71 +377,23 @@ const AddBusForm = ({ isOpen, onClose, vendorId }) => {
       formData.features.forEach((featureId) => {
         submitData.append("features", featureId);
       });
-      console.log(
-        "Features before submit:",
-        formData.features,
-        typeof formData.features[0]
-      );
-      const response = await addBusToVendor(vendorId, submitData);
+
+      const response = await editBusById(bus.id, submitData);
 
       if (response && !response.error) {
-        toast.success("Bus added successfully!");
+        toast.success("Bus updated successfully!");
+        onBusUpdated(response.data);
         onClose();
-        resetForm();
       } else {
-        toast.error(response?.message || "Failed to add bus");
+        toast.error(response?.message || "Failed to update bus");
       }
     } catch (error) {
-      console.error("Error adding bus:", error);
-      toast.error("Failed to add bus. Please try again.");
+      console.error("Error updating bus:", error);
+      toast.error("Failed to update bus. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const resetForm = () => {
-    setFormData({
-      bus_name: "",
-      bus_number: "",
-      bus_type: "",
-      capacity: "",
-      vehicle_description: "",
-      status: "available",
-      is_popular: false,
-      base_price: "",
-      base_price_km: "",
-      price_per_km: "",
-      night_allowance: "",
-      minimum_fare: "",
-      location: "",
-      latitude: "",
-      longitude: "",
-      travels_logo: null,
-      rc_certificate: null,
-      license: null,
-      contract_carriage_permit: null,
-      passenger_insurance: null,
-      vehicle_insurance: null,
-      bus_images: [],
-      amenities: [],
-      features: [],
-    });
-    setImagePreviews([]);
-    setDocumentPreviews({});
-  };
-
-  const commonFeatures = [
-    "AC",
-    "WiFi",
-    "Charging Points",
-    "CCTV",
-    "Music System",
-    "GPS Tracking",
-    "Push Back Seats",
-    "Reading Light",
-    "Emergency Exit",
-    "Fire Extinguisher",
-  ];
 
   if (!isOpen) return null;
 
@@ -351,7 +404,7 @@ const AddBusForm = ({ isOpen, onClose, vendorId }) => {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center">
             <Bus className="w-6 h-6 text-red-500 mr-2" />
-            <h2 className="text-2xl font-bold text-gray-800">Add New Bus</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Edit Bus</h2>
           </div>
           <button
             onClick={onClose}
@@ -664,7 +717,7 @@ const AddBusForm = ({ isOpen, onClose, vendorId }) => {
                   {imagePreviews.map((preview, index) => (
                     <div key={index} className="relative">
                       <img
-                        src={preview || "/placeholder.svg"}
+                        src={preview}
                         alt={`Bus image ${index + 1}`}
                         className="w-full h-24 object-cover rounded-lg"
                       />
@@ -713,7 +766,7 @@ const AddBusForm = ({ isOpen, onClose, vendorId }) => {
                   {documentPreviews[key] && (
                     <div className="mt-2">
                       <img
-                        src={documentPreviews[key] || "/placeholder.svg"}
+                        src={documentPreviews[key]}
                         alt={label}
                         className="w-20 h-20 object-cover rounded border"
                       />
@@ -787,7 +840,7 @@ const AddBusForm = ({ isOpen, onClose, vendorId }) => {
               className="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors disabled:opacity-50"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Adding Bus..." : "Add Bus"}
+              {isSubmitting ? "Updating Bus..." : "Update Bus"}
             </button>
           </div>
         </form>
@@ -796,4 +849,4 @@ const AddBusForm = ({ isOpen, onClose, vendorId }) => {
   );
 };
 
-export default AddBusForm;
+export default EditBusForm;

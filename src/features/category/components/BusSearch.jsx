@@ -36,7 +36,6 @@ const sortOptions = [
   { value: 'joining-date', label: 'Joining Date' },
   { value: 'state', label: 'State' },
   { value: 'district', label: 'District' },
-  { value: 'contact', label: 'Contact Number' },
 ];
 
   return (

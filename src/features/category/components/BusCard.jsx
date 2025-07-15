@@ -156,6 +156,10 @@ const BusCard = ({ bus, onClick, onPopularityToggle, onBusDelete }) => {
               <span className='font-medium text-gray-700'>Capacity:</span>{' '}
               {bus.capacity} seats
             </p>
+            <p className='text-sm text-gray-600'>
+                <span className='font-medium text-gray-700'>Contact NO:</span>{' '}
+                {bus.contactNumber}
+              </p>
             {bus.location && (
               <p className='text-sm text-gray-600'>
                 <span className='font-medium text-gray-700'>Location:</span>{' '}

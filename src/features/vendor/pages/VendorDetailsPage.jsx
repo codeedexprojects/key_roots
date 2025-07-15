@@ -9,6 +9,8 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { MarkedCalender } from '../components/MarkedCalender';
 import AddBusForm from '../components/AddBusForm';
+import EditBusForm from '../components/EditBusForm';
+import AddPackageForm from '../components/AddPackageForm';
 
 export const VendorDetailsPage = () => {
   const { vendorId } = useParams();
@@ -23,9 +25,16 @@ export const VendorDetailsPage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarRef = useRef(null);
+  const [showAddPackageForm, setShowAddPackageForm] = useState(false);
 
   const [showAddBusForm, setShowAddBusForm] = useState(false);
+ const [showEditBusForm, setShowEditBusForm] = useState(false);
+  const [busToEdit, setBusToEdit] = useState(null);
 
+  const handleBusUpdated = (updatedBus) => {
+    // Update your buses state with the updated bus
+    setBuses(prev => prev.map(b => b.id === updatedBus.id ? updatedBus : b));
+  };
   useEffect(() => {
     const fetchVendorDetails = async () => {
       setLoading(true);
@@ -225,87 +234,113 @@ export const VendorDetailsPage = () => {
       </div>
 
       {/* Available Buses Section */}
-      <div className='mb-8'>
-        <div className='flex justify-between items-center mb-4'>
-          <h2 className='text-lg font-semibold'>Available Buses</h2>
-          <Link
-            to={`/admin/vendors/${vendorId}/inventory`}
-            className='inline-flex items-center text-blue-500 hover:text-blue-700'>
-            <span className='text-sm'>See All</span>
-            <ChevronRight className='h-4 w-4 ml-1' />
-          </Link>
-        </div>
+     <div className='mb-8'>
+  <div className='flex justify-between items-center mb-4'>
+    <h2 className='text-lg font-semibold'>Available Buses</h2>
+    <div className='flex items-center gap-4'>
+      <button
+        onClick={() => setShowAddBusForm(true)}
+        className='px-3 py-1.5 text-sm bg-primary text-white rounded-md hover:bg-primary/80 transition'>
+        Add Bus
+      </button>
+      {buses.length > 0 && (
+        <Link
+          to={`/admin/vendors/${vendorId}/inventory`}
+          className='inline-flex items-center text-blue-500 hover:text-blue-700'>
+          <span className='text-sm'>See All</span>
+          <ChevronRight className='h-4 w-4 ml-1' />
+        </Link>
+      )}
+    </div>
+  </div>
 
-        <div className='relative'>
-          <div className='flex overflow-x-auto pb-4 -mx-2 px-2 space-x-4 no-scrollbar'>
-            {buses && buses.length > 0 ? (
-              buses.map((bus) => (
-                <div
-                  key={bus.id}
-                  className='w-72 flex-shrink-0'>
-                  <BusCard
-                    bus={bus}
-                    vendorId={vendorId}
-                  />
-                </div>
-              ))
-            ) : (
-              <EmptyState
-                title='No buses added yet'
-                description="Add buses to this vendor's inventory to get started."
-                actionLabel='Add Bus'
-                onAction={() => setShowAddBusForm(true)}
-                icon='bus'
-              />
-            )}
+  <div className='relative'>
+    <div className='flex overflow-x-auto pb-4 -mx-2 px-2 space-x-4 no-scrollbar'>
+
+      {buses && buses.length > 0 ? (
+        buses.map((bus) => (
+          <div
+            key={bus.id}
+            className='w-72 flex-shrink-0'>
+            <BusCard
+              bus={bus}
+              vendorId={vendorId}
+               onEdit={() => {
+              setBusToEdit(bus);
+              setShowEditBusForm(true);
+            }}
+            />
           </div>
-          <AddBusForm
-            isOpen={showAddBusForm}
-            onClose={() => setShowAddBusForm(false)}
-            vendorId={vendorId}
-          />
-        </div>
-      </div>
+        ))
+      ) : (
+        <EmptyState
+          title='No buses added yet'
+          description="Add buses to this vendor's inventory to get started."
+          icon='bus'
+        />
+      )}
+    </div>
+    <AddBusForm
+      isOpen={showAddBusForm}
+      onClose={() => setShowAddBusForm(false)}
+      vendorId={vendorId}
+    />
+     <EditBusForm
+        isOpen={showEditBusForm}
+        onClose={() => setShowEditBusForm(false)}
+        bus={busToEdit}
+        vendorId={vendorId}
+        onBusUpdated={handleBusUpdated}
+      />
+  </div>
+</div>
 
       {/* Available Packages Section */}
-      <div>
-        <div className='flex justify-between items-center mb-4'>
-          <h2 className='text-lg font-semibold'>Available Packages</h2>
-          <Link
-            to={`/admin/vendors/${vendorId}/inventory?tab=packages`}
-            className='inline-flex items-center text-blue-500 hover:text-blue-700'>
-            <span className='text-sm'>See All</span>
-            <ChevronRight className='h-4 w-4 ml-1' />
-          </Link>
-        </div>
+<div>
+  <div className='flex justify-between items-center mb-4'>
+    <h2 className='text-lg font-semibold'>Available Packages</h2>
+    <div className='flex items-center gap-4'>
+      <button
+        onClick={() => setShowAddPackageForm(true)}
+        className='px-3 py-1.5 text-sm bg-primary text-white rounded-md hover:bg-primary/80 transition'>
+        Add Package
+      </button>
+      {packages.length > 0 && (
+        <Link
+          to={`/admin/vendors/${vendorId}/inventory?tab=packages`}
+          className='inline-flex items-center text-blue-500 hover:text-blue-700'>
+          <span className='text-sm'>See All</span>
+          <ChevronRight className='h-4 w-4 ml-1' />
+        </Link>
+      )}
+    </div>
+  </div>
 
-        <div className='relative'>
-          <div className='flex overflow-x-auto pb-4 -mx-2 px-2 space-x-4 no-scrollbar'>
-            {packages && packages.length > 0 ? (
-              packages.map((pkg) => (
-                <div
-                  key={pkg.id}
-                  className='w-72 flex-shrink-0'>
-                  <PackageCard
-                    pkg={pkg}
-                    vendorId={vendorId}
-                  />
-                </div>
-              ))
-            ) : (
-              <EmptyState
-                title='No buses added yet'
-                description="Add buses to this vendor's inventory to get started."
-                actionLabel='Add Bus'
-                onAction={() =>
-                  navigate(`/admin/vendors/${vendorId}/inventory?tab=buses`)
-                }
-                icon='bus'
-              />
-            )}
+  <div className='relative'>
+    <div className='flex overflow-x-auto pb-4 -mx-2 px-2 space-x-4 no-scrollbar'>
+      {packages && packages.length > 0 ? (
+        packages.map((pkg) => (
+          <div key={pkg.id} className='w-72 flex-shrink-0'>
+            <PackageCard pkg={pkg} vendorId={vendorId} />
           </div>
-        </div>
-      </div>
+        ))
+      ) : (
+        <EmptyState
+          title='No packages added yet'
+          description="Add package to this vendor's inventory to get started."
+          actionLabel='Add Package'
+          onAction={() => setShowAddPackageForm(true)}
+          icon='bus'
+        />
+      )}
+    </div>
+    <AddPackageForm
+      isOpen={showAddPackageForm}
+      onClose={() => setShowAddPackageForm(false)}
+      vendorId={vendorId}
+    />
+  </div>
+</div>
     </>
   );
 };

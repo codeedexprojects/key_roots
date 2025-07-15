@@ -75,11 +75,7 @@ const BusesTab = () => {
         (a.district || '').localeCompare(b.district || '')
       );
     
-    case 'contact':
-      // Sort by contact number (assuming `contactNumber` is a string)
-      return sortedBuses.sort((a, b) => 
-        (a.contactNumber || '').localeCompare(b.contactNumber || '')
-      );
+   
     
     default:
       return sortedBuses;

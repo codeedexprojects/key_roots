@@ -61,6 +61,7 @@ const PackagesTab = () => {
     setIsLoadingSubCategories(true);
     try {
       const response = await getSubCategories(categoryId);
+console.log(response);
 
       if (response && response.subcategories) {
         const transformedSubCategories = transformSubCategoryData(

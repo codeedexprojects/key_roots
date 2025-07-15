@@ -57,6 +57,46 @@ export const getPackageDetails = async (packageId) => {
   );
 };
 
+export const createPackage = async (packageData) => {
+  return apiRequest(
+    () => axiosInstance.post('/create-package/', packageData),
+    'Error occurred while creating the package.'
+  );
+};
+
+export const getAllCategories = async () => {
+  return apiRequest(
+    () => axiosInstance.get('/categories/'),
+    'Error occurred while fetching categories.'
+  );
+};
+export const getSubCategoriesByCategoryId = async (categoryId) => {
+  return apiRequest(
+    () => axiosInstance.get(`/sub-category/?category_id=${categoryId}`),
+    `Error occurred while fetching sub-categories for category ID ${categoryId}.`
+  );
+};
+
+
+export const editPackage = async (packageId, packageData) => {
+  return apiRequest(
+    () => axiosInstance.put(`/vendor/${packageId}/edit-package/`, packageData),
+    `Error occurred while editing the package with ID ${packageId}.`
+  );
+};
+
+
+export const transformSubCategoryData = (subcategories) => {
+  if (!Array.isArray(subcategories)) return [];
+
+  return subcategories.map((subCategory) => ({
+    id: subCategory.id,
+    name: subCategory.name,
+    title: subCategory.name, // For backward compatibility
+    image: subCategory.image,
+    category: subCategory.category,
+  }));
+};
 // Function to create a new vendor
 export const createVendor = async (vendorData) => {
   return apiRequest(
@@ -80,7 +120,7 @@ export const addBusToVendor = async (vendorId, busData) => {
 
   return apiRequest(
     () =>
-      axiosInstance.post('/bus/create/', busData, {
+      axiosInstance.post('/create-bus/', busData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -88,3 +128,17 @@ export const addBusToVendor = async (vendorId, busData) => {
     'Error occurred while adding bus to vendor.'
   );
 };
+
+// Function to edit bus details by ID
+export const editBusById = async (busId, busData) => {
+  return apiRequest(
+    () =>
+      axiosInstance.patch(`/${busId}/edit-bus/`, busData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }),
+    'Error occurred while editing the bus.'
+  );
+};
+

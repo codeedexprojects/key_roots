@@ -29,6 +29,18 @@ export const toggleBusPopularity = async (busId) => {
   );
 };
 
+export const editBusById = async (busId, busData) => {
+  return apiRequest(
+    () =>
+      axiosInstance.patch(`/${busId}/edit-bus/`, busData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }),
+    'Error occurred while editing the bus.'
+  );
+};
+
 export const getAllAmenities = async () => {
   return apiRequest(
     () => axiosInstance.get('/amenities/'),

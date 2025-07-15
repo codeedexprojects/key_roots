@@ -3,6 +3,8 @@ import { MapPin, Calendar, Hash } from 'lucide-react';
 import { Link } from 'react-router';
 
 export const PackageCard = ({ pkg, vendorId }) => {
+  console.log('PackageCard:', pkg);
+  
   return (
     <Link
       to={
