@@ -23,6 +23,7 @@ export const BookingListPage = () => {
   const [filterBy, setFilterBy] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
   const [selectedDate, setSelectedDate] = useState('');
+  const [busCount, setBusCount] = useState(0);
 
   // State for API data
   const [bookings, setBookings] = useState([]);
@@ -35,11 +36,14 @@ export const BookingListPage = () => {
       setIsLoading(true);
       try {
         const response = await getAllBookings();
+        console.log('Bookings fetched:', response);
         
 
         if (!response.error) {
           const formattedBookings = formatBookingsForDisplay(response);
+          console.log('Formatted bookings:', formattedBookings);
           setBookings(formattedBookings);
+          setBusCount(response.bus_count || 0);
           setError(null);
         } else {
           setError(response.message || 'Failed to load bookings');
@@ -169,7 +173,12 @@ export const BookingListPage = () => {
   return (
     <div className='flex-1'>
       <h1 className='text-2xl font-semibold mb-6'>Bookings</h1>
-
+ {!isLoading && !error && (
+          <div className="bg-blue-50 text-blue-800 px-4 py-2 rounded-md">
+            <span className="font-medium">Total Buses: </span>
+            <span>{busCount}</span>
+          </div>
+        )}
       {/* Search and Filters */}
       <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4'>
         <div className='relative w-full md:w-64'>
@@ -259,10 +268,13 @@ export const BookingListPage = () => {
                 <tr>
                   {[
                     'Name',
-                    'Date',
+                    
                     'Category',
+                    'Booking Date',
+                    'Journey Date', 
                     'Trip',
                     'Cost',
+                    'Balance Amount',
                     'Status',
                     'Action',
                   ].map((header, i) => (
@@ -300,12 +312,12 @@ export const BookingListPage = () => {
                         </div>
                       </div>
                     </td>
-                    <td className='px-4 py-4 text-sm text-gray-500'>
-                      {booking.date}
-                    </td>
+                    
                     <td className='px-4 py-4 text-sm text-gray-500'>
                       {booking.category}
                     </td>
+                    <td className='px-4 py-4 text-sm text-gray-500'>{booking.date}</td>
+                    <td className='px-4 py-4 text-sm text-gray-500'>{booking.journeyDate}</td>
                     <td className='px-4 py-4 text-sm text-gray-500'>
                       {booking.trip}
                     </td>
@@ -314,6 +326,12 @@ export const BookingListPage = () => {
                         {booking.cost}
                       </span>
                     </td>
+                     <td className='px-4 py-4'>
+                      <span className='px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800'>
+                        {booking.balance_amount}
+                      </span>
+                    </td>
+                    
                     <td className='px-4 py-4'>
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(

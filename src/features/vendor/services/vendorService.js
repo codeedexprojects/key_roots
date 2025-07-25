@@ -2,9 +2,10 @@ import { axiosInstance } from '@/lib/axiosInstance';
 import { apiRequest } from '@/lib/apiRequest';
 
 // Function to get all vendors
-export const getAllVendors = async () => {
+export const getAllVendors = async (page = 1, filters = {}) => {
+  const params = new URLSearchParams({ page, ...filters });
   return apiRequest(
-    () => axiosInstance.get('/vendors/list/'),
+    () => axiosInstance.get(`/vendors/pagination/?${params}`),
     'Error occurred while fetching vendors.'
   );
 };
@@ -32,6 +33,8 @@ export const getVendorBuses = async (vendorId) => {
     `Error occurred while fetching buses for vendor with ID ${vendorId}.`
   );
 };
+
+
 
 // Function to get packages for a specific vendor
 export const getVendorPackages = async (vendorId) => {
@@ -64,6 +67,22 @@ export const createPackage = async (packageData) => {
   );
 };
 
+export const addDayPlans = async (packageData,id) => {
+  return apiRequest(
+    () => axiosInstance.post(`/packages/${id}/add-day/`, packageData),
+    'Error occurred while creating the package.'
+  );
+};
+
+
+export const editPackage = async (packageId, packageData) => {
+  return apiRequest(
+    () => axiosInstance.patch(`/${packageId}/edit-package/`, packageData),
+    `Error occurred while editing the package with ID ${packageId}.`
+  );
+};
+
+
 export const getAllCategories = async () => {
   return apiRequest(
     () => axiosInstance.get('/categories/'),
@@ -78,12 +97,28 @@ export const getSubCategoriesByCategoryId = async (categoryId) => {
 };
 
 
-export const editPackage = async (packageId, packageData) => {
+export const editPackageDay = async (packageId,day_number, packageData) => {
   return apiRequest(
-    () => axiosInstance.put(`/vendor/${packageId}/edit-package/`, packageData),
+    () => axiosInstance.patch(`/packages/${packageId}/day/${day_number}/edit/`, packageData),
     `Error occurred while editing the package with ID ${packageId}.`
   );
 };
+
+
+export const deleteDayImage = async (image_type,image_id) => {
+  return apiRequest(
+    () => axiosInstance.delete(`/images/${image_type}/${image_id}/`),
+    `Error occurred while editing the package with ID `
+  );
+};
+
+export const addDayImage = async (image_type,object_id,packageData) => {
+  return apiRequest(
+    () => axiosInstance.post(`/images/${image_type}/${object_id}/`, packageData),
+    'Error occurred while creating the package.'
+  );
+};
+
 
 
 export const transformSubCategoryData = (subcategories) => {
@@ -92,7 +127,7 @@ export const transformSubCategoryData = (subcategories) => {
   return subcategories.map((subCategory) => ({
     id: subCategory.id,
     name: subCategory.name,
-    title: subCategory.name, // For backward compatibility
+    title: subCategory.name,
     image: subCategory.image,
     category: subCategory.category,
   }));

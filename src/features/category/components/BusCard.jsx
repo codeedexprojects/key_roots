@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,forwardRef  } from 'react';
 import { Star, StarOff, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -9,7 +9,7 @@ import {
 } from '../services/busService';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
 
-const BusCard = ({ bus, onClick, onPopularityToggle, onBusDelete }) => {
+const BusCard = forwardRef(({ bus, onClick, onPopularityToggle, onBusDelete }, ref) => {
   const [isToggling, setIsToggling] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -74,9 +74,9 @@ const BusCard = ({ bus, onClick, onPopularityToggle, onBusDelete }) => {
 
   return (
     <>
-      <div
+      <div ref={ref}
         className='bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer border border-gray-100'
-        onClick={onClick}>
+        onClick={onClick} >
         <div className='h-48 overflow-hidden relative'>
           <img
             src={bus.image || '/placeholder.svg'}
@@ -158,7 +158,7 @@ const BusCard = ({ bus, onClick, onPopularityToggle, onBusDelete }) => {
             </p>
             <p className='text-sm text-gray-600'>
                 <span className='font-medium text-gray-700'>Contact NO:</span>{' '}
-                {bus.contactNumber}
+                {bus.vendor?.phone_no || 'N/A'}
               </p>
             {bus.location && (
               <p className='text-sm text-gray-600'>
@@ -201,6 +201,11 @@ const BusCard = ({ bus, onClick, onPopularityToggle, onBusDelete }) => {
       />
     </>
   );
-};
+  
+});
+BusCard.displayName = 'BusCard';
+
+
+
 
 export default BusCard;

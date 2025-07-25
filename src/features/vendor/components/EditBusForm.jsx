@@ -462,11 +462,11 @@ const initializeFormData = (data = bus) => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                   <option value="">Select Bus Type</option>
-                  <option value="AC">AC</option>
-                  <option value="Non-AC">Non-AC</option>
-                  <option value="Sleeper">Sleeper</option>
-                  <option value="Semi-Sleeper">Semi-Sleeper</option>
-                  <option value="Luxury">Luxury</option>
+                  <option value="Mini-Bus">Mini-bus</option>
+                  <option value="Tempo-Traveller">Tempo Traveller</option>
+                  <option value="Bus">Bus</option>
+                  <option value="Volvo">Volvo</option>
+                  <option value="Caravan">Caravan</option>
                 </select>
               </div>
               <div>

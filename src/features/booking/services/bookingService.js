@@ -30,13 +30,20 @@ export const formatBookingsForDisplay = (bookings) => {
             booking.travelers[0].last_name || ''
           }`
         : 'Unknown',
-    date: booking.start_date
-      ? new Date(booking.start_date).toLocaleDateString('en-US', {
+    date: booking.created_at
+      ? new Date(booking.created_at).toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'long',
           day: 'numeric',
         })
       : 'N/A',
+     journeyDate: booking.start_date
+      ? new Date(booking.start_date).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
+      : 'N/A', 
     rawDate: booking.start_date ? booking.start_date : null,
     category: booking.booking_type === 'bus' ? 'Bus' : 'Package',
     trip:
@@ -47,8 +54,13 @@ export const formatBookingsForDisplay = (bookings) => {
       ? `₹${parseFloat(booking.total_amount).toLocaleString('en-IN')}`
       : 'N/A',
     status: booking.booking_status || 'pending',
+    bus_count: booking.bus_count || 0,
     paymentStatus: booking.payment_status || 'pending',
     tripStatus: booking.trip_status || 'not_started',
     totalTravelers: booking.total_travelers || 0,
+    balance_amount:booking.total_amount
+      ? `₹${parseFloat(booking.balance_amount).toLocaleString('en-IN')}`
+      : 'N/A',
+
   }));
 };

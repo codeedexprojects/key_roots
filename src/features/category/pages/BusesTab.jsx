@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useRef } from 'react';
 import { toast } from 'sonner';
 import BusCard from '../components/BusCard';
 import BusDetails from '../components/BusDetails';
@@ -21,6 +21,8 @@ const BusesTab = () => {
     number: true,
     location: true,
   });
+  const [lastClickedBusId, setLastClickedBusId] = useState(null);
+   const busCardRefs = useRef({});
 
   useEffect(() => {
     loadBuses();
@@ -83,11 +85,28 @@ const BusesTab = () => {
 };
 
   const handleBusClick = (bus) => {
+      setLastClickedBusId(bus.id);
     setSelectedBus(bus);
   };
 
   const handleBackClick = () => {
     setSelectedBus(null);
+    // Scroll to the last clicked bus after the component re-renders
+    setTimeout(() => {
+      if (lastClickedBusId && busCardRefs.current[lastClickedBusId]) {
+        busCardRefs.current[lastClickedBusId].scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+        
+        // Optional: Add highlight effect
+        const element = busCardRefs.current[lastClickedBusId];
+        element.classList.add('highlight-bus');
+        setTimeout(() => {
+          element.classList.remove('highlight-bus');
+        }, 1000);
+      }
+    }, 0);
   };
 
   const handlePopularityToggle = (busId, newPopularityStatus) => {
@@ -146,6 +165,8 @@ const BusesTab = () => {
               {sortedBuses.map((bus) => (
                 <BusCard
                   key={bus.id}
+                  ref={(el) => (busCardRefs.current[bus.id] = el)}
+
                   bus={bus}
                   onClick={() => handleBusClick(bus)}
                   onPopularityToggle={handlePopularityToggle}

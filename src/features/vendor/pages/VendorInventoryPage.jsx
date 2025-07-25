@@ -16,8 +16,7 @@ export const VendorInventoryPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialTab =
-    searchParams.get('tab') === 'packages' ? 'packages' : 'buses';
-
+  searchParams.get('tab') === 'packages' ? 'packages' : 'buses';
   const [activeTab, setActiveTab] = useState(initialTab);
   const [vendor, setVendor] = useState(null);
   const [buses, setBuses] = useState([]);

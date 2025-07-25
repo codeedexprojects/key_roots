@@ -1,16 +1,18 @@
-import { useState, useEffect, useRef } from 'react';
-import { useParams, Link, useNavigate, useSearchParams } from 'react-router';
-import { ArrowLeft, DollarSign, Calendar, ChevronRight } from 'lucide-react';
-import { VendorInfoCard } from '../components/VendorInfoCard';
-import { BusCard } from '../components/BusCard';
-import { PackageCard } from '../components/PackageCard';
-import { getVendorById } from '../services/vendorService';
-import { EmptyState } from '@/components/common/EmptyState';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { MarkedCalender } from '../components/MarkedCalender';
-import AddBusForm from '../components/AddBusForm';
-import EditBusForm from '../components/EditBusForm';
-import AddPackageForm from '../components/AddPackageForm';
+import { useState, useEffect, useRef } from "react";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router";
+import { ArrowLeft, DollarSign, Calendar, ChevronRight } from "lucide-react";
+import { VendorInfoCard } from "../components/VendorInfoCard";
+import { BusCard } from "../components/BusCard";
+import { PackageCard } from "../components/PackageCard";
+import { getVendorById } from "../services/vendorService";
+import { EmptyState } from "@/components/common/EmptyState";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { MarkedCalender } from "../components/MarkedCalender";
+import AddBusForm from "../components/AddBusForm";
+import EditBusForm from "../components/EditBusForm";
+import AddPackageForm from "../components/AddPackageForm";
+import EditPackageForm from "../components/EditPackageForm";
+
 
 export const VendorDetailsPage = () => {
   const { vendorId } = useParams();
@@ -20,20 +22,27 @@ export const VendorDetailsPage = () => {
   const [buses, setBuses] = useState([]);
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const [markedDates, setMarkedDates] = useState(['2025-02-04', '2025-02-05']);
+  const [markedDates, setMarkedDates] = useState(["2025-02-04", "2025-02-05"]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarRef = useRef(null);
   const [showAddPackageForm, setShowAddPackageForm] = useState(false);
-
+  const [showEditPackageForm, setShowEditPackageForm] = useState(false);
   const [showAddBusForm, setShowAddBusForm] = useState(false);
- const [showEditBusForm, setShowEditBusForm] = useState(false);
+  const [showEditBusForm, setShowEditBusForm] = useState(false);
   const [busToEdit, setBusToEdit] = useState(null);
+  const [packageToEdit, setPackageToEdit] = useState(null);
 
   const handleBusUpdated = (updatedBus) => {
     // Update your buses state with the updated bus
-    setBuses(prev => prev.map(b => b.id === updatedBus.id ? updatedBus : b));
+    setBuses((prev) =>
+      prev.map((b) => (b.id === updatedBus.id ? updatedBus : b))
+    );
+  };
+  const handlepackageUpdated = (updatedPackage) => {
+    setPackages((prev) =>
+      prev.map((b) => (b.id === updatedPackage.id ? updatedPackage : b))
+    );
   };
   useEffect(() => {
     const fetchVendorDetails = async () => {
@@ -56,13 +65,13 @@ export const VendorDetailsPage = () => {
             ongoingBuses: vendorData.ongoing_buses?.length || 0,
             image:
               vendorData.buses?.[0]?.travels_logo ||
-              'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
+              "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
             contactPerson: vendorData.full_name,
-            phone: vendorData.phone || 'N/A',
+            phone: vendorData.phone || "N/A",
             email: vendorData.email_address,
-            address: `${vendorData.address || 'N/A'}, ${
-              vendorData.city || ''
-            }, ${vendorData.state || ''} - ${vendorData.pincode || ''}`,
+            address: `${vendorData.address || "N/A"}, ${
+              vendorData.city || ""
+            }, ${vendorData.state || ""} - ${vendorData.pincode || ""}`,
           };
 
           setVendor(transformedVendor);
@@ -71,12 +80,12 @@ export const VendorDetailsPage = () => {
             const transformedBuses = vendorData.buses.map((bus) => ({
               id: bus.id,
               title: bus.bus_name,
-              type: 'Bus',
+              type: "Bus",
               capacity: bus.capacity,
               vehicleRC: bus.vehicle_rc_number,
-              status: 'Available',
+              status: "Available",
               image:
-                bus.travels_logo || '/placeholder.svg?height=192&width=384',
+                bus.travels_logo || "/placeholder.svg?height=192&width=384",
             }));
             setBuses(transformedBuses);
           } else {
@@ -86,12 +95,12 @@ export const VendorDetailsPage = () => {
           if (vendorData.packages && vendorData.packages.length > 0) {
             const transformedPackages = vendorData.packages.map((pkg) => ({
               id: pkg.id,
-              destination: pkg.places || 'Package Tour',
-              route: pkg.places || 'Tour Package',
+              destination: pkg.places || "Package Tour",
+              route: pkg.places || "Tour Package",
               availableDates: `${pkg.days} days, ${pkg.nights} nights`,
-              status: 'Open',
+              status: "Open",
               image:
-                pkg.header_image || '/placeholder.svg?height=192&width=384',
+                pkg.header_image || "/placeholder.svg?height=192&width=384",
             }));
             setPackages(transformedPackages);
           } else {
@@ -111,7 +120,7 @@ export const VendorDetailsPage = () => {
           setMarkedDates([]);
         }
       } catch (error) {
-        console.error('Error fetching vendor details:', error);
+        console.error("Error fetching vendor details:", error);
         setVendor(null);
       } finally {
         setLoading(false);
@@ -129,18 +138,18 @@ export const VendorDetailsPage = () => {
     };
 
     if (showCalendar) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showCalendar]);
 
   if (loading) {
     return (
-      <div className='flex justify-center items-center min-h-[500px]'>
-        <LoadingSpinner size='large' />
+      <div className="flex justify-center items-center min-h-[500px]">
+        <LoadingSpinner size="large" />
       </div>
     );
   }
@@ -148,14 +157,15 @@ export const VendorDetailsPage = () => {
   if (!vendor) {
     return (
       <>
-        <div className='bg-white rounded-lg shadow-sm p-8 text-center'>
-          <p className='text-gray-500'>Vendor not found.</p>
+        <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+          <p className="text-gray-500">Vendor not found.</p>
           <button
             onClick={() => {
-              const page = searchParams.get('page') || 1;
+              const page = searchParams.get("page") || 1;
               navigate(`/admin/vendors?page=${page}`);
             }}
-            className='mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors'>
+            className="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+          >
             Back to Vendors
           </button>
         </div>
@@ -165,23 +175,26 @@ export const VendorDetailsPage = () => {
 
   return (
     <>
-      <div className='mb-6 flex flex-row justify-between items-center'>
-        <h1 className='text-2xl font-semibold'>Vendor Details</h1>
+      <div className="mb-6 flex flex-row justify-between items-center">
+        <h1 className="text-2xl font-semibold">Vendor Details</h1>
 
-        <div className='w-fit my-6'>
+        <div className="w-fit my-6">
           <button
             onClick={() => setShowCalendar(true)}
-            className='px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/80 transition'>
+            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/80 transition"
+          >
             Marked Dates
           </button>
 
           {showCalendar && (
             <div
-              className='fixed inset-0 z-50 flex items-center justify-center bg-black/30'
-              onClick={() => setShowCalendar(false)}>
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
+              onClick={() => setShowCalendar(false)}
+            >
               <div
                 onClick={(e) => e.stopPropagation()}
-                className='w-full max-w-xl'>
+                className="w-full max-w-xl"
+              >
                 <MarkedCalender
                   markedDates={markedDates}
                   currentMonth={currentMonth}
@@ -194,153 +207,173 @@ export const VendorDetailsPage = () => {
 
         {/* Back Button */}
         <Link
-          to={`/admin/vendors?page=${searchParams.get('page') || 1}`}
-          className='inline-flex items-center text-gray-600 hover:text-gray-900'>
-          <ArrowLeft className='h-4 w-4 mr-2' />
+          to={`/admin/vendors?page=${searchParams.get("page") || 1}`}
+          className="inline-flex items-center text-gray-600 hover:text-gray-900"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
           <span>Go Back</span>
         </Link>
       </div>
 
       {/* Vendor Stats */}
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 no-scrollbar'>
-        <div className='bg-white rounded-lg shadow-sm p-4'>
-          <div className='flex items-center'>
-            <div className='p-3 rounded-full bg-green-100 text-green-600 mr-4'>
-              <DollarSign className='h-6 w-6' />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 no-scrollbar">
+        <div className="bg-white rounded-lg shadow-sm p-4">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+              <DollarSign className="h-6 w-6" />
             </div>
             <div>
-              <p className='text-sm text-gray-500'>Total Amount</p>
-              <p className='text-2xl font-semibold'>₹{vendor.earnings}</p>
+              <p className="text-sm text-gray-500">Total Amount</p>
+              <p className="text-2xl font-semibold">₹{vendor.earnings}</p>
             </div>
           </div>
         </div>
 
-        <div className='bg-white rounded-lg shadow-sm p-4'>
-          <div className='flex items-center'>
-            <div className='p-3 rounded-full bg-blue-100 text-blue-600 mr-4'>
-              <Calendar className='h-6 w-6' />
+        <div className="bg-white rounded-lg shadow-sm p-4">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+              <Calendar className="h-6 w-6" />
             </div>
             <div>
-              <p className='text-sm text-gray-500'>Total Bookings</p>
-              <p className='text-2xl font-semibold'>{vendor.bookings}</p>
+              <p className="text-sm text-gray-500">Total Bookings</p>
+              <p className="text-2xl font-semibold">{vendor.bookings}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Vendor Info Card */}
-      <div className='mb-8'>
+      <div className="mb-8">
         <VendorInfoCard vendor={vendor} />
       </div>
 
       {/* Available Buses Section */}
-     <div className='mb-8'>
-  <div className='flex justify-between items-center mb-4'>
-    <h2 className='text-lg font-semibold'>Available Buses</h2>
-    <div className='flex items-center gap-4'>
-      <button
-        onClick={() => setShowAddBusForm(true)}
-        className='px-3 py-1.5 text-sm bg-primary text-white rounded-md hover:bg-primary/80 transition'>
-        Add Bus
-      </button>
-      {buses.length > 0 && (
-        <Link
-          to={`/admin/vendors/${vendorId}/inventory`}
-          className='inline-flex items-center text-blue-500 hover:text-blue-700'>
-          <span className='text-sm'>See All</span>
-          <ChevronRight className='h-4 w-4 ml-1' />
-        </Link>
-      )}
-    </div>
-  </div>
-
-  <div className='relative'>
-    <div className='flex overflow-x-auto pb-4 -mx-2 px-2 space-x-4 no-scrollbar'>
-
-      {buses && buses.length > 0 ? (
-        buses.map((bus) => (
-          <div
-            key={bus.id}
-            className='w-72 flex-shrink-0'>
-            <BusCard
-              bus={bus}
-              vendorId={vendorId}
-               onEdit={() => {
-              setBusToEdit(bus);
-              setShowEditBusForm(true);
-            }}
-            />
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Available Buses</h2>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowAddBusForm(true)}
+              className="px-3 py-1.5 text-sm bg-primary text-white rounded-md hover:bg-primary/80 transition"
+            >
+              Add Bus
+            </button>
+            {buses.length > 0 && (
+              <Link
+                to={`/admin/vendors/${vendorId}/inventory`}
+                className="inline-flex items-center text-blue-500 hover:text-blue-700"
+              >
+                <span className="text-sm">See All</span>
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Link>
+            )}
           </div>
-        ))
-      ) : (
-        <EmptyState
-          title='No buses added yet'
-          description="Add buses to this vendor's inventory to get started."
-          icon='bus'
-        />
-      )}
-    </div>
-    <AddBusForm
-      isOpen={showAddBusForm}
-      onClose={() => setShowAddBusForm(false)}
-      vendorId={vendorId}
-    />
-     <EditBusForm
-        isOpen={showEditBusForm}
-        onClose={() => setShowEditBusForm(false)}
-        bus={busToEdit}
-        vendorId={vendorId}
-        onBusUpdated={handleBusUpdated}
-      />
-  </div>
-</div>
+        </div>
+
+        <div className="relative">
+          <div className="flex overflow-x-auto pb-4 -mx-2 px-2 space-x-4 no-scrollbar">
+            {buses && buses.length > 0 ? (
+              buses.map((bus) => (
+                <div key={bus.id} className="w-72 flex-shrink-0">
+                  <BusCard
+                    bus={bus}
+                    vendorId={vendorId}
+                    onEdit={() => {
+                      setBusToEdit(bus);
+                      setShowEditBusForm(true);
+                      setShowEditBusForm(true);
+                    }}
+                  />
+                </div>
+              ))
+            ) : (
+              <EmptyState
+                title="No buses added yet"
+                description="Add buses to this vendor's inventory to get started."
+                icon="bus"
+              />
+            )}
+          </div>
+          <AddBusForm
+            isOpen={showAddBusForm}
+            onClose={() => setShowAddBusForm(false)}
+            vendorId={vendorId}
+          />
+          <EditBusForm
+            isOpen={showEditBusForm}
+            onClose={() => setShowEditBusForm(false)}
+            bus={busToEdit}
+            vendorId={vendorId}
+            onBusUpdated={handleBusUpdated}
+          />
+        </div>
+      </div>
 
       {/* Available Packages Section */}
-<div>
-  <div className='flex justify-between items-center mb-4'>
-    <h2 className='text-lg font-semibold'>Available Packages</h2>
-    <div className='flex items-center gap-4'>
-      <button
-        onClick={() => setShowAddPackageForm(true)}
-        className='px-3 py-1.5 text-sm bg-primary text-white rounded-md hover:bg-primary/80 transition'>
-        Add Package
-      </button>
-      {packages.length > 0 && (
-        <Link
-          to={`/admin/vendors/${vendorId}/inventory?tab=packages`}
-          className='inline-flex items-center text-blue-500 hover:text-blue-700'>
-          <span className='text-sm'>See All</span>
-          <ChevronRight className='h-4 w-4 ml-1' />
-        </Link>
-      )}
-    </div>
-  </div>
-
-  <div className='relative'>
-    <div className='flex overflow-x-auto pb-4 -mx-2 px-2 space-x-4 no-scrollbar'>
-      {packages && packages.length > 0 ? (
-        packages.map((pkg) => (
-          <div key={pkg.id} className='w-72 flex-shrink-0'>
-            <PackageCard pkg={pkg} vendorId={vendorId} />
+      <div>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Available Packages</h2>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowAddPackageForm(true)}
+              className="px-3 py-1.5 text-sm bg-primary text-white rounded-md hover:bg-primary/80 transition"
+            >
+              Add Package
+            </button>
+            {packages.length > 0 && (
+              <Link
+                to={`/admin/vendors/${vendorId}/inventory?tab=packages`}
+                className="inline-flex items-center text-blue-500 hover:text-blue-700"
+              >
+                <span className="text-sm">See All</span>
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Link>
+            )}
           </div>
-        ))
-      ) : (
-        <EmptyState
-          title='No packages added yet'
-          description="Add package to this vendor's inventory to get started."
-          actionLabel='Add Package'
-          onAction={() => setShowAddPackageForm(true)}
-          icon='bus'
-        />
-      )}
-    </div>
-    <AddPackageForm
-      isOpen={showAddPackageForm}
-      onClose={() => setShowAddPackageForm(false)}
-      vendorId={vendorId}
-    />
-  </div>
-</div>
+        </div>
+
+        <div className="relative">
+          <div className="flex overflow-x-auto pb-4 -mx-2 px-2 space-x-4 no-scrollbar">
+            {packages && packages.length > 0 ? (
+              packages.map((pkg) => (
+                <div key={pkg.id} className="w-72 flex-shrink-0">
+                  <PackageCard
+                    onEdit={() => {
+                      setPackageToEdit(pkg);
+                      setShowEditPackageForm(true);
+                    }}
+                   
+                    pkg={pkg}
+                    vendorId={vendorId}
+                  />
+                </div>
+              ))
+            ) : (
+              <EmptyState
+                title="No packages added yet"
+                description="Add package to this vendor's inventory to get started."
+                actionLabel="Add Package"
+                onAction={() => setShowAddPackageForm(true)}
+                icon="bus"
+              />
+            )}
+          </div>
+          <AddPackageForm
+            isOpen={showAddPackageForm}
+            onClose={() => setShowAddPackageForm(false)}
+            vendorId={vendorId}
+          />
+         
+
+          <EditPackageForm
+            isOpen={showEditPackageForm}
+            onClose={() => setShowEditPackageForm(false)}
+            pkg={packageToEdit}
+            vendorId={vendorId}
+            onPackageUpdated={handlepackageUpdated}
+          />
+        </div>
+      </div>
     </>
   );
 };
