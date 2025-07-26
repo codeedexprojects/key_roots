@@ -6,6 +6,8 @@ import {
   ChevronLeft,
   ChevronRight,
   MoreHorizontal,
+  Filter,
+  X,
 } from "lucide-react";
 import { Link, useSearchParams } from "react-router";
 import { useNavigate } from "react-router";
@@ -25,12 +27,21 @@ export const VendorsListPage = () => {
     sortBy: searchParams.get("sort_by") || "name",
     filterState: searchParams.get("state") || "all",
     filterDistrict: searchParams.get("district") || "all",
+    filterCity: searchParams.get("city") || "all",
+    minBuses: searchParams.get("min_buses") || "",
+    maxBuses: searchParams.get("max_buses") || "",
+    minPackages: searchParams.get("min_packages") || "",
+    maxPackages: searchParams.get("max_packages") || "",
+    hasPackages: searchParams.get("has_packages") || "all",
+    hasBuses: searchParams.get("has_buses") || "all",
+    packageStatus: searchParams.get("package_status") || "all",
   });
 
   // State management
   const [state, setState] = useState(getInitialState());
   const [searchInput, setSearchInput] = useState(state.searchTerm); // For input field
   const [searchTimeout, setSearchTimeout] = useState(null);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Data state
   const [vendors, setVendors] = useState({
@@ -64,6 +75,14 @@ export const VendorsListPage = () => {
     if (newState.sortBy !== "name") params.set("sort_by", newState.sortBy);
     if (newState.filterState !== "all") params.set("state", newState.filterState);
     if (newState.filterDistrict !== "all") params.set("district", newState.filterDistrict);
+    if (newState.filterCity !== "all") params.set("city", newState.filterCity);
+    if (newState.minBuses) params.set("min_buses", newState.minBuses);
+    if (newState.maxBuses) params.set("max_buses", newState.maxBuses);
+    if (newState.minPackages) params.set("min_packages", newState.minPackages);
+    if (newState.maxPackages) params.set("max_packages", newState.maxPackages);
+    if (newState.hasPackages !== "all") params.set("has_packages", newState.hasPackages);
+    if (newState.hasBuses !== "all") params.set("has_buses", newState.hasBuses);
+    if (newState.packageStatus !== "all") params.set("package_status", newState.packageStatus);
 
     setSearchParams(params);
   }, [setSearchParams]);
@@ -115,6 +134,38 @@ export const VendorsListPage = () => {
         filters.district = state.filterDistrict;
       }
 
+      if (state.filterCity !== "all") {
+        filters.city = state.filterCity;
+      }
+
+      if (state.minBuses) {
+        filters.min_buses = state.minBuses;
+      }
+
+      if (state.maxBuses) {
+        filters.max_buses = state.maxBuses;
+      }
+
+      if (state.minPackages) {
+        filters.min_packages = state.minPackages;
+      }
+
+      if (state.maxPackages) {
+        filters.max_packages = state.maxPackages;
+      }
+
+      if (state.hasPackages !== "all") {
+        filters.has_packages = state.hasPackages;
+      }
+
+      if (state.hasBuses !== "all") {
+        filters.has_buses = state.hasBuses;
+      }
+
+      if (state.packageStatus !== "all") {
+        filters.package_status = state.packageStatus;
+      }
+
       const response = await getAllVendors(state.currentPage, filters);
       console.log(response);
 
@@ -125,18 +176,19 @@ export const VendorsListPage = () => {
           location: vendor.location || vendor.city || "Not specified",
           state: vendor.state || "Unknown",
           district: vendor.district || "Not specified",
+          city: vendor.city || "Not specified",
           busesCount: vendor.bus_count || 0,
           packagesCount: vendor.package_count || 0,
           availableBuses: vendor.buses?.length || 0,
           ongoingBuses: vendor.ongoing_buses?.length || 0,
-          bookings: vendor.buses?.length || 0,
+          bookings: vendor.bookings?.length || 0,
           earnings: vendor.earnings || 0,
           status: vendor.is_active ? "active" : "inactive",
           image:
             vendor.buses?.[0]?.travels_logo ||
             "/placeholder.svg?height=48&width=48",
           created_at: vendor.created_at || new Date().toISOString(),
-          hasBookings: (vendor.buses?.length || 0) > 0,
+          hasBookings: (vendor.bookings?.length || 0) > 0,
           hasPackages: (vendor.package_count || 0) > 0,
         }));
 
@@ -230,6 +282,7 @@ export const VendorsListPage = () => {
       ...prev,
       filterState: newState,
       filterDistrict: "all", // Reset district when state changes
+      filterCity: "all", // Reset city when state changes
       currentPage: 1,
     }));
   };
@@ -239,8 +292,54 @@ export const VendorsListPage = () => {
     setState(prev => ({
       ...prev,
       filterDistrict: newDistrict,
+      filterCity: "all", // Reset city when district changes
       currentPage: 1,
     }));
+  };
+
+  // Handle city filter change
+  const handleCityFilterChange = (newCity) => {
+    setState(prev => ({
+      ...prev,
+      filterCity: newCity,
+      currentPage: 1,
+    }));
+  };
+
+  // Handle advanced filter changes
+  const handleAdvancedFilterChange = (filterName, value) => {
+    setState(prev => ({
+      ...prev,
+      [filterName]: value,
+      currentPage: 1,
+    }));
+  };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    const resetState = {
+      currentPage: 1,
+      searchTerm: "",
+      sortBy: "name",
+      filterState: "all",
+      filterDistrict: "all",
+      filterCity: "all",
+      minBuses: "",
+      maxBuses: "",
+      minPackages: "",
+      maxPackages: "",
+      hasPackages: "all",
+      hasBuses: "all",
+      packageStatus: "all",
+    };
+    setState(resetState);
+    setSearchInput("");
+  };
+
+  // Check if any advanced filters are applied
+  const hasAdvancedFilters = () => {
+    return state.minBuses || state.maxBuses || state.minPackages || state.maxPackages || 
+           state.hasPackages !== "all" || state.hasBuses !== "all" || state.packageStatus !== "all";
   };
 
   // Pagination
@@ -256,7 +355,7 @@ export const VendorsListPage = () => {
     }
   };
 
-  // Get unique states and districts for filters
+  // Get unique states, districts, and cities for filters
   const availableStates = Array.from(
     new Set(vendors.data.map((v) => v.state).filter(Boolean))
   ).sort();
@@ -270,6 +369,23 @@ export const VendorsListPage = () => {
             : true
         )
         .map((vendor) => vendor.district)
+        .filter(Boolean)
+    )
+  ).sort();
+
+  const availableCities = Array.from(
+    new Set(
+      vendors.data
+        .filter((vendor) => {
+          let stateMatch = state.filterState !== "all" 
+            ? vendor.state.toLowerCase() === state.filterState.toLowerCase() 
+            : true;
+          let districtMatch = state.filterDistrict !== "all" 
+            ? vendor.district.toLowerCase() === state.filterDistrict.toLowerCase() 
+            : true;
+          return stateMatch && districtMatch;
+        })
+        .map((vendor) => vendor.city)
         .filter(Boolean)
     )
   ).sort();
@@ -290,11 +406,12 @@ export const VendorsListPage = () => {
     return pages;
   };
 
-  // Sort options mapping
+  // Sort options mapping - Updated with newest first
   const sortOptions = [
     { value: "name", label: "Sort by: Name (A-Z)" },
     { value: "name_desc", label: "Sort by: Name (Z-A)" },
     { value: "location", label: "Sort by: Location" },
+    { value: "created_desc", label: "Sort by: Newest First" },
     { value: "created_asc", label: "Sort by: Oldest First" },
     { value: "bus_count", label: "Sort by: Bus Count" },
     { value: "package_count", label: "Sort by: Package Count" },
@@ -345,26 +462,7 @@ export const VendorsListPage = () => {
               value: vendorStats.total_buses,
               icon: "bus",
             },
-            // {
-            //   label: "Vendors with Bookings",
-            //   value: vendorStats.vendors_with_bookings,
-            //   icon: "bookings",
-            // },
-            // {
-            //   label: "Vendors without Bookings",
-            //   value: vendorStats.vendors_without_bookings,
-            //   icon: "no-bookings",
-            // },
-            // {
-            //   label: "Vendors with Packages",
-            //   value: vendorStats.vendors_with_packages,
-            //   icon: "packages",
-            // },
-            // {
-            //   label: "Vendors without Packages",
-            //   value: vendorStats.vendors_without_packages,
-            //   icon: "no-packages",
-            // },
+           
           ].map((stat, index) => (
             <div key={index} className="bg-white p-4 rounded-md shadow-sm">
               <div className="flex items-center">
@@ -410,70 +508,235 @@ export const VendorsListPage = () => {
 
       <div className="bg-white rounded-md shadow-sm p-6">
         {/* Search and Filter Controls */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div className="relative w-full md:w-80">
-            <input
-              type="text"
-              placeholder="Search by name, place, or mobile number"
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none text-sm w-full"
-              value={searchInput}
-              onChange={handleSearchChange}
-            />
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-          </div>
-
-          <div className="flex gap-3">
-            <div className="relative">
-              <select
-                className="appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md text-sm bg-white"
-                value={state.sortBy}
-                onChange={(e) => handleSortChange(e.target.value)}
-              >
-                {sortOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
+        <div className="flex flex-col gap-4 mb-6">
+          {/* Search and Basic Filters Row */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="relative w-full md:w-80">
+              <input
+                type="text"
+                placeholder="Search by name, place, or mobile number"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none text-sm w-full"
+                value={searchInput}
+                onChange={handleSearchChange}
+              />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
             </div>
 
-            <div className="relative">
-              <select
-                className="appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md text-sm bg-white"
-                value={state.filterState}
-                onChange={(e) => handleStateFilterChange(e.target.value)}
-              >
-                <option value="all">Filter by: State</option>
-                {availableStates.map((stateOption) => (
-                  <option key={stateOption} value={stateOption}>
-                    {stateOption}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
-            </div>
+            <div className="flex gap-3 flex-wrap">
+              <div className="relative">
+                <select
+                  className="appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md text-sm bg-white"
+                  value={state.sortBy}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                >
+                  {sortOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
+              </div>
 
-            {/* District Filter Dropdown (Conditional) */}
-            {(state.filterState !== "all" || state.sortBy === "state") &&
-              availableDistricts.length > 0 && (
-                <div className="relative">
-                  <select
-                    className="appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md text-sm bg-white"
-                    value={state.filterDistrict}
-                    onChange={(e) => handleDistrictFilterChange(e.target.value)}
-                  >
-                    <option value="all">Filter by: District</option>
-                    {availableDistricts.map((district) => (
-                      <option key={district} value={district}>
-                        {district}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
-                </div>
+              <div className="relative">
+                <select
+                  className="appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md text-sm bg-white"
+                  value={state.filterState}
+                  onChange={(e) => handleStateFilterChange(e.target.value)}
+                >
+                  <option value="all">Filter by: State</option>
+                  {availableStates.map((stateOption) => (
+                    <option key={stateOption} value={stateOption}>
+                      {stateOption}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
+              </div>
+
+              {/* District Filter Dropdown (Conditional) */}
+              {(state.filterState !== "all" || state.sortBy === "state") &&
+                availableDistricts.length > 0 && (
+                  <div className="relative">
+                    <select
+                      className="appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md text-sm bg-white"
+                      value={state.filterDistrict}
+                      onChange={(e) => handleDistrictFilterChange(e.target.value)}
+                    >
+                      <option value="all">Filter by: District</option>
+                      {availableDistricts.map((district) => (
+                        <option key={district} value={district}>
+                          {district}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
+                  </div>
+                )}
+
+              {/* City Filter Dropdown (Conditional) */}
+              {(state.filterState !== "all" || state.filterDistrict !== "all") &&
+                availableCities.length > 0 && (
+                  <div className="relative">
+                    <select
+                      className="appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-md text-sm bg-white"
+                      value={state.filterCity}
+                      onChange={(e) => handleCityFilterChange(e.target.value)}
+                    >
+                      <option value="all">Filter by: City</option>
+                      {availableCities.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
+                  </div>
+                )}
+
+              <button
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className={`inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium ${
+                  hasAdvancedFilters() 
+                    ? 'bg-blue-50 text-blue-700 border-blue-300' 
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Advanced Filters
+                {hasAdvancedFilters() && (
+                  <span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-blue-600 rounded-full">
+                    •
+                  </span>
+                )}
+              </button>
+
+              {(state.searchTerm || state.filterState !== "all" || state.filterDistrict !== "all" || 
+                state.filterCity !== "all" || hasAdvancedFilters()) && (
+                <button
+                  onClick={clearAllFilters}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium bg-white text-gray-700 hover:bg-gray-50"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Clear All
+                </button>
               )}
+            </div>
           </div>
+
+          {/* Advanced Filters Panel */}
+          {showAdvancedFilters && (
+            <div className="bg-gray-50 p-4 rounded-lg border">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Bus Count Filters */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Min Buses
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g., 5"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value={state.minBuses}
+                    onChange={(e) => handleAdvancedFilterChange('minBuses', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Max Buses
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g., 20"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value={state.maxBuses}
+                    onChange={(e) => handleAdvancedFilterChange('maxBuses', e.target.value)}
+                  />
+                </div>
+
+                {/* Package Count Filters */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Min Packages
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g., 3"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value={state.minPackages}
+                    onChange={(e) => handleAdvancedFilterChange('minPackages', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Max Packages
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g., 10"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value={state.maxPackages}
+                    onChange={(e) => handleAdvancedFilterChange('maxPackages', e.target.value)}
+                  />
+                </div>
+
+                {/* Has Packages Filter */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Has Packages
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value={state.hasPackages}
+                    onChange={(e) => handleAdvancedFilterChange('hasPackages', e.target.value)}
+                  >
+                    <option value="all">All Vendors</option>
+                    <option value="true">With Packages</option>
+                    <option value="false">Without Packages</option>
+                  </select>
+                </div>
+
+                {/* Has Buses Filter */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Has Buses
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value={state.hasBuses}
+                    onChange={(e) => handleAdvancedFilterChange('hasBuses', e.target.value)}
+                  >
+                    <option value="all">All Vendors</option>
+                    <option value="true">With Buses</option>
+                    <option value="false">Without Buses</option>
+                  </select>
+                </div>
+
+                {/* Package Status Filter */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Package Status
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value={state.packageStatus}
+                    onChange={(e) => handleAdvancedFilterChange('packageStatus', e.target.value)}
+                  >
+                    <option value="all">All Status</option>
+                    <option value="available">Available</option>
+                    <option value="unavailable">Unavailable</option>
+                    <option value="draft">Draft</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Loading State */}
