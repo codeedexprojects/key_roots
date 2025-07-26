@@ -63,8 +63,10 @@ const EditPackageForm = ({ isOpen, onClose, pkg }) => {
         setExistingHeaderImage(packageData.header_image);
       }
       if (packageData.package_images && packageData.package_images.length > 0) {
-        setExistingPackageImages(packageData.package_images);
-      }
+      // Extract just the image paths from the package_images array
+      const existingImages = packageData.package_images.map(img => img.image);
+      setExistingPackageImages(existingImages);
+    }
 
       // Fetch subcategories for the package's category
       if (packageData.sub_category?.category_id) {
@@ -83,7 +85,7 @@ const EditPackageForm = ({ isOpen, onClose, pkg }) => {
         price_per_person: packageData.price_per_person || "",
         extra_charge_per_km: packageData.extra_charge_per_km || "",
         header_image: null,
-        package_images: [],
+        package_images: null,
       });
 
     } catch (error) {
@@ -614,7 +616,7 @@ const EditPackageForm = ({ isOpen, onClose, pkg }) => {
                   ))}
                 </div>
               )}
-
+   
               {/* Newly uploaded images */}
               {imagePreviews.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
